@@ -1,0 +1,133 @@
+package com.javaboot.system.mapper;
+
+import java.util.List;
+
+import com.javaboot.system.vo.SysDeptVO;
+import org.apache.ibatis.annotations.Param;
+import com.javaboot.system.domain.SysDept;
+
+/**
+ * 部门管理 数据层
+ *
+ * @author javaboot
+ */
+public interface SysDeptMapper {
+    /**
+     * 查询部门人数
+     *
+     * @param dept 部门信息
+     * @return 结果
+     */
+    public int selectDeptCount(SysDept dept);
+
+    /**
+     * 查询部门是否存在用户
+     *
+     * @param deptId 部门ID
+     * @return 结果
+     */
+    public int checkDeptExistUser(String deptId);
+
+    /**
+     * 查询部门管理数据
+     *
+     * @param dept 部门信息
+     * @return 部门信息集合
+     */
+    public List<SysDept> selectDeptList(SysDept dept);
+
+    /**
+     * 删除部门管理信息
+     *
+     * @param deptId 部门ID
+     * @return 结果
+     */
+    public int deleteDeptById(String deptId);
+
+    /**
+     * 根据Id查询该部门和所有下级部门
+     *
+     * @param deptId
+     * @return
+     */
+    List<SysDeptVO> selectDeptListById(String deptId);
+
+    /**
+     * 新增部门信息
+     *
+     * @param dept 部门信息
+     * @return 结果
+     */
+    public int insertDept(SysDept dept);
+
+    /**
+     * 修改部门信息
+     *
+     * @param dept 部门信息
+     * @return 结果
+     */
+    public int updateDept(SysDept dept);
+
+    /**
+     * 修改子元素关系
+     *
+     * @param depts 子元素
+     * @return 结果
+     */
+    public int updateDeptChildren(@Param("depts") List<SysDept> depts);
+
+    /**
+     * 根据部门ID查询信息
+     *
+     * @param deptId 部门ID
+     * @return 部门信息
+     */
+    public SysDept selectDeptById(String deptId);
+
+    /**
+     * 校验部门名称是否唯一
+     *
+     * @param deptName 部门名称
+     * @param parentId 父部门ID
+     * @return 结果
+     */
+    public SysDept checkDeptNameUnique(@Param("deptName") String deptName, @Param("parentId") String parentId);
+
+    /**
+     * 校验部门Id是否唯一
+     *
+     * @param deptId 部门id
+     * @return 结果
+     */
+    public SysDept checkDeptIdUnique(@Param("deptId") String deptId);
+
+    /**
+     * 根据角色ID查询部门
+     *
+     * @param roleId 角色ID
+     * @return 部门列表
+     */
+    public List<String> selectRoleDeptTree(Long roleId);
+
+    /**
+     * 修改所在部门的父级部门状态
+     *
+     * @param dept 部门
+     */
+    public void updateDeptStatus(SysDept dept);
+
+    /**
+     * 根据ID查询所有子部门
+     *
+     * @param deptId 部门ID
+     * @return 部门列表
+     */
+    public List<SysDept> selectChildrenDeptById(String deptId);
+
+    /**
+     * 根据ID查询所有子部门
+     * @param deptId
+     * @return
+     */
+    public List<SysDept> selectDeptLeafList(String deptId);
+}

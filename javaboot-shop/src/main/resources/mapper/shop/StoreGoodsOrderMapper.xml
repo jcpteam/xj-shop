@@ -1,0 +1,672 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaboot.shop.mapper.StoreGoodsOrderMapper">
+
+    <resultMap type="com.javaboot.shop.vo.StoreGoodsOrderVO" id="StoreGoodsOrderResult">
+        <result property="orderId" column="order_id"/>
+        <result property="merchantId" column="merchant_id"/>
+        <result property="deptId" column="dept_id"/>
+        <result property="deptName" column="dept_name"/>
+        <result property="code" column="code"/>
+        <result property="price" column="price"/>
+        <result property="sortingPrice" column="sorting_price"/>
+        <result property="source" column="source"/>
+        <result property="printStatus" column="print_status"/>
+        <result property="odoPrintStatus" column="odo_print_status"/>
+        <result property="payStatus" column="pay_status"/>
+        <result property="status" column="status"/>
+        <result property="receiptStatus" column="receipt_status"/>
+        <result property="comment" column="comment"/>
+        <result property="deliveryDate" column="delivery_date"/>
+        <result property="receiveDate" column="receive_date"/>
+        <result property="createTime" column="create_time"/>
+        <result property="lastModifyTime" column="last_modify_time"/>
+        <result property="warehouseId" column="warehouse_id"/>
+        <result property="financialAuditStatus" column="financial_audit_status"/>
+        <result property="oldStatus" column="old_status"/>
+    </resultMap>
+
+    <sql id="selectStoreGoodsOrderVo">
+        select  * from store_goods_order
+      </sql>
+
+    <select id="selectStoreGoodsOrderList" parameterType="com.javaboot.shop.dto.StoreGoodsOrderQueryDTO"
+            resultMap="StoreGoodsOrderResult">
+        <include refid="selectStoreGoodsOrderVo"/>
+        <where>
+            AND status !=0
+            <if test="orderId != null ">and order_id = #{orderId}</if>
+            <if test="financialAuditStatus != null and financialAuditStatus!=''">and financial_audit_status = #{financialAuditStatus}</if>
+            <if test="merchantId != null ">and merchant_id = #{merchantId}</if>
+            <if test="deptId != null  and deptId != ''">and dept_id = #{deptId}</if>
+            <if test="code != null  and code != ''">and code = #{code}</if>
+            <if test="price != null ">and price = #{price}</if>
+            <if test="source != null  and source != ''">and source = #{source}</if>
+            <if test="printStatus != null  and printStatus != ''">and print_status = #{printStatus}</if>
+            <if test="odoPrintStatus != null  and odoPrintStatus != ''">and odo_print_status = #{odoPrintStatus}</if>
+            <if test="payStatus != null  and payStatus != ''">and pay_status = #{payStatus}</if>
+            <if test="synStatus != null  and synStatus != ''">and syn_status = #{synStatus}</if>
+            <if test="receiptStatus != null  and receiptStatus != ''">and receipt_status = #{receiptStatus}</if>
+            <if test="status != null  and status != ''">and status = #{status}</if>
+            <if test="comment != null  and comment != ''">and comment = #{comment}</if>
+            <if test="deliveryDate != null ">and delivery_date = #{deliveryDate}</if>
+            <if test="receiveDate != null ">and receive_date = #{receiveDate}</if>
+            <if test="lastModifyTime != null ">and last_modify_time = #{lastModifyTime}</if>
+            <if test="createTime != null ">and create_time &lt;= #{createTime}</if>
+            <if test="creatorId != null and creatorId != '' ">and creator_id = #{creatorId}</if>
+            <if test="loginUserDeptId != null  and loginUserDeptId !='' and (deptId==null or deptId=='')">
+                AND  dept_id IN (
+                SELECT
+                dept_id
+                FROM
+                sys_dept
+                WHERE
+                find_in_set( #{loginUserDeptId}, ancestors )  or dept_id=#{loginUserDeptId}
+                )
+            </if>
+            <if test="orderIdList != null  and orderIdList.size()>0">
+                and order_id in
+                <foreach item="orderId" collection="orderIdList" open="(" separator="," close=")">
+                    #{orderId}
+                </foreach>
+            </if>
+            <if test="statusList != null  and statusList.size()>0">
+            and (status in
+                <foreach item="statusValue" collection="statusList" open="(" separator="," close=")">
+                    #{statusValue}
+                </foreach>
+                <if test="typeKey=='afterSales'">
+                    or old_status = 3
+                </if>
+                )
+            </if>
+            <if test="merchantIdList != null  and merchantIdList.size()>0">
+                and (merchant_id in
+                <foreach item="merchantId" collection="merchantIdList" open="(" separator="," close=")">
+                    #{merchantId}
+                </foreach>
+                )
+            </if>
+            <if test="deliveryBeginDate != null and deliveryBeginDate!='' and deliveryEndDate != null and deliveryEndDate!='' ">
+                and delivery_date
+                BETWEEN
+                DATE_FORMAT(#{deliveryBeginDate},'%Y-%m-%d %H:%i:%s')
+                 AND DATE_FORMAT(#{deliveryEndDate},'%Y-%m-%d %H:%i:%s')
+            </if>
+            <if test="createBeginDate != null and createBeginDate!='' and createEndDate != null and createEndDate!='' ">
+                and create_time  BETWEEN
+                DATE_FORMAT(#{createBeginDate},'%Y-%m-%d %H:%i:%s')
+                AND DATE_FORMAT(#{createEndDate},'%Y-%m-%d %H:%i:%s')
+            </if>
+
+            <if test="orderKey != null and orderKey!='' ">and
+                (
+                code like concat('%', #{orderKey}, '%')
+                or
+                EXISTS
+                (
+                SELECT
+                1
+                FROM
+                store_goods_order_item t1
+                JOIN store_goods_quotation_goods t2 ON t1.goods_id = t2.goods_id
+                JOIN store_goods_spu t3 ON t2.spu_no = t3.spu_no
+                where t3.code like concat('%', #{orderKey}, '%') and t1.order_id=order_id
+                )
+                )
+            </if>
+            <if test="deliveryKey != null and deliveryKey!='' ">
+                AND EXISTS (
+                SELECT
+                1
+                FROM
+                store_member s1
+                WHERE
+                 s1.id=merchant_id AND
+                 (
+                        s1.nickname like concat('%', #{deliveryKey}, '%')
+                        OR
+                        s1.phone like concat('%', #{deliveryKey}, '%')
+                        OR
+                        s1.contact_name like concat('%', #{deliveryKey}, '%')
+                    )
+                )
+            </if>
+            <if test="minPrice !=null">
+                AND price &gt;=#{minPrice}
+            </if>
+            <if test="maxPrice !=null">
+                AND price &lt;#{maxPrice}
+            </if>
+        </where>
+        <if test="reqPage != null">
+           LIMIT #{reqPage.pagePreNum} OFFSET #{reqPage.pageNo}
+        </if>
+    </select>
+
+    <select id="selectStoreGoodsOrderById" parameterType="Long" resultMap="StoreGoodsOrderResult">
+        <include refid="selectStoreGoodsOrderVo"/>
+        where order_id = #{orderId}
+    </select>
+
+    <insert id="insertStoreGoodsOrder" parameterType="com.javaboot.shop.domain.StoreGoodsOrder" useGeneratedKeys="true"
+            keyProperty="orderId">
+        insert into store_goods_order
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="orderId != null ">order_id,</if>
+            <if test="merchantId != null ">merchant_id,</if>
+            <if test="deptId != null  and deptId != ''">dept_id,</if>
+            <if test="code != null  and code != ''">code,</if>
+            <if test="price != null ">price,</if>
+            <if test="sortingPrice != null ">sorting_price,</if>
+            <if test="source != null  and source != ''">source,</if>
+            <if test="printStatus != null  and printStatus != ''">print_status,</if>
+            <if test="odoPrintStatus != null  and odoPrintStatus != ''">odo_print_status,</if>
+            <if test="payStatus != null  and payStatus != ''">pay_status,</if>
+            <if test="status != null  and status != ''">status,</if>
+            <if test="comment != null  and comment != ''">comment,</if>
+            <if test="deliveryDate != null ">delivery_date,</if>
+            <if test="receiveDate != null ">receive_date,</if>
+            <if test="warehouseId != null ">warehouse_id,</if>
+            <if test="creatorId != null  and creatorId != ''">creator_id,</if>
+            <if test="financialAuditStatus != null and financialAuditStatus!=''">financial_audit_status,</if>
+            create_time, last_modify_time
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="orderId != null ">#{orderId},</if>
+            <if test="merchantId != null ">#{merchantId},</if>
+            <if test="deptId != null  and deptId != ''">#{deptId},</if>
+            <if test="code != null  and code != ''">#{code},</if>
+            <if test="price != null ">#{price},</if>
+            <if test="sortingPrice != null ">#{sortingPrice},</if>
+            <if test="source != null  and source != ''">#{source},</if>
+            <if test="printStatus != null  and printStatus != ''">#{printStatus},</if>
+            <if test="odoPrintStatus != null  and odoPrintStatus != ''">#{odoPrintStatus},</if>
+            <if test="payStatus != null  and payStatus != ''">#{payStatus},</if>
+            <if test="status != null  and status != ''">#{status},</if>
+            <if test="comment != null  and comment != ''">#{comment},</if>
+            <if test="deliveryDate != null ">#{deliveryDate},</if>
+            <if test="receiveDate != null ">#{receiveDate},</if>
+            <if test="warehouseId != null ">#{warehouseId},</if>
+            <if test="creatorId != null  and creatorId != ''">#{creatorId},</if>
+            <if test="financialAuditStatus != null and financialAuditStatus!=''">  #{financialAuditStatus},</if>
+
+            now(),now()
+        </trim>
+    </insert>
+
+    <update id="updateStoreGoodsOrder" parameterType="com.javaboot.shop.domain.StoreGoodsOrder">
+        update store_goods_order
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="merchantId != null ">merchant_id = #{merchantId},</if>
+            <if test="deptId != null  and deptId != ''">dept_id = #{deptId},</if>
+            <if test="code != null  and code != ''">code = #{code},</if>
+            <if test="price != null ">price = #{price},</if>
+            <if test="sortingPrice != null ">sorting_price = #{sortingPrice},</if>
+            <if test="source != null  and source != ''">source = #{source},</if>
+            <if test="printStatus != null  and printStatus != ''">print_status = #{printStatus},</if>
+            <if test="odoPrintStatus != null  and odoPrintStatus != ''">odo_print_status = #{odoPrintStatus},</if>
+            <if test="payStatus != null  and payStatus != ''">pay_status = #{payStatus},</if>
+            <if test="synStatus != null  and synStatus != ''">syn_status = #{synStatus},</if>
+            <if test="status != null  and status != ''">status = #{status},</if>
+            <if test="comment != null ">comment = #{comment},</if>
+            <if test="deliveryDate != null ">delivery_date = #{deliveryDate},</if>
+            <if test="receiveDate != null ">receive_date = #{receiveDate},</if>
+            <if test="createTime != null ">create_time = #{createTime},</if>
+            <if test="warehouseId != null ">warehouse_id = #{warehouseId},</if>
+            <if test="financialAuditStatus != null and financialAuditStatus!=''">  financial_audit_status = #{financialAuditStatus},</if>
+            <if test="oldStatus != null and oldStatus!=''">  old_status = #{oldStatus},</if>
+            last_modify_time = now()
+        </trim>
+        where order_id = #{orderId}
+    </update>
+
+    <update id="deleteStoreGoodsOrderById" parameterType="Long">
+       update store_goods_order  set status=0,last_modify_time = now()  where order_id = #{orderId}  AND status not in(3,4)
+    </update>
+
+    <update id="deleteStoreGoodsOrderByIds" parameterType="String">
+        update store_goods_order set status=5,last_modify_time = now() where order_id in
+        <foreach item="orderId" collection="array" open="(" separator="," close=")">
+            #{orderId}
+        </foreach>
+        AND status not in(4)
+    </update>
+    <update id="examineStoreGoodsOrderByIds" parameterType="String">
+        update store_goods_order set status=2,last_modify_time = now() where order_id in
+        <foreach item="orderId" collection="array" open="(" separator="," close=")">
+            #{orderId}
+        </foreach>
+        AND status=1
+    </update>
+    <update id="financialExamineStoreGoodsOrderByIds" parameterType="String">
+        update store_goods_order set financial_audit_status=1,pay_status=0,last_modify_time = now() where order_id in
+        <foreach item="orderId" collection="array" open="(" separator="," close=")">
+            #{orderId}
+        </foreach>
+    </update>
+    <update id="financialCancelStoreGoodsOrderByIds" parameterType="String">
+        update store_goods_order set financial_audit_status=0,pay_status=0,last_modify_time = now() where pay_status = '0' AND  order_id in
+        <foreach item="orderId" collection="array" open="(" separator="," close=")">
+            #{orderId}
+        </foreach>
+    </update>
+    <select id="selectStoreGoodsOrderListForSorting" parameterType="com.javaboot.shop.dto.StoreGoodsOrderQueryDTO"
+            resultMap="StoreGoodsOrderResult">
+        select  sgo.*,
+            (CASE sgo.status
+                WHEN '2' THEN 1
+                ELSE 0
+              END) as seq,
+              sd.dept_name
+        from store_goods_order sgo
+        left join sys_dept sd on sgo.dept_id = sd.dept_id
+        <where>
+            AND sgo.status !=0
+            <if test="orderId != null ">and sgo.order_id = #{orderId}</if>
+            <if test="financialAuditStatus != null and financialAuditStatus!=''">and sgo.financial_audit_status = #{financialAuditStatus}</if>
+            <if test="merchantId != null ">and sgo.merchant_id = #{merchantId}</if>
+            <if test="deptId != null  and deptId != ''">and sgo.dept_id = #{deptId}</if>
+            <if test="code != null  and code != ''">and sgo.code = #{code}</if>
+            <if test="price != null ">and sgo.price = #{price}</if>
+            <if test="source != null  and source != ''">and sgo.source = #{source}</if>
+            <if test="printStatus != null  and printStatus != ''">and sgo.print_status = #{printStatus}</if>
+            <if test="odoPrintStatus != null  and odoPrintStatus != ''">and sgo.odo_print_status = #{odoPrintStatus}</if>
+            <if test="payStatus != null  and payStatus != ''">and sgo.pay_status = #{payStatus}</if>
+            <if test="status != null  and status != ''">and sgo.status = #{status}</if>
+            <if test="comment != null  and comment != ''">and sgo.comment = #{comment}</if>
+            <if test="deliveryDate != null ">and sgo.delivery_date = #{deliveryDate}</if>
+            <if test="receiveDate != null ">and sgo.receive_date = #{receiveDate}</if>
+            <if test="lastModifyTime != null ">and sgo.last_modify_time = #{lastModifyTime}</if>
+            <if test="createTime != null ">and sgo.create_time &lt;= #{createTime}</if>
+            <if test="loginUserDeptId != null  and loginUserDeptId !='' and (deptId==null or deptId=='')">
+                AND  sgo.dept_id IN (
+                SELECT
+                dept_id
+                FROM
+                sys_dept
+                WHERE
+                find_in_set( #{loginUserDeptId}, ancestors )  or dept_id=#{loginUserDeptId}
+                )
+            </if>
+            <if test="orderIdList != null  and orderIdList.size()>0">
+                and sgo.order_id in
+                <foreach item="orderId" collection="orderIdList" open="(" separator="," close=")">
+                    #{orderId}
+                </foreach>
+            </if>
+            <if test="statusList != null  and statusList.size()>0">
+                and sgo.status in
+                <foreach item="statusValue" collection="statusList" open="(" separator="," close=")">
+                    #{statusValue}
+                </foreach>
+            </if>
+            <if test="deliveryBeginDate != null and deliveryBeginDate!='' and deliveryEndDate != null and deliveryEndDate!='' ">
+                and sgo.delivery_date
+                BETWEEN
+                DATE_FORMAT(#{deliveryBeginDate},'%Y-%m-%d %H:%i:%s')
+                AND DATE_FORMAT(#{deliveryEndDate},'%Y-%m-%d %H:%i:%s')
+            </if>
+            <if test="createBeginDate != null and createBeginDate!='' and createEndDate != null and createEndDate!='' ">
+                and sgo.create_time  BETWEEN
+                DATE_FORMAT(#{createBeginDate},'%Y-%m-%d %H:%i:%s')
+                AND DATE_FORMAT(#{createEndDate},'%Y-%m-%d %H:%i:%s')
+            </if>
+
+            <if test="orderKey != null and orderKey!='' ">and
+                (
+                sgo.code like concat('%', #{orderKey}, '%')
+                or
+                EXISTS
+                (
+                SELECT
+                1
+                FROM
+                store_goods_order_item t1
+                JOIN store_goods_quotation_goods t2 ON t1.goods_id = t2.goods_id
+                JOIN store_goods_spu t3 ON t2.spu_no = t3.spu_no
+                where t3.code like concat('%', #{orderKey}, '%') and t1.order_id=order_id
+                )
+                )
+            </if>
+            <if test="deliveryKey != null and deliveryKey!='' ">
+                AND EXISTS (
+                SELECT
+                1
+                FROM
+                store_member s1
+                WHERE
+                s1.id=sgo.merchant_id AND
+                (
+                s1.nickname like concat('%', #{deliveryKey}, '%')
+                OR
+                s1.phone like concat('%', #{deliveryKey}, '%')
+                )
+                )
+            </if>
+            <if test="minPrice !=null">
+                sgo.price &gt;=#{minPrice}
+            </if>
+            <if test="maxPrice !=null">
+                sgo.price &lt;#{maxPrice}
+            </if>
+            <if test="routeId != null and routeId!='' ">
+                and sgo.merchant_id in (
+                    select customer_id
+                    from store_route_shop srs
+                    where srs.route_id = #{routeId}
+                )
+            </if>
+            <if test="quotationId != null and quotationId!='' ">
+                and sgo.order_id in (
+                    select DISTINCT sgoi.order_id
+                    from store_goods_order_item sgoi
+                    join store_goods_quotation_goods sgqg on sgqg.goods_id = sgoi.goods_id
+                    join store_goods_quotation sgq on sgq.quotation_id = sgqg.quotation_id
+                    where sgq.quotation_id = #{quotationId}
+                )
+            </if>
+        </where>
+        order by seq desc, sgo.create_time desc
+    </select>
+
+    <select id="getStoreGoodsOrderSortingCountByIds" parameterType="String" resultType="com.javaboot.shop.vo.StoreGoodsOrderSortingCountVO">
+        SELECT order_id,count(item_id) as orderGoodCount,sum(sorting_status) as orderGoodSortCount
+        FROM store_goods_order_item
+        where order_id in
+        <foreach item="orderId" collection="array" open="(" separator="," close=")">
+            #{orderId}
+        </foreach>
+        GROUP BY order_id
+    </select>
+
+    <select id="getSortingMerchantInfo" parameterType="String" resultType="com.javaboot.shop.vo.SortingQueryMerchantInfo">
+        SELECT sgo.merchant_id ,sm.nickname as merchantName
+        FROM store_goods_order sgo
+        left join store_member sm on sgo.merchant_id = sm.id
+        where sgo.status != '0'
+        <if test="loginUserDeptId != null  and loginUserDeptId !=''">
+            AND sgo.dept_id IN (
+            SELECT
+            dept_id
+            FROM
+            sys_dept
+            WHERE
+            find_in_set( #{loginUserDeptId}, ancestors )  or dept_id=#{loginUserDeptId}
+            )
+        </if>
+        GROUP BY sgo.merchant_id ,sm.nickname
+    </select>
+
+    <select id="getSortingRouteInfo" parameterType="String" resultType="com.javaboot.shop.domain.StoreDeliverRoute">
+        SELECT sdr.route_id ,sdr.route_name
+        FROM store_deliver_route sdr
+        join store_route_shop srs on sdr.route_id = srs.route_id
+        join store_goods_order sgo on srs.customer_id = sgo.merchant_id
+        where sgo.status != '0'
+        <if test="loginUserDeptId != null  and loginUserDeptId !=''">
+            AND sdr.dept_id IN (
+            SELECT
+            dept_id
+            FROM
+            sys_dept
+            WHERE
+            find_in_set( #{loginUserDeptId}, ancestors )  or dept_id=#{loginUserDeptId}
+            )
+        </if>
+        GROUP BY sdr.route_id ,sdr.route_name
+    </select>
+
+    <select id="getSortingQuotationInfo" parameterType="String" resultType="com.javaboot.shop.domain.StoreGoodsQuotation">
+        SELECT sgq.quotation_id ,sgq.quotation_name
+        FROM store_goods_quotation sgq
+        join store_goods_quotation_goods sgqg on sgq.quotation_id = sgqg.quotation_id
+        join store_goods_order_item sgoi on sgqg.goods_id = sgoi.goods_id
+        where 1=1
+        <if test="loginUserDeptId != null  and loginUserDeptId !=''">
+            AND sgq.dept_id IN (
+            SELECT
+            dept_id
+            FROM
+            sys_dept
+            WHERE
+            find_in_set( #{loginUserDeptId}, ancestors )  or dept_id=#{loginUserDeptId}
+            )
+        </if>
+        GROUP BY sgq.quotation_id ,sgq.quotation_name
+    </select>
+    <update id="updateStatusOfOld"  >
+        update store_goods_order set status=old_status,last_modify_time = now() where order_id in
+        <foreach item="orderId" collection="orderIdList" open="(" separator="," close=")">
+            #{orderId}
+        </foreach>
+    </update>
+    <update id="updateOldOfStatus"  >
+        update store_goods_order set old_status=status,last_modify_time = now() where order_id in
+        <foreach item="orderId" collection="orderIdList" open="(" separator="," close=")">
+            #{orderId}
+        </foreach>
+    </update>
+    <update id="updateReceiptStatus" parameterType="map" >
+        update store_goods_order set
+        <if test="financialAuditStatus != null and financialAuditStatus != '' ">financial_audit_status=#{financialAuditStatus}, </if>
+        <if test="synStatus != null and synStatus != '' ">syn_status=#{synStatus}, </if>
+        receipt_status=#{receiptStatus},last_modify_time = now() where order_id in
+        <foreach item="orderId" collection="orderIdList" open="(" separator="," close=")">
+            #{orderId}
+        </foreach>
+    </update>
+    <select id="getOrderGoodsCount" resultType="Integer">
+        SELECT
+            count( t2.goods_id )
+        FROM
+            store_goods_order t1,
+            store_goods_order_item t2
+        WHERE
+            t1.order_id = t2.order_id
+            AND t1.status != '0' AND t2.goods_id IN
+            <foreach item="goodsId" collection="goodsIdList" open="(" separator="," close=")">
+                #{goodsId}
+            </foreach>
+    </select>
+
+
+    <resultMap type="com.javaboot.shop.vo.StoreGoodsOrderVO" id="StoreGoodsOrderResultForApp">
+        <id     property="orderId"       column="order_id"      />
+        <result property="merchantId" column="merchant_id"/>
+        <result property="deptId" column="dept_id"/>
+        <result property="code" column="code"/>
+        <result property="price" column="price"/>
+        <result property="sortingPrice" column="sorting_price"/>
+        <result property="source" column="source"/>
+        <result property="printStatus" column="print_status"/>
+        <result property="odoPrintStatus" column="odo_print_status"/>
+        <result property="payStatus" column="pay_status"/>
+        <result property="status" column="status"/>
+        <result property="receiptStatus" column="receipt_status"/>
+        <result property="comment" column="comment"/>
+        <result property="deliveryDate" column="delivery_date"/>
+        <result property="receiveDate" column="receive_date"/>
+        <result property="createTime" column="create_time"/>
+        <result property="lastModifyTime" column="last_modify_time"/>
+        <result property="warehouseId" column="warehouse_id"/>
+        <result property="financialAuditStatus" column="financial_audit_status"/>
+        <result property="oldStatus" column="old_status"/>
+
+        <collection  property="goodsOrderItems"   ofType="com.javaboot.shop.domain.StoreGoodsOrderItem" >
+            <id property="itemId"     column="item_id"      />
+            <result property="goodsId"    column="goods_id"    />
+            <result property="spuNo"    column="spu_no"    />
+            <result property="quantity"    column="quantity"    />
+            <result property="amount"    column="amount"    />
+            <result property="price"    column="sgoi_price"    />
+            <result property="discount"    column="discount"    />
+            <result property="comment"    column="sgoi_comment"    />
+            <result property="createTime"    column="sgoi_create_time"    />
+            <result property="unitId"    column="unit_id"    />
+            <result property="unitName"    column="unit_name"    />
+            <result property="printStatus" column="sgoi_print_status"/>
+            <result property="sortingStatus" column="sorting_status"/>
+            <result property="sortingPrice" column="sgoi_sorting_price"/>
+            <result property="sortingWeight" column="sorting_weight"/>
+            <result property="sortingQuantity" column="sorting_quantity"/>
+            <result property="sortingQuantityUnit" column="sorting_quantity_unit"/>
+            <result property="goodsImg" column="goods_img"/>
+            <result property="goodName" column="good_name"/>
+            <result property="lastModifyTime"    column="sgoi_last_modify_time"    />
+        </collection>
+    </resultMap>
+
+    <select id="selectStoreGoodsOrderListForApp" parameterType="com.javaboot.shop.dto.StoreGoodsOrderQueryDTO"
+            resultMap="StoreGoodsOrderResultForApp">
+        select  sgo.*,
+            sgoi.item_id,sgoi.goods_id,sgoi.spu_no,sgoi.quantity,sgoi.amount,sgoi.price as sgoi_price,sgoi.discount,sgoi.sorting_price as sgoi_sorting_price,sgoi.comment as sgoi_comment,
+            sgoi.create_time as sgoi_create_time,sgoi.unit_id,sgoi.print_status as sgoi_print_status,sgoi.sorting_status,sgoi.last_modify_time as sgoi_last_modify_time,
+            sgqg.property_name as good_name,
+            sgs.image as goods_img,
+            sgsu.name as unit_name,
+            ssd.sorting_weight,ssd.sorting_quantity,ssd.sorting_quantity_unit
+        from store_goods_order sgo
+        left join store_goods_order_item sgoi on sgo.order_id = sgoi.order_id
+        left join store_goods_quotation_goods sgqg on sgoi.goods_id = sgqg.goods_id
+        left join store_goods_spu sgs on sgoi.spu_no = sgs.spu_no
+        left join store_goods_sales_unit sgsu on sgoi.unit_id = sgsu.unit_id
+        left join store_sorting_detail ssd on sgoi.item_id = ssd.order_item_id  and ssd.status = '1'
+        <where>
+            AND sgo.status !=0 and sgo.status != 5
+            <if test="orderId != null ">and sgo.order_id = #{orderId}</if>
+            <if test="financialAuditStatus != null and financialAuditStatus!=''">and sgo.financial_audit_status = #{financialAuditStatus}</if>
+            <if test="merchantId != null ">and sgo.merchant_id = #{merchantId}</if>
+            <if test="deptId != null  and deptId != ''">and sgo.dept_id = #{deptId}</if>
+            <if test="code != null  and code != ''">and sgo.code = #{code}</if>
+            <if test="price != null ">and sgo.price = #{price}</if>
+            <if test="source != null  and source != ''">and sgo.source = #{source}</if>
+            <if test="printStatus != null  and printStatus != ''">and sgo.print_status = #{printStatus}</if>
+            <if test="odoPrintStatus != null  and odoPrintStatus != ''">and sgo.odo_print_status = #{odoPrintStatus}</if>
+            <if test="payStatus != null  and payStatus != ''">and sgo.pay_status = #{payStatus}</if>
+            <if test="status != null  and status != ''">and sgo.status = #{status}</if>
+            <if test="comment != null  and comment != ''">and sgo.comment = #{comment}</if>
+            <if test="merchantId != null  and merchantId != ''">and sgo.merchant_id = #{merchantId}</if>
+            <if test="deliveryDate != null ">and sgo.delivery_date = #{deliveryDate}</if>
+            <if test="receiveDate != null ">and sgo.receive_date = #{receiveDate}</if>
+            <if test="lastModifyTime != null ">and sgo.last_modify_time = #{lastModifyTime}</if>
+            <if test="createTime != null ">and sgo.create_time &lt;= #{createTime}</if>
+            <if test="loginUserDeptId != null  and loginUserDeptId !='' and (deptId==null or deptId=='')">
+                AND  sgo.dept_id IN (
+                SELECT
+                dept_id
+                FROM
+                sys_dept
+                WHERE
+                find_in_set( #{loginUserDeptId}, ancestors )  or dept_id=#{loginUserDeptId}
+                )
+            </if>
+            <if test="orderIdList != null  and orderIdList.size()>0">
+                and sgo.order_id in
+                <foreach item="orderId" collection="orderIdList" open="(" separator="," close=")">
+                    #{orderId}
+                </foreach>
+            </if>
+            <if test="orderIdListLong != null  and orderIdListLong.size()>0">
+                and sgo.order_id in
+                <foreach item="orderId" collection="orderIdListLong" open="(" separator="," close=")">
+                    #{orderId}
+                </foreach>
+            </if>
+            <if test="statusList != null  and statusList.size()>0">
+                and sgo.status in
+                <foreach item="statusValue" collection="statusList" open="(" separator="," close=")">
+                    #{statusValue}
+                </foreach>
+            </if>
+            <if test="deliveryBeginDate != null and deliveryBeginDate!='' and deliveryEndDate != null and deliveryEndDate!='' ">
+                and sgo.delivery_date
+                BETWEEN
+                DATE_FORMAT(#{deliveryBeginDate},'%Y-%m-%d %H:%i:%s')
+                AND DATE_FORMAT(#{deliveryEndDate},'%Y-%m-%d %H:%i:%s')
+            </if>
+            <if test="createBeginDate != null and createBeginDate!='' and createEndDate != null and createEndDate!='' ">
+                and sgo.create_time  BETWEEN
+                DATE_FORMAT(#{createBeginDate},'%Y-%m-%d %H:%i:%s')
+                AND DATE_FORMAT(#{createEndDate},'%Y-%m-%d %H:%i:%s')
+            </if>
+
+            <if test="orderKey != null and orderKey!='' ">and
+                (
+                sgo.code like concat('%', #{orderKey}, '%')
+                or
+                EXISTS
+                (
+                SELECT
+                1
+                FROM
+                store_goods_order_item t1
+                JOIN store_goods_quotation_goods t2 ON t1.goods_id = t2.goods_id
+                JOIN store_goods_spu t3 ON t2.spu_no = t3.spu_no
+                where t3.code like concat('%', #{orderKey}, '%') and t1.order_id=order_id
+                )
+                )
+            </if>
+            <if test="deliveryKey != null and deliveryKey!='' ">
+                AND EXISTS (
+                SELECT
+                1
+                FROM
+                store_member s1
+                WHERE
+                s1.id=sgo.merchant_id AND
+                (
+                s1.nickname like concat('%', #{deliveryKey}, '%')
+                OR
+                s1.phone like concat('%', #{deliveryKey}, '%')
+                )
+                )
+            </if>
+            <if test="minPrice !=null">
+                sgo.price &gt;=#{minPrice}
+            </if>
+            <if test="maxPrice !=null">
+                sgo.price &lt;#{maxPrice}
+            </if>
+        </where>
+        order by sgo.create_time desc
+    </select>
+
+    <update id="updateStoreGoodsOrderPrintByIds">
+        update store_goods_order set print_status='1' where order_id in
+        <foreach item="orderId" collection="orderIdList" open="(" separator="," close=")">
+            #{orderId}
+        </foreach>
+    </update>
+
+    <update id="updateStoreGoodsOrderOdoPrintByIds">
+        update store_goods_order set odo_print_status='1' where order_id in
+        <foreach item="orderId" collection="orderIdList" open="(" separator="," close=")">
+            #{orderId}
+        </foreach>
+    </update>
+
+    <select id="checkTodayOrder" parameterType="com.javaboot.shop.dto.StoreGoodsCheckTodayOrder"
+            resultType="java.lang.Long">
+        select t.order_id from store_goods_order t
+        where
+        t.status in ('1','2','3','4')
+        <if test="merchantId != null ">and t.merchant_id = #{merchantId}</if>
+        <if test="createBeginDate != null and createBeginDate!='' and createEndDate != null and createEndDate!='' ">
+            and t.create_time &gt;= #{createBeginDate}
+            and t.create_time &lt;= #{createEndDate}
+        </if>
+    </select>
+
+    <select id="queryUnpayOrderList"
+            resultType="com.javaboot.shop.vo.StoreGoodsOrderVO">
+        select
+	      base.*,sm.opmanager_id as opmanagerId
+        from
+	      (select t.* from store_goods_order t where t.pay_status = '0' and t.status in ('4','5') GROUP BY t.merchant_id ,t.delivery_date asc) as base
+        left join store_member sm on base.merchant_id = sm.id
+        group by base.merchant_id
+    </select>
+</mapper>

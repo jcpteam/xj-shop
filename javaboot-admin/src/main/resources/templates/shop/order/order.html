@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('订单信息主列表')" />
+    <style>
+        .layui-table-cell {
+            min-height: 30px;
+            height: initial;
+            white-space: initial;
+            word-break: break-word;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+
+
+<!-- 正文开始 -->
+<div class="layui-fluid">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-card">
+            <!-- 搜索区 -->
+            <form class="layui-form toolbar" th:onsubmit="return false" lay-filter="inputForm" id="inputForm">
+                <div class="layui-form-item">
+
+                    <div class="layui-inline" >
+                        <label class="layui-form-label label-auto">订单信息：</label>
+                        <div class="layui-input-inline">
+                            <input class="layui-input" name="orderKey" type="text" placeholder="订单编号/商品货号"/>
+                        </div>
+                    </div>
+                    <div class="layui-inline" th:if="${type!='finance'}" >
+                        <label class="layui-form-label label-auto" th:text="${{type=='order'?'收货信息':'客户信息'}}"></label>
+                        <div class="layui-input-inline">
+                            <input class="layui-input" name="deliveryKey" type="text" th:placeholder="${{type=='order'?'联系人/收货电话/客户名称':'客户电话/客户名称'}}"/>
+                        </div>
+                    </div>
+                    <div class="layui-inline" th:if="${type=='finance'}" >
+                        <label class="layui-form-label label-auto">结算客户</label>
+                        <div class="layui-input-inline">
+                            <input class="layui-input" name="deliveryKey" type="text" placeholder="结算客户名称"/>
+                        </div>
+                    </div>
+                    <div class="layui-inline" th:if="${type=='order'}">
+                        <label class="layui-form-label label-auto">订单状态:</label>
+                        <div class="layui-input-inline">
+                            <select name="status" th:with="type=${statusList}">
+                                <option value="">所有</option>
+                                <option th:each="dict : ${type}" th:text="${dict.dictLabel}" th:value="${dict.dictValue}"></option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-inline" th:if="${type=='afterSales' || type=='finance'}">
+                        <label class="layui-form-label label-auto">付款单状态:</label>
+                        <div class="layui-input-inline">
+                            <select name="receiptStatus"  id="receiptStatus">
+                                <option value="">所有</option>
+                                <option value="0">未生成</option>
+                                <option value="1">已生成</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-inline" >
+                        <label class="layui-form-label label-auto">所属区域：</label>
+                        <div class="layui-input-inline">
+                            <select name="deptId"   id="deptId"  lay-search >
+                                <option  value="" th:checked="true">选择区域</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-inline" >
+                        <label class="layui-form-label label-auto">收货日期：</label>
+                        <div class="layui-input-inline">
+                            <input id="deliveryDate" type="text" placeholder="请选择开始和结束日期" class="layui-input date-icon" autocomplete="off"/>
+                            <input id="deliveryBeginDate" type="hidden" name="deliveryBeginDate">
+                            <input id="deliveryEndDate" type="hidden" name="deliveryEndDate">
+                        </div>
+                    </div>
+                    <div class="layui-inline" th:if="${type=='order'||type=='afterSales'}">
+                        <label class="layui-form-label label-auto">创建时间：</label>
+                        <div class="layui-input-inline">
+                            <input id="createDate" type="text" placeholder="请选择开始和结束日期" class="layui-input date-icon" autocomplete="off"/>
+                            <input id="createBeginDate" type="hidden" name="createBeginDate">
+                            <input id="createEndDate" type="hidden" name="createEndDate">
+                        </div>
+                    </div>
+                    <div class="layui-inline" th:if="${type=='finance'}">
+                        <label class="layui-form-label label-auto">支付状态:</label>
+                        <div class="layui-input-inline">
+                            <select name="payStatus" th:with="type=${payStatusList}">
+                                <option value="">所有</option>
+                                <option th:each="dict : ${type}" th:text="${dict.dictLabel}" th:value="${dict.dictValue}"></option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-inline" th:if="${type=='finance'}" style="width:400px">
+                        <label class="layui-form-label label-auto">金额范围:</label>
+                        <div class="layui-input-inline">
+                                <input name="minPrice" style="float: left;width: 40%" type="number" min="0"   placeholder="最小值" class="layui-input"/>
+                                <span style="float: left;width: 10%;padding-top: 10px;text-align: center;">-</span>
+                                <input name="maxPrice"  style="float: left;width: 40%" type="number"  min="0"   placeholder="最大值" class="layui-input"/>
+
+                        </div>
+                    </div>
+                    <div class="layui-inline" style="padding-left: 13px;">
+                        <button class="layui-btn layui-btn-sm icon-btn" lay-submit lay-filter="searchBtn" id="searchBtn">
+                            <i class="layui-icon layui-icon-search"></i>搜索
+                        </button>
+                        <button class="layui-btn layui-btn-sm icon-btn" type="reset" id="restBtn">
+                            <i class="layui-icon layui-icon-refresh"></i>重置
+                        </button>
+                        <a class="layui-btn layui-btn-primary form-search-expand layui-hide" data-expand="true">
+                            展开 <i class="layui-icon layui-icon-down"></i>
+                        </a>
+                    </div>
+                </div>
+            </form>
+
+            <table class="layui-table" id="dataTable" lay-filter="dataTable"></table>
+        </div>
+
+    </div>
+</div>
+
+<!-- 头工具栏 -->
+<script type="text/html" id="toolbarHead">
+    <div class="layui-btn-container">
+        {{#  if (type=='order'){ }}
+        <button class="layui-btn layui-btn-normal layui-btn-sm" lay-event="add" shiro:hasPermission="shop:order:add"><i class="layui-icon layui-icon-addition"></i>新增</button>
+        <button class="layui-btn layui-btn-sm" lay-event="batchExamine" shiro:hasPermission="shop:order:edit"><i class="layui-icon layui-icon-auz"></i>审核订单</button>
+        {{#  } }}
+        {{#  if (type=='finance'){ }}
+            <button class="layui-btn layui-btn-normal layui-btn-sm fkd" lay-event="batchAddReceipt" shiro:hasPermission="shop:receipt:add"><i class="layui-icon layui-icon-addition"></i>生成付款单</button>
+        {{#  } }}
+        {{#  if (type=='afterSales'){ }}
+        <button class="layui-btn layui-btn-sm fkd" lay-event="batchFinancialExamine" shiro:hasPermission="shop:order:edit"><i class="layui-icon layui-icon-auz"></i>审核订单</button>
+        {{#  } }}
+    </div>
+</script>
+
+<!-- 行工具栏 -->
+<script type="text/html" id="toolbarRow">
+
+    <a class="layui-btn layui-btn-xs" lay-event="view" shiro:hasPermission="shop:order:edit">查看</a>
+    {{#  if (type=='order'){ }}
+        {{#  if (d.status ==1 || d.status ==2){ }}
+        <a class="layui-btn layui-btn-xs" lay-event="edit" shiro:hasPermission="shop:order:edit">修改</a>
+        <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del" shiro:hasPermission="shop:order:remove">作废</a>
+        {{#  } }}
+        {{#  if (d.status ==5 && d.oldStatus !=3){ }}
+        <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="revert" shiro:hasPermission="shop:order:remove">还原</a>
+        <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="phyDel" shiro:hasPermission="shop:order:remove">删除</a>
+        {{# } }}
+        {{#  if (d.status ==1){ }}
+        <a class="layui-btn layui-btn-xs" lay-event="examine" shiro:hasPermission="shop:order:edit">审核</a>
+        {{#  } }}
+    {{#  }   }}
+    {{#  if (type=='finance'){ }}
+        {{#  if ( d.financialAuditStatus==1 && d.payStatus==0 && d.status==3 && d.receiptStatus == 0){ }}
+        <a class="layui-btn layui-btn-xs" lay-event="addReceipt" shiro:hasPermission="shop:receipt:edit">生成付款单</a>
+        {{#  } }}
+    {{#  } }}
+    {{#  if (type=='afterSales'){ }}
+        {{#  if (d.financialAuditStatus ==0 && d.status == 3){ }}
+        <a class="layui-btn layui-btn-xs" lay-event="edit" shiro:hasPermission="shop:order:edit">修改</a>
+        <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del" shiro:hasPermission="shop:order:remove">作废</a>
+        <a class="layui-btn layui-btn-xs" lay-event="financialExamine" shiro:hasPermission="shop:order:edit">审核</a>
+        {{#  } }}
+        {{#  if (d.financialAuditStatus == 1 && d.status == 3 && d.receiptStatus == 0){ }}
+            <a class="layui-btn layui-btn-xs" lay-event="financialCancel" shiro:hasPermission="shop:order:edit">取消审核</a>
+        {{#  } }}
+        {{#  if (d.status ==5){ }}
+        <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="revert" shiro:hasPermission="shop:order:remove">还原</a>
+        <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="phyDel" shiro:hasPermission="shop:order:remove">删除</a>
+        {{# } }}
+    {{#  }   }}
+</script>
+
+<!-- js部分 -->
+<th:block th:include="include :: footer" />
+<script type="text/javascript" th:inline="javascript">
+    var ctx = [[@{/}]];
+    var type = [[${type}]];
+</script>
+<script type="text/javascript" th:inline="none">
+    layui.use(['index', 'layer', 'form', 'table', 'util', 'ext','laydate'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        var table = layui.table;
+        var util = layui.util;
+        var laydate = layui.laydate;
+        var ext = layui.ext;
+        var admin = layui.admin;
+        var index = layui.index;
+
+        var prefix = ctx + "shop/order";
+        var listUrl = prefix + "/list";
+        var createUrl = prefix + "/add";
+        var updateUrl = prefix + "/edit/{id}/"+type;
+        var removeUrl = prefix + "/remove";
+        var exportUrl = prefix + "/export";
+        var phyRemoveUrl = prefix + "/phyRemove";
+        var examineUrl = prefix + "/examine";
+        var financialExamineUrl = prefix + "/financial/examine";
+        var financialCancelUrl = prefix + "/financial/cancel";
+        var revertUrl = prefix + "/revert";
+
+        // 初始日期今天9点到第二天9点
+        var today = new Date();
+        if(today.getHours() < 9){
+            today.setDate(today.getDate() - 1);
+        }
+
+        var s1 = layui.util.toDateString(today, 'yyyy-MM-dd 09:00:00')
+        //明天的时间
+        var day2 = today;
+        day2.setDate(day2.getDate() + 1);
+        var s2 = layui.util.toDateString(day2, 'yyyy-MM-dd 09:00:00')
+        $("#createBeginDate").val(s1);
+        $("#createEndDate").val(s2);
+
+        var cols=[[
+            {type: 'checkbox'}
+            ,{field: 'orderId', title: '订单id', hide: true}
+            ,{field: 'code', title: '订单编号',width:200}
+            ,{field: 'createTime', title: '下单时间',width:120}
+            ,{field: 'merchantName', title: '下单客户', width:150}
+            ,{field: 'price', title: '下单金额',width:100}
+            ,{field: 'sortingPrice', title: '结算金额',width:100}
+            ,{field: 'deptId', width:100,title: '所属区域',templet:function (d) {
+                    var name=''
+                    layui.each(deptList,function (index,item) {
+                        if(d.deptId==item.value){
+                            name=item.name
+                        }
+                    })
+                    return name;
+                }}
+            ,{field: 'sourceName', title: '订单来源',width:100}
+            ,{field: 'printStatusName', title: '打印状态',width:100}
+            ,{field: 'payStatusName', title: '付款状态',width:100}
+            ,{field: 'receiptStatus', title: '付款单',width:100,templet:function (d) {
+                    return d.receiptStatus === '0' ? '未生成':'已生成';
+            }}
+            ,{field: 'statusName', title: '订单状态',width:100}
+            ,{field: 'synStatus', title: '同步状态',width:100,templet:function (d) {
+                if(d.synStatus  === '0') {
+                    return '未同步';
+                } else if(d.synStatus  === '1'){
+                    return '已同步';
+                } else {
+                    return '同步失败';
+                }
+            }}
+            ,{field: 'operate', title: '操作', minWidth: 210, toolbar: '#toolbarRow', fixed: 'right'}
+        ]];
+        if(type=='finance'){
+            cols=[[
+                {type: 'checkbox'}
+                ,{field: 'orderId', title: '订单id', hide: true}
+                ,{field: 'merchantName', title: '客户名称', width:150}
+                ,{field: 'superMerchantName', title: '结算客户', width:150}
+                ,{field: 'code', title: '订单编号', width:200}
+                ,{field: 'deptId', width:100, title: '所属区域',templet:function (d) {
+                        var name=''
+                        layui.each(deptList,function (index,item) {
+                            if(d.deptId==item.value){
+                                name=item.name
+                            }
+                        })
+                        return name;
+                    }}
+                ,{field: 'price', title: '下单金额', width:100}
+                ,{field: 'sortingPrice', title: '结算金额',width:100}
+                ,{field: 'receiptStatus', width:100, title: '付款单',templet:function (d) {
+                        return d.receiptStatus === '0' ? '未生成':'已生成';
+                }}
+                ,{field: 'payStatusName', title: '支付状态', width:100}
+                ,{field: 'createTime', title: '下单时间', width:150}
+
+                ,{field: 'deliveryDate', title: '收货时间', width:120,templet:function (d) {
+                        return layui.util.toDateString(d.deliveryDate, 'yyyy-MM-dd');
+                }}
+                ,{field: 'operate', title: '操作', minWidth: 150, toolbar: '#toolbarRow', fixed: 'right'}
+            ]];
+        }
+
+        //所属区域------------------------------------------------------------------------------------------------------
+        var deptList=[]
+
+        admin.req(ctx + "system/dept/getLoginUserDept", { }, function (result) {
+            var select= document.getElementById('deptId');
+            deptList= result.data;
+            for (var i=0;i<result.data.length;i++) {
+                var data= result.data[i];
+                var option = document.createElement("option");
+                option.setAttribute("value", data.value);
+                option.innerText =data.name;
+                if(select){
+                    select.appendChild(option)
+                }
+            }
+            form.render('select');
+        },'get',{async: false})
+        queryList(getFormData())
+
+        function queryList(field){
+            var params={}
+            if(field!=null){
+                params=field;
+            }
+            if(type=='finance'){
+                //对账列表只查：财务审核通过、未付款、已配送的订单
+                params.financialAuditStatus=1
+                params.payStatus=0
+                params.status=3
+            }else if(type=='afterSales'){
+                //订单售后维护列表（财务）只查询：未付款、已配送的订单
+                params.payStatus=0
+                params.status=3
+                params.typeKey=type
+            }
+            params.orderByColumn='create_time';
+            params.isAsc='desc'
+            table.render({
+                elem: '#dataTable'
+                ,url: listUrl
+                ,method: 'POST'
+                ,defaultToolbar:['print', {title:'导出',layEvent: 'LAYTABLE_EXCEL',icon: 'layui-icon-export'}]
+                ,toolbar: '#toolbarHead'
+                ,height: 'full-130'
+                ,cellMinWidth: 80
+                ,page: {
+                    curr:1
+                }
+                ,request: {
+                    pageName: 'pageNum' //页码的参数名称，默认：page
+                    ,limitName: 'pageSize' //每页数据量的参数名，默认：limit
+                }
+                ,where:params
+                ,limit: 20
+                ,cols: cols
+                ,parseData: function(res){ //将原始数据解析成 table 组件所规定的数据
+                    return {
+                        "code": res.code, //解析接口状态
+                        "msg": res.msg, //解析提示文本
+                        "count": res.total, //解析数据长度
+                        "data": res.rows //解析数据列表
+                    };
+                }
+                ,done:function(res, curr, count){
+                    //动态监听表头高度变化，冻结行跟着改变高度
+                    $(".layui-table-header  tr").resize(function () {
+                        $(".layui-table-header  tr").each(function (index, val) {
+                            $($(".layui-table-fixed .layui-table-header table tr")[index]).height($(val).height());
+                        });
+                    });
+                    //初始化高度，使得冻结行表头高度一致
+                    $(".layui-table-header  tr").each(function (index, val) {
+                        $($(".layui-table-fixed .layui-table-header table tr")[index]).height($(val).height());
+                    });
+                    //动态监听表体高度变化，冻结行跟着改变高度
+                    $(".layui-table-body  tr").resize(function () {
+                        $(".layui-table-body  tr").each(function (index, val) {
+                            $($(".layui-table-fixed .layui-table-body table tr")[index]).height($(val).height());
+                        });
+                    });
+                    //初始化高度，使得冻结行表体高度一致
+                    $(".layui-table-body  tr").each(function (index, val) {
+                        $($(".layui-table-fixed .layui-table-body table tr")[index]).height($(val).height());
+                    });
+                }
+            });
+        }
+
+        //日期范围
+        laydate.render({
+            elem: '#deliveryDate'
+            //,type: 'datetime'
+            , range: '~'
+            , done: function (value, date, endDate) {
+                if (value != null && value != '') {
+                    var b = $.trim(value.split('~')[0]);
+                    var e = $.trim(value.split('~')[1]);
+                    $("#deliveryBeginDate").val(b);
+                    $("#deliveryEndDate").val(e);
+                }
+            }
+        });
+
+        //日期范围
+        var timescope = laydate.render({
+            elem: '#createDate'
+            ,type: 'datetime'
+            , range: '~'
+            , value:s1 + ' ~ ' + s2
+            , done: function (value, date, endDate) {
+                if (value != null && value != '') {
+                    var b = $.trim(value.split('~')[0]);
+                    var e = $.trim(value.split('~')[1]);
+                    $("#createBeginDate").val(b);
+                    $("#createEndDate").val(e);
+                }
+            }
+        });
+        //监听搜索
+        form.on('submit(searchBtn)', function (data) {
+            var field = data.field;
+            debugger
+            //执行重载
+            table.reload('dataTable', {
+                where: field
+                ,page:{curr:1}
+            });
+        });
+
+        $("#restBtn").click(function () {
+            $("input[type='hidden']").val("")
+            timescope.config.value = ''
+        })
+
+        table.on('checkbox(dataTable)', function (obj) {
+            var totalPrice = 0;
+            var checkData = layui.table.checkStatus('dataTable').data;
+            layui.each(checkData, function (index, item) {
+                totalPrice += item.sortingPrice
+            });
+            totalPrice = totalPrice.toFixed(2)
+            $(".fkd").next().remove()
+            if(totalPrice > 0)  {
+                $(".fkd").after("<div style='display: inline-block;font-size: 14px'>选择金额总计："+totalPrice+"</div>")
+            }
+
+        })
+        
+        //头工具栏事件
+        table.on('toolbar(dataTable)', function(obj){
+            switch(obj.event){
+                case 'add':
+                    active.add();
+                    break;
+                case 'edit':
+                    var checkStatus = table.checkStatus('dataTable')
+                            , checkData = checkStatus.data; //得到选中的数据
+                    var id = null;
+                    if (id == null) {
+                        if (checkData.length === 0) {
+                            return admin.info('请选择一条数据');
+                        } else if (checkData.length > 1) {
+                            return admin.info('只能选择一条数据编辑');
+                        } else {
+                            id = checkData[0].orderId;
+                        }
+                    }
+                    active.edit(id);
+                    break;
+                case 'batchdel':
+                    active.batchdel();
+                    break;
+                case 'batchExamine':
+                    active.batchExamine();
+                    break;
+                case 'batchAddReceipt':
+                    active.batchAddReceipt();
+                    break; 
+                case 'batchFinancialExamine':
+                    active.batchFinancialExamine();
+                    break;
+                case 'LAYTABLE_EXCEL':
+                    $.modal.loading("正在导出数据，请稍后...");
+                    console.log( $("#inputForm").serializeArray());
+                    $.post(exportUrl, $("#inputForm").serializeArray(), function(result) {
+                        if (result.code == web_status.SUCCESS) {
+                            window.location.href = ctx + "common/download?fileName=" + encodeURI(result.msg) + "&delete=" + true;
+                        } else if (result.code == web_status.WARNING) {
+                            $.modal.alertWarning(result.msg)
+                        } else {
+                            $.modal.alertError(result.msg);
+                        }
+                        $.modal.closeLoading();
+                    });
+                    break;
+
+            };
+        });
+
+        //行工具栏事件
+        table.on('tool(dataTable)', function (obj) {
+            var data = obj.data;
+            if (obj.event === 'view') {
+                active.view(data.orderId);
+            } else if(obj.event === 'edit'){
+                active.edit(data.orderId);
+            } else if (obj.event === 'del') {
+                active.del(data.orderId);
+            } else if(obj.event === 'phyDel'){
+                active.phyDel(data.orderId);
+            } else if (obj.event === 'examine') {
+                active.examine(data.orderId);
+            }else if (obj.event === 'revert') {
+                active.revert(data.orderId);
+            }else if (obj.event === 'addReceipt') {
+                active.addReceipt(data.orderId);
+            }else if (obj.event === 'financialExamine') {
+                active.financialExamine(data.orderId);
+            }else if (obj.event === 'financialCancel') {
+                active.financialCancel(data.orderId);
+            }
+        });
+
+        //事件
+        var active = {
+            batchdel: function () {
+                var checkStatus = table.checkStatus('dataTable')
+                        , checkData = checkStatus.data; //得到选中的数据
+
+                if (checkData.length === 0) {
+                    return admin.info('请选择数据');
+                }
+
+                var ids = [];
+                var codes=[]
+                layui.each(checkData, function (index, item) {
+                    if(item.status==3||item.status==4){
+                        codes.push(item.code)
+                    }else {
+                        ids.push(item.orderId);
+                    }
+
+                });
+                if(codes.length>0){
+                    return admin.info('订单编号【'+codes.join(',')+'】不能删除，请重新选择');
+                }
+
+                admin.confirm('确定删除吗？', function () {
+                    admin.req(removeUrl, {ids: ids.join(',')}, function (result) {
+                        if (result.code == 0) {
+                            table.reload('dataTable');
+                            admin.success('删除成功!');
+                        } else {
+                            admin.error(result.msg);
+                        }
+                    },'post')
+                });
+            },
+            batchExamine: function(){
+                var checkStatus = table.checkStatus('dataTable')
+                    , checkData = checkStatus.data; //得到选中的数据
+
+                if (checkData.length === 0) {
+                    return admin.info('请选择数据');
+                }
+
+                var ids = [];
+                var codes=[]
+                layui.each(checkData, function (index, item) {
+                    if(item.status!=1){
+                        codes.push(item.code)
+                    }else {
+                        ids.push(item.orderId);
+                    }
+
+                });
+                if(codes.length>0){
+                    return admin.info('订单编号【'+codes.join(',')+'】不属于待审核订单，请重新选择');
+                }
+                admin.confirm('共'+ids.length+'条订单,确定审核通过吗？', function () {
+                    admin.req(examineUrl, {ids: ids.join(',')}, function (result) {
+                        if (result.code == 0) {
+                            table.reload('dataTable');
+                            admin.success('成功!');
+                        } else {
+                            admin.error(result.msg);
+                        }
+                    },'post')
+                });
+            }
+            ,view: function (id) {
+                var editUrl = updateUrl.replace("{id}", id);
+                parent.layui.admin.openDialogView3('查看订单信息', editUrl,'100%', '100%');
+            }
+            ,add: function () {
+                parent.layui.admin.openUrl('新增订单信息', createUrl, '100%', '100%',function () {
+                    //执行重载
+                    queryList(getFormData())
+                });
+            }
+            ,edit: function (id) {
+                var editUrl = updateUrl.replace("{id}", id);
+                parent.layui.admin.openUrl('修改订单信息', editUrl, '100%', '100%',function () {
+                    //执行重载
+                    queryList(getFormData())
+                });
+            }
+            ,phyDel: function(id){
+                admin.confirm('确定删除订单吗?',function(){
+                    admin.req(phyRemoveUrl, {ids: id}, function (data) {
+                        if (data.code == 0) {
+                            table.reload('dataTable');
+                            admin.success('删除成功!');
+                        } else {
+                            admin.error(data.msg);
+                        }
+                    },'post')
+                });
+            }
+            ,del: function(id){
+                admin.confirm('确定作废订单吗?',function(){
+                    admin.req(removeUrl, {ids: id}, function (data) {
+                        if (data.code == 0) {
+                            table.reload('dataTable');
+                            admin.success('删除成功!');
+                        } else {
+                            admin.error(data.msg);
+                        }
+                    },'post')
+                });
+            },examine: function(id){
+                admin.confirm('确定审核通过吗?',function(){
+                    admin.req(examineUrl, {ids: id}, function (data) {
+                        if (data.code == 0) {
+                            table.reload('dataTable');
+                            admin.success('成功!');
+                        } else {
+                            admin.error(data.msg);
+                        }
+                    },'post')
+                });
+            },revert: function(id){
+                admin.req(revertUrl, {ids: id}, function (data) {
+                    if (data.code == 0) {
+                        table.reload('dataTable');
+                        admin.success('还原成功!');
+                    } else {
+                        admin.error(data.msg);
+                    }
+                },'post')
+            },addReceipt: function(id){
+                admin.confirm('确定生成付款单吗?',function(){
+                    saveReceipt(id)
+                });
+            },batchAddReceipt: function(){
+                var checkStatus = table.checkStatus('dataTable')
+                    , checkData = checkStatus.data; //得到选中的数据
+
+                if (checkData.length === 0) {
+                    return admin.info('请选择数据');
+                }
+
+                var ids = [];
+                layui.each(checkData, function (index, item) {
+                    ids.push(item.orderId);
+                });
+                admin.confirm('确定生成付款单吗?',function(){
+                    saveReceipt(ids.join(','))
+                });
+            },batchFinancialExamine:function () {
+                var checkStatus = table.checkStatus('dataTable')
+                    , checkData = checkStatus.data; //得到选中的数据
+
+                if (checkData.length === 0) {
+                    return admin.info('请选择数据');
+                }
+
+                var ids = [];
+                var codes=[]
+                layui.each(checkData, function (index, item) {
+                    if(item.financialAuditStatus==1){
+                        codes.push(item.code)
+                    }else {
+                        ids.push(item.orderId);
+                    }
+
+                });
+                if(codes.length>0){
+                    return admin.info('订单编号【'+codes.join(',')+'】不属于待审核订单，请重新选择');
+                }
+                admin.confirm('共'+ids.length+'条订单,确定审核通过吗？', function () {
+                    saveFinancialExamine(ids.join(','))
+                });
+            },financialExamine:function (id) {
+                admin.confirm('确定审核通过吗?',function(){
+                    saveFinancialExamine(id)
+                });
+            },financialCancel:function (id) {
+                admin.confirm('确定取消审核吗?',function(){
+                    admin.req(financialCancelUrl, {ids: id}, function (result) {
+                        if (result.code == 0) {
+                            table.reload('dataTable');
+                            admin.success('成功!');
+                        } else {
+                            admin.error(result.msg);
+                        }
+                    },'post')
+                });
+            }
+        }
+        function getFormData(){
+            var d = {
+                orderKey:$("#orderKey").val(),
+                deliveryKey:$("#deliveryKey").val(),
+                status:$("#status").val(),
+                deliveryBeginDate:$("#deliveryBeginDate").val(),
+                deliveryEndDate:$("#deliveryEndDate").val(),
+                createBeginDate:$("#createBeginDate").val(),
+                createEndDate:$("#createEndDate").val(),
+                deptId:$("#deptId").val(),
+                minPrice:$("#minPrice").val(),
+                maxPrice:$("#maxPrice").val(),
+            }
+            return d;
+        }
+
+        function updateSave(id,status) {
+            admin.req(prefix + '/edit', {orderId:id,status:status}, function (data) {
+                if (data.code == 0) {
+                    table.reload('dataTable');
+                    admin.success('成功!');
+                } else {
+                    admin.error(data.msg);
+                }
+            }, 'post');
+        }
+
+        function saveReceipt(ids) {
+            admin.req(ctx  + 'shop/receipt/batchSave', {orderIds:ids}, function (data) {
+                if (data.code == 0) {
+                    table.reload('dataTable');
+                    admin.success('成功!');
+                } else {
+                    admin.error(data.msg);
+                }
+            }, 'post');
+        }
+
+        function saveFinancialExamine(ids) {
+            admin.req(financialExamineUrl, {ids: ids}, function (result) {
+                if (result.code == 0) {
+                    table.reload('dataTable');
+                    admin.success('成功!');
+                } else {
+                    admin.error(result.msg);
+                }
+            },'post')
+        }
+    });
+</script>
+
+</body>
+</html>

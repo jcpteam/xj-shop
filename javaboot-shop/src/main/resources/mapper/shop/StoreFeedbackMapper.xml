@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaboot.shop.mapper.StoreFeedbackMapper">
+    
+    <resultMap type="StoreFeedback" id="StoreFeedbackResult">
+        <result property="id"    column="id"    />
+        <result property="name"    column="name"    />
+        <result property="contact"    column="contact"    />
+        <result property="content"    column="content"    />
+        <result property="createTime"    column="create_time"    />
+    </resultMap>
+
+    <sql id="selectStoreFeedbackVo">
+        select id, name, contact, content, create_time from store_feedback
+    </sql>
+
+    <select id="selectStoreFeedbackList" parameterType="StoreFeedback" resultMap="StoreFeedbackResult">
+        <include refid="selectStoreFeedbackVo"/>
+        <where>  
+            <if test="name != null  and name != ''"> and name like concat('%', #{name}, '%')</if>
+            <if test="contact != null  and contact != ''"> and contact = #{contact}</if>
+            <if test="content != null  and content != ''"> and content = #{content}</if>
+        </where>
+    </select>
+    
+    <select id="selectStoreFeedbackById" parameterType="Integer" resultMap="StoreFeedbackResult">
+        <include refid="selectStoreFeedbackVo"/>
+        where id = #{id}
+    </select>
+        
+    <insert id="insertStoreFeedback" parameterType="StoreFeedback" useGeneratedKeys="true" keyProperty="id">
+        insert into store_feedback
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="name != null  and name != ''">name,</if>
+            <if test="contact != null  and contact != ''">contact,</if>
+            <if test="content != null  and content != ''">content,</if>
+            <if test="createTime != null ">create_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="name != null  and name != ''">#{name},</if>
+            <if test="contact != null  and contact != ''">#{contact},</if>
+            <if test="content != null  and content != ''">#{content},</if>
+            <if test="createTime != null ">#{createTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateStoreFeedback" parameterType="StoreFeedback">
+        update store_feedback
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="name != null  and name != ''">name = #{name},</if>
+            <if test="contact != null  and contact != ''">contact = #{contact},</if>
+            <if test="content != null  and content != ''">content = #{content},</if>
+            <if test="createTime != null ">create_time = #{createTime},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteStoreFeedbackById" parameterType="Integer">
+        delete from store_feedback where id = #{id}
+    </delete>
+
+    <delete id="deleteStoreFeedbackByIds" parameterType="String">
+        delete from store_feedback where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+    
+</mapper>

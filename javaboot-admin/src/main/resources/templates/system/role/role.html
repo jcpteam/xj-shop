@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+	<th:block th:include="include :: header('角色列表')"/>
+</head>
+<body>
+<!-- 正文开始 -->
+<div class="layui-fluid">
+	<div class="layui-row layui-col-space15">
+		<div class="layui-card">
+			<!-- 搜索区 -->
+			<form class="layui-form toolbar" th:onsubmit="return false" lay-filter="inputForm" id="inputForm">
+				<div class="layui-form-item">
+					<div class="layui-inline">
+						<label class="layui-form-label label-auto">角色名称：</label>
+						<div class="layui-input-inline">
+							<input class="layui-input" name="roleName" type="text" placeholder="输入角色名称"/>
+						</div>
+					</div>
+					<div class="layui-inline">
+						<label class="layui-form-label label-auto">权限字符：</label>
+						<div class="layui-input-inline">
+							<input class="layui-input" name="roleKey" type="text" placeholder="输入权限字符"/>
+						</div>
+					</div>
+					<div class="layui-inline">
+						<label class="layui-form-label label-auto">角色状态：</label>
+						<div class="layui-input-inline">
+							<select name="status" th:with="type=${@dict.getType('sys_normal_disable')}">
+								<option value="">所有</option>
+								<option th:each="dict : ${type}" th:text="${dict.dictLabel}" th:value="${dict.dictValue}"></option>
+							</select>
+						</div>
+					</div>
+					<div class="layui-inline" style="padding-left: 13px;">
+						<button class="layui-btn layui-btn-sm icon-btn" lay-submit lay-filter="searchBtn" id="searchBtn">
+							<i class="layui-icon layui-icon-search"></i>搜索
+						</button>
+						<button class="layui-btn layui-btn-sm icon-btn" type="reset">
+							<i class="layui-icon layui-icon-refresh"></i>重置
+						</button>
+					</div>
+				</div>
+			</form>
+
+			<table class="layui-table" id="dataTable" lay-filter="dataTable"></table>
+		</div>
+
+	</div>
+</div>
+
+<!-- 头工具栏 -->
+<script type="text/html" id="toolbarHead">
+	<div class="layui-btn-container">
+		<button class="layui-btn layui-btn-normal layui-btn-sm" lay-event="add" shiro:hasPermission="system:role:add"><i class="layui-icon layui-icon-addition"></i>新增</button>
+		<button class="layui-btn layui-btn-warm layui-btn-sm" lay-event="edit" shiro:hasPermission="system:role:edit"><i class="layui-icon layui-icon-edit"></i>修改</button>
+		<button class="layui-btn layui-btn-danger layui-btn-sm" lay-event="batchdel" shiro:hasPermission="system:role:remove"><i class="layui-icon layui-icon-delete"></i>删除</button>
+		<!--<button class="layui-btn layui-btn-normal layui-btn-sm" lay-event="import" shiro:hasPermission="system:role:import"><i class="layui-icon layui-icon-upload"></i>导入</button>-->
+		<!--<button class="layui-btn layui-btn-normal layui-btn-sm" lay-event="export" shiro:hasPermission="system:role:export"><i class="layui-icon layui-icon-export"></i>导出</button>-->
+	</div>
+</script>
+
+<!-- 行工具栏 -->
+<script type="text/html" id="toolbarRow">
+	<a class="layui-btn layui-btn-xs" lay-event="edit" shiro:hasPermission="system:role:edit">修改</a>
+	<!--<a class="layui-btn layui-btn-xs" lay-event="dataScope" shiro:hasPermission="system:role:edit">数据权限</a>-->
+	<!--<a class="layui-btn layui-btn-xs" lay-event="authUser" shiro:hasPermission="system:role:edit">分配用户</a>-->
+	<a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del" shiro:hasPermission="system:role:remove">删除</a>
+</script>
+
+<!-- js部分 -->
+<script type="text/javascript" src="../../../static/assets/libs/layui/layui.js" th:src="@{/assets/libs/layui/layui.js}"></script>
+<script type="text/javascript" src="../../../static/assets/js/common.js?v=316" th:src="@{/assets/js/common.js}"></script>
+
+<script type="text/javascript" th:inline="javascript">
+	var ctx = [[@{/}]];
+	var datas = [[${@dict.getType('sys_normal_disable')}]];
+</script>
+<script type="text/javascript" th:inline="none">
+	layui.use(['index', 'layer', 'form', 'table', 'util', 'upload', 'ext'], function () {
+		var $ = layui.jquery;
+		var layer = layui.layer;
+		var form = layui.form;
+		var table = layui.table;
+		var util = layui.util;
+		var laydate = layui.laydate;
+		var ext = layui.ext;
+		var admin = layui.admin;
+		var index = layui.index;
+		var upload = layui.upload;
+
+		var prefix = ctx + "system/role";
+		var listUrl = prefix + "/list";
+		var createUrl = prefix + "/add";
+		var updateUrl = prefix + "/edit/{id}";
+		var removeUrl = prefix + "/remove";
+		var importUrl = prefix + "/import";
+		var exportUrl = prefix + "/export";
+		var templateUrl = prefix + "/template";
+
+		table.render({
+			elem: '#dataTable'
+			,url: listUrl
+			,method: 'POST'
+			,toolbar: '#toolbarHead'
+			,defaultToolbar: []
+			,height: 'full-100'
+			,cellMinWidth: 80
+			,page: {
+				curr:1
+			}
+			,request: {
+				pageName: 'pageNum' //页码的参数名称，默认：page
+				,limitName: 'pageSize' //每页数据量的参数名，默认：limit
+			}
+			,limit: 10
+			,cols: [[
+				{type: 'checkbox'}
+				,{field: 'roleName', title: '角色名称', width: 200}
+				,{field: 'roleKey', title: '权限字符'}
+				,{field: 'roleSort', title: '显示顺序', width: 100}
+				,{field: 'status', title: '角色状态', width: 100, templet:function (res) {
+						return $.table.selectDictLabel(datas, res.status);
+				 }}
+				,{field: 'createTime', title: '创建时间', width: 200}
+				,{field: 'operate', title: '操作', minWidth: 200, toolbar: '#toolbarRow', fixed: 'right'}
+			]]
+			,parseData: function(res){ //将原始数据解析成 table 组件所规定的数据
+				return {
+					"code": res.code, //解析接口状态
+					"msg": res.msg, //解析提示文本
+					"count": res.total, //解析数据长度
+					"data": res.rows //解析数据列表
+				};
+			}
+		});
+
+		//监听搜索
+		form.on('submit(searchBtn)', function (data) {
+			var field = data.field;
+			//执行重载
+			table.reload('dataTable', {
+				where: field
+				,page:{curr:1}
+			});
+		});
+
+		//头工具栏事件
+		table.on('toolbar(dataTable)', function(obj){
+			switch(obj.event){
+				case 'add':
+					active.add();
+					break;
+				case 'edit':
+					var checkStatus = table.checkStatus('dataTable')
+							, checkData = checkStatus.data; //得到选中的数据
+					var id = null;
+					if (id == null) {
+						if (checkData.length === 0) {
+							return admin.info('请选择一条数据');
+						} else if (checkData.length > 1) {
+							return admin.info('只能选择一条数据编辑');
+						} else {
+							id = checkData[0].roleId;
+						}
+					}
+					active.edit(id);
+					break;
+				case 'batchdel':
+					active.batchdel();
+					break;
+				case 'import':
+					active.import();
+					break;
+				case 'export':
+					$.modal.loading("正在导出数据，请稍后...");
+					$.post(exportUrl, $("#inputForm").serializeArray(), function(result) {
+						if (result.code == web_status.SUCCESS) {
+							window.location.href = ctx + "common/download?fileName=" + encodeURI(result.msg) + "&delete=" + true;
+						} else if (result.code == web_status.WARNING) {
+							$.modal.alertWarning(result.msg)
+						} else {
+							$.modal.alertError(result.msg);
+						}
+						$.modal.closeLoading();
+					});
+					break;
+			};
+		});
+
+		//行工具栏事件
+		table.on('tool(dataTable)', function (obj) {
+			var data = obj.data;
+			if (obj.event === 'edit') {
+				active.edit(data.roleId);
+			} else if(obj.event === 'dataScope'){
+				active.dataScope(data.roleId);
+			} else if(obj.event === 'authUser'){
+				active.authUser(data.roleId);
+			} else if (obj.event === 'del') {
+				active.del(data.roleId);
+			}
+		});
+
+		admin.events.click = function () {
+			active.template();
+		}
+
+		//事件
+		var active = {
+			batchdel: function () {
+				var checkStatus = table.checkStatus('dataTable')
+						, checkData = checkStatus.data; //得到选中的数据
+
+				if (checkData.length === 0) {
+					return admin.info('请选择数据');
+				}
+
+				var ids = [];
+				layui.each(checkData, function (index, item) {
+					ids.push(item.roleId);
+				});
+
+				admin.confirm('确定删除吗？', function () {
+					admin.req(removeUrl, {ids: ids.join(',')}, function (result) {
+						if (result.code == 0) {
+							table.reload('dataTable');
+							admin.success('删除成功!');
+						} else {
+							admin.error(result.msg);
+						}
+					},'post')
+				});
+			}
+			,add: function () {
+				admin.openDialog('新增角色', createUrl, '800px', '480px');
+			}
+			,edit: function (id) {
+				var editUrl = updateUrl.replace("{id}", id);
+				admin.openDialog('修改角色', editUrl, '800px', '480px');
+			}
+			,del: function(id){
+				admin.confirm('确定删除吗?',function(){
+					admin.req(removeUrl, {ids: id}, function (data) {
+						if (data.code == 0) {
+							table.reload('dataTable');
+							admin.success('删除成功!');
+						} else {
+							admin.error(data.msg);
+						}
+					},'post')
+				});
+			}
+			,import: function(){
+				admin.open({
+					type: 1,
+					title: '导入角色',
+					content: ['<div style="padding: 20px 0 10px 0;text-align: center;" class="layui-text">',
+						'         <div id="uploadDrag" class="layui-upload-drag" style="margin-bottom: 10px;">',
+						'            <i class="layui-icon" style="color: #1682e5;">&#xe681;</i>',
+						'            <p>点击上传，或将文件拖拽到此处</p>',
+						'         </div>',
+						'         <div><a ew-event="click" target="_blank">下载模板</a></div>',
+						'      </div>'
+					].join(''),
+					success: function(layero, dIndex) {
+						upload.render({
+							elem: '#uploadDrag',
+							url: importUrl,
+							accept: 'file',
+							exts: 'xls|xlsx',
+							before: function(obj) {
+								layer.load(2);
+							},
+							done: function(res) {
+								layer.closeAll('loading');
+								if (0 === res.code) {
+									admin.success('导入成功!');
+									layer.close(dIndex);
+									table.reload('dataTable');
+								} else {
+									admin.error('导入失败!');
+								}
+							},
+							error: function() {
+								admin.error('导入失败!');
+								layer.closeAll('loading');
+							}
+						});
+					}
+				});
+			}
+			,export: function(){
+				$.modal.loading("正在导出数据，请稍后...");
+				$.post(exportUrl, $("#inputForm").serializeArray(), function(result) {
+					if (result.code == web_status.SUCCESS) {
+						window.location.href = ctx + "common/download?fileName=" + encodeURI(result.msg) + "&delete=" + true;
+					} else if (result.code == web_status.WARNING) {
+						$.modal.alertWarning(result.msg)
+					} else {
+						$.modal.alertError(result.msg);
+					}
+					$.modal.closeLoading();
+				});
+			}
+			,template: function(){
+				$.modal.loading("正在下载模板，请稍后...");
+				$.post(templateUrl, {}, function(result) {
+					if (result.code == web_status.SUCCESS) {
+						window.location.href = ctx + "common/download?fileName=" + encodeURI(result.msg) + "&delete=" + true;
+					} else if (result.code == web_status.WARNING) {
+						admin.warning(result.msg)
+					} else {
+						admin.error(result.msg);
+					}
+				});
+				$.modal.closeLoading();
+			}
+			,dataScope: function(id){
+				var url = prefix + '/authDataScope/' + id;
+				admin.openDialog('分配数据权限', url, '800px', '480px');
+			}
+			,authUser: function (id) {
+				var url = prefix + '/authUser/' + id;
+				admin.openDialogSimple('分配用户', url, '100%', '100%');
+			}
+		}
+	});
+</script>
+</body>
+
+</html>

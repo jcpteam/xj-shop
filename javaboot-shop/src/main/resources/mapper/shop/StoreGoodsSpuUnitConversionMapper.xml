@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaboot.shop.mapper.StoreGoodsSpuUnitConversionMapper">
+    
+    <resultMap type="StoreGoodsSpuUnitConversion" id="StoreGoodsSpuUnitConversionResult">
+        <result property="deptId"    column="dept_id"    />
+        <result property="spuNo"    column="spu_no"    />
+        <result property="subCaseMain"    column="sub_case_main"    />
+        <result property="mainCaseSub"    column="main_case_sub"    />
+        <result property="lastModifyTime"    column="last_modify_time"    />
+        <result property="mainUnitId"    column="main_unit_id"    />
+        <result property="subUnitId"    column="sub_unit_id"    />
+    </resultMap>
+
+    <sql id="selectStoreGoodsSpuUnitConversionVo">
+        select dept_id, spu_no, sub_case_main, main_case_sub, last_modify_time from store_goods_spu_unit_conversion
+    </sql>
+
+    <select id="selectStoreGoodsSpuUnitConversionList" parameterType="StoreGoodsSpuUnitConversion" resultMap="StoreGoodsSpuUnitConversionResult">
+        <include refid="selectStoreGoodsSpuUnitConversionVo"/>
+        <where>  
+            <if test="deptId != null "> and dept_id = #{deptId}</if>
+            <if test="spuNo != null  and spuNo != ''"> and spu_no = #{spuNo}</if>
+            <if test="subCaseMain != null "> and sub_case_main = #{subCaseMain}</if>
+            <if test="mainCaseSub != null "> and main_case_sub = #{mainCaseSub}</if>
+            <if test="lastModifyTime != null "> and last_modify_time = #{lastModifyTime}</if>
+            <if test="spuNoList != null and spuNoList.size()>0">
+             and spu_no in
+                <foreach item="spu" collection="spuNoList" open="(" separator="," close=")">
+                    #{spu}
+                </foreach>
+             </if>
+            and dept_id != '0'
+        </where>
+    </select>
+    
+    <select id="selectStoreGoodsSpuUnitConversionById" parameterType="Long" resultMap="StoreGoodsSpuUnitConversionResult">
+        <include refid="selectStoreGoodsSpuUnitConversionVo"/>
+        where dept_id = #{deptId}
+    </select>
+        
+    <insert id="insertStoreGoodsSpuUnitConversion" parameterType="StoreGoodsSpuUnitConversion">
+        insert into store_goods_spu_unit_conversion
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="deptId != null ">dept_id,</if>
+            <if test="spuNo != null  and spuNo != ''">spu_no,</if>
+            <if test="subCaseMain != null ">sub_case_main,</if>
+            <if test="mainCaseSub != null ">main_case_sub,</if>
+            <if test="lastModifyTime != null ">last_modify_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="deptId != null ">#{deptId},</if>
+            <if test="spuNo != null  and spuNo != ''">#{spuNo},</if>
+            <if test="subCaseMain != null ">#{subCaseMain},</if>
+            <if test="mainCaseSub != null ">#{mainCaseSub},</if>
+            <if test="lastModifyTime != null ">#{lastModifyTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateStoreGoodsSpuUnitConversion" parameterType="StoreGoodsSpuUnitConversion">
+        update store_goods_spu_unit_conversion
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="spuNo != null  and spuNo != ''">spu_no = #{spuNo},</if>
+            <if test="subCaseMain != null ">sub_case_main = #{subCaseMain},</if>
+            <if test="mainCaseSub != null ">main_case_sub = #{mainCaseSub},</if>
+            <if test="lastModifyTime != null ">last_modify_time = #{lastModifyTime},</if>
+        </trim>
+        where dept_id = #{deptId}
+    </update>
+
+    <delete id="deleteStoreGoodsSpuUnitConversionById" parameterType="String">
+        delete from store_goods_spu_unit_conversion where dept_id = #{deptId}
+    </delete>
+
+    <delete id="deleteStoreGoodsSpuUnitConversionByIds" parameterType="String">
+        delete from store_goods_spu_unit_conversion where dept_id in
+        <foreach item="deptId" collection="array" open="(" separator="," close=")">
+            #{deptId}
+        </foreach>
+    </delete>
+
+    <delete id="deleteSpuUnitConversionBySpus" parameterType="map">
+        delete from store_goods_spu_unit_conversion where dept_id = #{deptId} AND spu_no in
+        <foreach item="spuNo" collection="spuNos" open="(" separator="," close=")">
+            #{spuNo}
+        </foreach>
+    </delete>
+
+    <select id="selectSpuConversion" parameterType="map" resultMap="StoreGoodsSpuUnitConversionResult">
+        SELECT t1.spu_no, t1.main_unit_id, t1.sub_unit_id, t2.main_case_sub, t2.sub_case_main,t2.dept_id
+        FROM store_goods_spu_unit t1
+        LEFT JOIN store_goods_spu_unit_conversion t2 ON t1.spu_no = t2.spu_no
+        WHERE
+        <choose>
+            <when test="deptId != null and deptId != ''">
+                t2.dept_id = #{deptId}
+            </when>
+            <otherwise>
+                t2.dept_id = '0'
+            </otherwise>
+        </choose>
+        <if test="spuNo != null  and spuNo != ''">AND t1.spu_no = #{spuNo}</if>
+        <if test="spuNoList != null and spuNoList.size()>0">
+            and t1.spu_no in
+            <foreach item="spu" collection="spuNoList" open="(" separator="," close=")">
+                #{spu}
+            </foreach>
+        </if>
+    </select>
+
+</mapper>

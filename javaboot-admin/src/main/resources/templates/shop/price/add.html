@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('新增控价')" />
+</head>
+<body class="bg-white">
+<!-- 加载动画-->
+<!--<div class="page-loading">
+    <div class="ball-loader">
+        <span></span><span></span><span></span><span></span>
+    </div>
+</div>-->
+<!-- 正文开始 -->
+<form class="layui-form bg-white" id="inputForm" th:onsubmit="return false" th:action="@{/shop/price/add}">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <div class="layui-row">
+                <!--<div class="layui-form-item">
+                    <label class="layui-form-label">所属中心id:</label>
+                    <div class="layui-input-block">
+                        <input name="deptId" type="text" class="layui-input"/>
+                    </div>
+                </div>-->
+
+                <div id="select_2" class="layui-form-item active" data-id="select_2" data-tag="select"
+                     data-index="1">
+                    <label class="layui-form-label layui-form-required">
+                        所属区域:
+                    </label>
+                    <div class="layui-input-block" style="width:calc(100% - 110px)">
+                        <select name="deptId" lay-verify="required" xm-select="roleid"  id="deptId">
+                        </select>
+                    </div>
+                </div>
+
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">控价日期:</label>
+                    <div class="layui-input-block">
+                        <input id="optDate" type="text" placeholder="请选择控价日期"  lay-verify="required" class="layui-input date-icon" autocomplete="off" readonly="readonly"/>
+                        <input type="hidden"  name="optDate">
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-hide">
+        <button id="submitBtn" class="layui-btn" lay-filter="submitBtn" lay-submit>保存</button>
+        <button id="closeBtn" class="layui-btn layui-btn-primary" ew-event="closeDialog">关闭</button>
+    </div>
+</form>
+
+<th:block th:include="include :: footer" />
+<script th:inline="javascript">
+    var ctx = [[@{/}]];
+    var prefix = ctx + "shop/price";
+</script>
+<script th:inline="none">
+    layui.use(['index', 'form', 'formX', 'table', 'laydate', 'upload', 'ext'], function(){
+        var $ = layui.$;
+        var form = layui.form;
+        var formX = layui.formX;
+        var layer = layui.layer;
+        var table = layui.table;
+        var admin = layui.admin;
+        var upload = layui.upload;
+        var laydate = layui.laydate;
+
+        //日期范围
+        laydate.render({
+            elem: '#optDate'
+            , done: function (value, date, endDate) {
+                $("input[name='optDate']").val(value);
+            }
+        });
+        //日期范围
+        laydate.render({
+            elem: '#lastModifyTime'
+            , type: 'datetime'
+            , done: function (value, date, endDate) {
+                $("input[name='lastModifyTime']").val(value);
+            }
+        });
+
+        admin.req(ctx + "system/dept/getLoginUserDept", { }, function (result) {
+
+            var select= document.getElementById('deptId');
+            for (var i=0;i<result.data.length;i++) {
+                var data= result.data[i];
+                var option = document.createElement("option");
+                option.setAttribute("value", data.value);
+                option.innerText =data.name;
+                select.appendChild(option)
+            }
+            form.render('select');
+        },'get')
+
+    })
+</script>
+</body>
+</html>

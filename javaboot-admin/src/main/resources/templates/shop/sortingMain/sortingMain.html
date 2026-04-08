@@ -1,0 +1,2512 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('分拣主页')"/>
+    <link rel="stylesheet" href="../../../assets/module/num_keyboard.css?v=318"/>
+    <style>
+        /*分拣订单列表样式*/
+        .sorting-order-list {
+            /*height: 310px;*/
+            height: auto !important;
+            max-height: 1100px;
+            white-space: normal;
+            overflow-y: auto;
+            padding-top: 5px;
+            padding-bottom: 5px;
+        }
+
+        /** 分拣订单列表item样式 */
+        .sorting-order-list-item {
+            border-bottom: 1px solid #e8e8e8;
+            /*margin-top: 4px;*/
+            /*margin-bottom: 4px;*/
+            padding: 4px;
+            margin-top: 4px;
+            margin-bottom: 4px;
+            margin-left: 8px;
+            margin-right: 8px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        /** 分拣订单列表item选中样式 */
+        .sorting-order-list-item-active {
+            border: 2px solid #00a65a;
+            padding: 4px;
+            margin-top: 4px;
+            margin-bottom: 4px;
+            margin-left: 8px;
+            margin-right: 8px;
+            background: #f3f8f4;
+            color: #00a65a;
+            font-weight: bold;
+        }
+
+        /** 分拣订单列表item选中样式 */
+        .sorting-finish {
+            background: #d3f8f4;
+            /*color: #00a65a;*/
+            /*font-weight: bold;*/
+        }
+        /** 分拣订单列表item选中样式 */
+        .sorting-unfinish {
+            background: #fff;
+            /*color: #00a65a;*/
+            /*font-weight: bold;*/
+        }
+
+        /*分拣订单商品列表样式*/
+        .sorting-order-good-list {
+            background-color: transparent;
+            /*height: 440px;*/
+            height: auto !important;
+            max-height: 550px;
+            white-space: normal;
+        }
+
+        /** 分拣订单商品列表item样式 */
+        .sorting-order-good-list-item {
+            /*background-color: #fff;*/
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all .2s;
+            height: 214px;
+        }
+
+        .item-active-border {
+            border: 2px solid #00a65a;
+            border-radius: 5px;
+        }
+
+        .item-default-border {
+            border: 1px solid #fff;
+            border-radius: 5px;
+        }
+
+        /** 分拣订单商品列表item样式：商品分类 */
+        .good-category {
+            padding-left: 15px;
+            padding-right: 15px;
+        }
+
+        /** 分拣订单商品列表item样式：商品分类 */
+        .print-tag {
+            padding-left: 3px;
+            padding-right: 3px;
+            background-color: #ffc633;
+        }
+
+        /** 分拣订单商品列表item样式：商品分类 */
+        .odo-print-tag {
+            padding-left: 3px;
+            padding-right: 3px;
+            background-color: #33b87b;
+        }
+
+        /** 分拣订单商品列表item样式：商品标题 */
+        .good-title {
+            margin-left: 10px;
+            font-weight: bold;
+        }
+
+        /** 分拣订单商品列表item样式：商品订货重量 */
+        .good-order-weight {
+            background-color: #fef6e9;
+            border: 1px solid #ebdac8;
+            border-radius: 4px;
+            height: 38px;
+            width: 90%;
+            margin-left: auto;
+            margin-right: auto;
+            margin-top: 8px;
+            text-align: center;
+            color: #f29c53;
+            font-weight: bold;
+            font-size: 28px;
+        }
+
+        /** 分拣订单商品列表item样式：商品分拣重量 */
+        .good-sorting-weight {
+            width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+            margin-top: 15px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .good-sorting-weight-text-left {
+            width: 30%;
+            text-align: left;
+            font-size: 14px;
+            padding-left: 20px;
+            position: absolute;
+            left: 0px;
+        }
+
+        .good-sorting-weight-text-center {
+            width: 32%;
+            text-align: center;
+            font-size: 14px;
+            margin-left: auto;
+            margin-right: auto;
+            font-weight: bold;
+        }
+
+        .sorting-text-red{
+            color:red;
+        }
+
+        .good-sorting-weight-text-right {
+            width: 30%;
+            text-align: right;
+            font-size: 14px;
+            padding-right: 20px;
+            position: absolute;
+            right: 0px;
+        }
+
+        /** 分拣订单商品列表item样式：商品打印操作 */
+        .good-sorting-print {
+            margin-top: 40px;
+            margin-left: 15px;
+        }
+
+        /** 分拣订单商品列表item样式 */
+        .good-actual-weight-content {
+            background-color: #f5f7f6;
+            border: 1px solid #f5f7f6;
+            height: 190px;
+            border-radius: 2px;
+            margin-top: 10px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .good-actual-weight-content-mark {
+            background-color: #fef6e9;
+            border: 1px solid #ebdac8;
+            border-radius: 1px;
+            /*height: 30px;*/
+            width: 98%;
+            margin-left: auto;
+            margin-right: auto;
+            margin-top: 1px;
+            text-align: center;
+            color: #f29c53;
+            font-weight: bold;
+            font-size: 22px;
+            /*设置只能显示一行*/
+            text-overflow: -o-ellipsis-lastline;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+        }
+
+        .good-actual-weight-content-gongjin-center {
+            margin-top: 10px;
+            width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .auto-weight-switch {
+        }
+
+        .good-box-content {
+            background-color: #DFEAE4;
+            margin-top: 10px;
+            width: 90%;
+            margin-left: auto;
+            margin-right: auto;
+            padding-top: 5px;
+            padding-left: 5px;
+            padding-right: 5px;
+            padding-bottom: 5px;
+        }
+
+        /* 横向滚动 */
+        #quotationList {
+            white-space: nowrap;
+            overflow: auto;
+            max-width: 900px;
+        }
+
+        /* 横向滚动 */
+        #routeList {
+            white-space: nowrap;
+            overflow: auto;
+        }
+
+        /* 横向滚动 */
+        .h-scroll {
+            white-space: nowrap;
+            overflow: auto;
+        }
+
+        .layui-table-cell {
+            height: auto !important;
+            white-space: normal;
+        }
+
+        /*右侧底部串口连接样式*/
+        .right-bottom-serial-com {
+            z-index: 10;
+            position: fixed;
+            text-align: center;
+            margin-left: 40%;
+            margin-right: 10%;
+            bottom: 0;
+            width: 50%;
+            height: 45px;
+            background-color: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(0, 0, 0, 0.5);
+            border-radius: 5px;
+        }
+
+        .print-select{
+            margin-left: 4px;
+            margin-right: 4px;
+        }
+
+    </style>
+</head>
+<body>
+
+<!-- 正文开始 -->
+<div class="layui-fluid">
+    <div class="layui-row layui-col-space15" id="sortingMainRoot">
+        <div class="layui-card">
+            <!-- 搜索区 -->
+            <form class="layui-form toolbar" th:onsubmit="return false" lay-filter="inputForm" id="inputForm">
+                <div class="layui-form-item">
+                    <!--左边搜索条件-->
+                    <div class="layui-col-md4">
+                        <div class="layui-row">
+                            <div class="layui-inline">
+                                <div class="layui-input-inline" style="width: 110px;">
+                                    <select name="timeType" id="timeType" lay-filter="timeType">
+                                        <option value="0" th:checked="true">下单时间</option>
+                                        <option value="1">收货时间</option>
+                                    </select>
+                                </div>
+                                <div class="layui-input-inline" style="padding-left: 10px;">
+                                    <div id="createDateRoot" class="layui-input-inline">
+                                        <input id="createDate" type="text" placeholder="请选择开始和结束日期" class="layui-input date-icon" autocomplete="off"/>
+                                        <input id="createBeginDate" type="hidden" name="createBeginDate">
+                                        <input id="createEndDate" type="hidden" name="createEndDate">
+                                    </div>
+
+                                    <input id="deliveryDate" type="text" placeholder="请选择日期"
+                                           class="layui-input date-icon" autocomplete="off" style="display: none"/>
+                                </div>
+                            </div>
+                            <div class="layui-inline">
+                                <button class="layui-btn layui-btn-sm icon-btn" lay-submit lay-filter="searchBtn"
+                                        id="searchBtn">
+                                    <i class="layui-icon layui-icon-search"></i>搜索
+                                </button>
+                            </div>
+                        </div>
+                        <div class="layui-row">
+                            <div class="layui-inline">
+                                <label class="layui-form-label label-auto">客户名称：</label>
+                                <div class="layui-input-inline" style="margin-left: 10px;">
+                                    <select name="customerId" id="customerId" lay-filter="customerId" lay-search>
+                                        <option value="" th:checked="true">全部</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="layui-inline">
+                                <button class="layui-btn layui-btn-sm icon-btn" type="reset" id="restBtn">
+                                    <i class="layui-icon layui-icon-refresh"></i>重置
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <!--右边搜索条件-->
+                    <div class="layui-col-md8">
+                        <div class="layui-row">
+                            <div class="layui-inline">
+                                <label class="layui-inline layui-form-label label-auto">线路：</label>
+                                <div style="height: 50px" id="routeList">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="layui-row">
+                            <div class="layui-inline">
+                                <label class="layui-inline layui-form-label label-auto">报价：</label>
+                                <div style="height: 50px" id="quotationList">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!--左边订单列表-->
+        <div class="layui-col-md4">
+            <div class="layui-card">
+                <div class="layui-tab layui-tab-brief">
+                    <ul class="layui-tab-title">
+                        <li class="layui-this sorting-list-tab" data-type="0">全部订单</li>
+                        <li class="sorting-list-tab" data-type="1">待分拣订单</li>
+                        <li class="sorting-list-tab" data-type="2">已分拣订单</li>
+                    </ul>
+                    <div class="layui-tab-content">
+                        <div class="layui-form-item text-center">
+                            <!--<button type="button" class="layui-btn layui-btn-sm layui-btn-warm"-->
+                            <!--id="printOrderMaterial">打印配货单-->
+                            <!--</button>-->
+                            <!-- 下拉按钮 -->
+                            <div class="dropdown-menu dropdown-hover">
+                                <button type="button" class="layui-btn layui-btn-sm layui-btn-warm">
+                                    打印配货单 <i class="layui-icon layui-icon-drop"></i>
+                                </button>
+                                <ul class="dropdown-menu-nav">
+                                    <li><a id="printOrderMaterial1">全部订单</a></li>
+                                    <li><a id="printOrderMaterial2">未打印订单</a></li>
+                                </ul>
+                            </div>
+                            <button type="button" class="layui-btn layui-btn-sm layui-btn-selected"
+                                    id="printOrderLabel">打印出库单
+                            </button>
+                            <div class="dropdown-menu dropdown-hover">
+                                <button type="button" class="layui-btn layui-btn-sm layui-btn-normal" id="printOrderGoodLabel">
+                                    打印标签
+                                </button>
+                                <ul class="dropdown-menu-nav">
+                                    <li><a id="printOrderGoodLabel1">全部订单</a></li>
+                                    <li><a id="printOrderGoodLabel2">当前选择订单</a></li>
+                                </ul>
+                            </div>
+                            <button type="button" class="layui-btn layui-btn-sm layui-btn-primary" id="modifyOrder">
+                                修改订单
+                            </button>
+                            <button type="button" class="layui-btn layui-btn-sm layui-btn-normal" id="addOrder">
+                                新增订单
+                            </button>
+                        </div>
+                        <div class="layui-tab-item sorting-order-list layui-show">
+                            <div class="layui-row layui-col-space15" id="sortingOrderCardList1"></div>
+                        </div>
+                        <div class="layui-tab-item sorting-order-list">
+                            <div class="layui-row layui-col-space15" id="sortingOrderCardList2"></div>
+                        </div>
+                        <div class="layui-tab-item sorting-order-list">
+                            <div class="layui-row layui-col-space15" id="sortingOrderCardList3"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!--右边商品列表-->
+        <div class="layui-col-md8 sorting-order-good-list">
+            <div class="layui-card" id="sortingOrderDetailList"
+                 style="background-color: transparent;padding-bottom: 80px"></div>
+        </div>
+
+        <!--底部悬浮电子秤信息-->
+        <div class="layer-footer right-bottom-serial-com" id="bottomScale">
+            <div class="layui-form">
+                <div class="inline-block">
+                    <label class="layui-form-label label-auto">端口号：</label>
+                    <div class="layui-input-inline">
+                        <select name="serialComId" id="serialComId" lay-filter="serialComId">
+                            <option value="">请选择电子秤端口</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="inline-block" style="margin-left: 30px">
+                    <button type="button" id="connectStatus"
+                            class="layui-btn layui-btn-sm layui-btn-radius layui-btn-danger">未连接
+                    </button>
+                </div>
+                <div class="inline-block" style="margin-left: 20px">
+                    <button id="syncScaleWeight" class="layui-btn layui-btn-normal layui-btn-sm"
+                            style="margin-top: 5px">重量同步
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- 订单模板 -->
+<script type="text/html" id="sortingOrderCardItem">
+    <div class="sorting-order-list-item" data-orderstatus="{{d.status}}">
+        <div class="layui-row layui-col-space15">
+            <div class="layui-col-md10">
+                <div class="layui-input-inline">
+                    <form class="layui-form layui-input-inline" action="">
+                        <input class="print-select" type="checkbox"
+                               lay-filter="orderPrintCheck" name="orderPrintCheck" lay-skin="primary"
+                               data-orderid="{{d.orderId}}"
+                               data-orderstatus="{{d.status}}">
+                    </form>
+                </div>
+
+                <div class="layui-input-inline">
+                    <!--{{#  if (d.printStatus=='1'){ }}-->
+                    <!--<span class="layui-input-inline layui-badge print-tag">已打印</span>-->
+                    <!--{{#  } }}-->
+                    {{#  if (d.odoPrintStatus && d.odoPrintStatus=='1'){ }}
+                    <span class="layui-input-inline layui-badge odo-print-tag">已打印</span>
+                    {{#  } }}
+
+                    <!--{{d.code}}&nbsp;&nbsp;&nbsp;{{d.merchantName}}-->
+                    {{d.merchantName?d.merchantName:'商户已删除'}}
+                </div>
+
+                <span class="layui-input-inline">
+                    <div class="layui-text go-pay-text" style="color:dodgerblue;" data-orderid="{{d.orderId}}">
+                        {{((d.status==='3' || d.status === '4') && (d.source==='3' || d.deliveryType ==='2') &&d.payStatus != 1)?'去支付':''}}
+                    </div>
+                </span>
+            </div>
+            <div class="layui-col-md2">
+                <div class="layui-inline">
+                    <div class="layui-input-inline" style="font-size: 24px">
+                        {{d.orderGoodSortCount}}
+                    </div>
+                    <div class="layui-input-inline" style="color:#8f8f91">
+                        /{{d.orderGoodCount}}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+
+<!-- 订单商品详情模板 -->
+<script type="text/html" id="sortingOrderDetailItem">
+    <div class="sorting-order-good-list-item item-default-border" lay-event="goodItemClick" data-sortingstatus="{{d.sortingStatus}}">
+        <div class="layui-row layui-col-space15">
+            <div class="layui-col-md6">
+                <div class="layui-inline" style="margin-top: 15px;">
+                    <span class="layui-input-inline layui-badge good-category">{{d.classifyName}}</span>
+                    <div class="layui-input-inline layui-text good-title">
+                        {{d.spuName}}-{{d.goodName}}
+                    </div>
+                </div>
+                <div class="good-order-weight">
+                    订货：{{d.quantity}}{{d.unitName}}
+                </div>
+
+                <div class="layui-inline good-sorting-weight">
+                    <div class="layui-input-inline good-sorting-weight-text-left">
+                        订货：{{d.quantity1}}{{d.unitName1}}
+                    </div>
+                    <div class="layui-input-inline good-sorting-weight-text-center">
+                        <div class="layui-input-inline layui-text sorting-text-red">分拣重量:</div>
+                        <div class="layui-input-inline layui-text had-sorting-weight sorting-text-red">{{d.sortingWeight}}</div>
+                        <div class="layui-input-inline layui-text sorting-text-red">{{d.mainUnitName}}</div>
+                    </div>
+                    <div class="layui-input-inline good-sorting-weight-text-right">
+                        <div class="layui-input-inline layui-text sorting-text-red">分拣数量:</div>
+                        <div class="layui-input-inline layui-text had-sorting-num sorting-text-red">{{d.sortingQuantity}}</div>
+                        <div class="layui-input-inline layui-text sorting-text-red">{{d.subUnitName}}</div>
+                    </div>
+                </div>
+
+                <div class="layui-btn-container good-box-content text-center">
+                    <button lay-event="goodOutStock" type="button" class="layui-btn layui-btn-danger"
+                            style="margin-top: auto;margin-bottom: auto">标记缺货
+                    </button>
+                    <button lay-event="goodPrintLabel" class="layui-btn layui-btn-primary layui-border-green"
+                            style="margin-top: auto;margin-bottom: auto">打印标签
+                    </button>
+                    <button lay-event="goodPrintSubLabel" class="layui-btn layui-btn-primary layui-border-green"
+                            style="margin-top: auto;margin-bottom: auto">打印分标签
+                    </button>
+                </div>
+            </div>
+
+            <div class="layui-col-md6">
+                <div class="layui-card good-actual-weight-content">
+                    <div class="good-actual-weight-content-mark">
+                        备注：{{d.comment}}
+                    </div>
+                    <div class="text-center good-actual-weight-content-gongjin-center">
+                        <div class="layui-inline">
+                            <form class="layui-form layui-input-inline" action="" style="width:90px;">
+                                <!--<input type="checkbox" name="close" lay-skin="switch" lay-text="关|开"/>-->
+                                <input class="auto-weight-switch" type="checkbox" checked="" name="autoWeightStatus"
+                                       lay-filter="autoWeightStatus" lay-skin="switch" data-itemid="{{d.itemId}}"
+                                       lay-text="自动|手动">
+                            </form>
+
+                            <!--<div class="layui-input-inline" style="width: 150px;">  -->
+                            <div class="layui-input-inline" style="width: 80px;">
+                                <input class="layui-input add-sorting-weight mykeyboard" seq="0" data-itemid="{{d.itemId}}"
+                                       name="actualWeight" type="text" placeholder="" autocomplete="off"
+                                       oninput="value=weightInput(value)"/>
+                                <!--<input class="layui-input layui-input-number add-sorting-weight"-->
+                                       <!--seq="0" data-itemid="{{d.itemId}}" name="actualWeight" type="text" placeholder="" autocomplete="off" oninput="value=weightInput(value)"-->
+                                       <!--min="0" max="999999" step="1" data-prec="2" lay-verType="tips"  lay-verify="number">-->
+                            </div>
+                            <div class="layui-input-inline">
+                                <div class="layui-text" style="width: 30px;text-align: left;">{{d.mainUnitName}}</div>
+                            </div>
+
+                            <div class="layui-input-inline">
+                                <div class="layui-text add-sorting-box-weight-tip" style="width: 75px;text-align: left;font-size: 8px;color: #ff3300">(框重0)</div>
+                            </div>
+
+                            <div class="layui-input-inline">
+                                <button lay-event="addSortingWeight" type="button"
+                                        class="layui-btn layui-btn-sm layui-btn-selected"
+                                        style="width: 70px;">加入称重
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center good-actual-weight-content-gongjin-center">
+                        <div class="layui-inline">
+                            <form class="layui-form layui-input-inline" action="" style="width:90px;">
+                            </form>
+
+                            <div class="layui-input-inline" style="width: 150px;">
+                                <input class="layui-input add-sorting-num mykeyboard" seq="{{d.itemId + 100}}"
+                                       data-conversion="{{d.mainCaseSub}}" name="actualNum" type="text" placeholder=""
+                                       autocomplete="off" oninput="value=weightInput(value)"/>
+                                <!--<input class="layui-input layui-input-number add-sorting-num"-->
+                                       <!--seq="{{d.itemId + 100}}" data-conversion="{{d.mainCaseSub}}" name="actualNum" type="text" placeholder="" autocomplete="off" oninput="value=weightInput(value)"-->
+                                       <!--min="0" max="999999" step="1" data-prec="2" lay-verType="tips"  lay-verify="number"/>-->
+                            </div>
+                            <div class="layui-input-inline" style="width: 40px;text-align: left;">
+                                <div class="layui-text">{{d.subUnitName}}</div>
+                            </div>
+                            <div class="layui-input-inline">
+                                <button lay-event="saveSortingWeight" type="button"
+                                        class="layui-btn layui-btn-sm layui-btn-selected"
+                                        style="width: 70px">保存
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="good-box-content text-center sorting-box h-scroll">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+
+
+<!-- js部分 -->
+<th:block th:include="include :: footer"/>
+<script type="text/javascript" src="../../../static/assets/module/num_keyboard.js?v=316" th:src="@{/assets/module/num_keyboard.js}"></script>
+<script type="text/javascript" th:inline="javascript">
+    var ctx = [[@{
+        /}]];
+    var memberPrintDict = [[${@dict.getType('store_member_print_type')}]];
+</script>
+<script type="text/javascript" th:inline="none">
+    /*商品重量仅能输入数字和小数点*/
+    function weightInput(value) {
+        //修复第一个字符是小数点 的情况.
+        let fa = '';
+        if (value !== '' && value.substr(0, 1) === '.') {
+            value = "";
+        }
+        // console.log('test viv weight--->',value);
+        value = value.replace(/^0*(0\.|[1-9])/, '$1');//解决 粘贴不生效
+        value = value.replace(/[^\d.]/g, "");  //清除“数字”和“.”以外的字符
+        value = value.replace(/\.{2,}/g, "."); //只保留第一个. 清除多余的
+        value = value.replace(".", "$#$").replace(/\./g, "").replace("$#$", ".");
+        value = value.replace(/^(\-)*(\d+)\.(\d\d).*$/, '$1$2.$3'); //只能输入两个小数
+        if (value.indexOf(".") < 0 && value !== "") { //以上已经过滤，此处控制的是如果没有小数点，首位不能为类似于 01、02的金额
+            if (value.substr(0, 1) === '0' && value.length === 2) {
+                value = value.substr(1, value.length);
+            }
+        }
+        value = fa + value;
+        return value;
+    }
+
+    layui.use(['index', 'layer', 'dataGrid', 'mousewheel', 'dropdown', 'laydate', 'notice', 'printer', 'form', 'table', 'util', 'ext','numinput'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        var table = layui.table;
+        var dataGrid = layui.dataGrid;
+        var util = layui.util;
+        var laydate = layui.laydate;
+        var ext = layui.ext;
+        var admin = layui.admin;
+        var index = layui.index;
+        var notice = layui.notice;
+        var printer = layui.printer;
+
+        var prefix = ctx + "shop/sortingMain";
+        var listUrl = prefix + "/list";
+
+        setTimeout(function(){
+            $(".mykeyboard").mykeyboard();
+        }, 500)
+
+        //变量
+        var orderGridIns = null;  //订单列表datagrid实例
+        var curTabType = '0';  //当前tab类型，默认是第一个全部订单
+        var curTabOrderCount = 0;   //当前选中tab的订单总数
+        var curOrderObj = {};  //当前选中的订单对象
+        var curSelectIndex = 0;   //当前选中的位置index
+        var curInputSortingWeight = 0; //当前称重的重量值，用于点击分拣无框时恢复原始值
+        var curQuotationId = ''  //当前选择的报价单
+        var curRouteId = ''  //当前选择的线路
+
+        var goodGridIns = null;  //商品列表dtagrid实例
+        var curGoodSelectIndex = 0;   //当前选中商品的位置index
+        var lastGoodSelectIndex = -1;   //上次选中商品的位置index
+        var goodItemId2SwitchStatus = [];  //当前商品列表对应的电子秤自动读取开关状态
+        var preparePrintOrderIds = [];   //准备打印的出库单订单id列表
+
+        var numinp = layui.numinput;
+
+        // 初始日期今天9点到第二天9点
+        var today = new Date();
+        if(today.getHours() < 9){
+            today.setDate(today.getDate() - 1);
+        }
+        var s1 = layui.util.toDateString(today, 'yyyy-MM-dd 09:00:00')
+        //明天的时间
+        var day2 = today;
+        day2.setDate(day2.getDate() + 1);
+        var s2 = layui.util.toDateString(day2, 'yyyy-MM-dd 09:00:00')
+        $("#createBeginDate").val(s1);
+        $("#createEndDate").val(s2);
+        //下单日期范围
+        var timescope = laydate.render({
+            elem: '#createDate'
+            ,type: 'datetime'
+            , range: '~'
+            , value:s1 + ' ~ ' + s2
+            , done: function (value, date, endDate) {
+                if (value != null && value != '') {
+                    var b = $.trim(value.split('~')[0]);
+                    var e = $.trim(value.split('~')[1]);
+                    $("#createBeginDate").val(b);
+                    $("#createEndDate").val(e);
+                }
+            }
+        });
+
+        //收货日期
+        laydate.render({
+            elem: '#deliveryDate'
+            // , type: 'datetime'
+            // , range: true
+            , format: 'yyyy-MM-dd'
+            , done: function (value, date, endDate) {
+                // console.log('test viv --->', value);
+                if (value != null && value != '') {
+                    // var b = $.trim(value.split('~')[0]);
+                    // var e = $.trim(value.split('~')[1]);
+                    // $("#deliveryBeginDate").val(value + ' 00:00:00');
+                    // $("#deliveryEndDate").val(value + ' 23:59:59');
+                    // $("#deliveryDate").val(b + '-' + e);
+                } else {
+                    // $("#deliveryBeginDate").val('');
+                    // $("#deliveryEndDate").val('');
+                    // $("#deliveryDate").val('');
+                }
+                //时间条件改变自动搜索
+                searchSortingOrderList();
+            }
+        });
+
+        $("#restBtn").click(function () {
+            $("input[type='hidden']").val("")
+            timescope.config.value = ''
+        })
+
+        //监听时间类型改变
+        form.on('select(timeType)', function (data) {
+            //获取选中的时间类型
+            if (data.value === "1") {
+                //收货时间
+                document.getElementById('createDateRoot').style.display = "none"; //隐藏
+                document.getElementById('deliveryDate').style.display = ""; //显示
+            }else{
+                //下单时间
+                document.getElementById('deliveryDate').style.display = "none";
+                document.getElementById('createDateRoot').style.display = "";
+            }
+            searchSortingOrderList();
+        });
+
+        //监听客户类型改变
+        form.on('select(customerId)', function (data) {
+            searchSortingOrderList();
+        });
+
+        // 报价单搜索实现横向滚动
+        $('#quotationList').on('mousewheel', function (event) {
+            $(this).stop();
+            $(this).animate({'scrollLeft': $(this).scrollLeft() - event.deltaFactor * event.deltaY * 2}, 80);
+            event.stopPropagation();
+            event.preventDefault();
+        });
+        // 线路搜索实现横向滚动
+        $('#routeList').on('mousewheel', function (event) {
+            $(this).stop();
+            $(this).animate({'scrollLeft': $(this).scrollLeft() - event.deltaFactor * event.deltaY * 2}, 80);
+            event.stopPropagation();
+            event.preventDefault();
+        });
+
+        //搜索按钮点击执行搜索
+        $('#searchBtn').click(function () {
+            searchSortingOrderList();
+        });
+
+        //获取搜索参数
+        function getSearchParams() {
+            //获取选中的时间类型
+            var timeOptions = $("#timeType option:selected");
+            var timeType = timeOptions.val();
+            //设置开始时间和结束时间
+            var startTime = '';
+            var endTime = '';
+
+            if (timeType === "1") {
+                //收货时间
+                //获取搜索日期值
+                var time = $("#deliveryDate").val();
+                console.log('select deliveryDate time--->',time);
+                if (time) {
+                    startTime = time + ' 00:00:00';
+                    endTime = time + ' 23:59:59';
+                }
+            }else{
+                startTime = $("#createBeginDate").val();
+                endTime = $("#createEndDate").val();
+            }
+            console.log('select startTime time--->',startTime);
+            console.log('select endTime time--->',endTime);
+
+            //获取选中的客户id
+            var customerOptions = $("#customerId option:selected"); //获取选中的项
+            var customerId = customerOptions.val();
+
+            //查询参数
+            var params = {
+                sortingStatus: curTabType,
+            };
+            if (timeType === "1") {
+                //收货时间
+                if (startTime) {
+                    params.deliveryBeginDate = startTime;
+                }
+                if (endTime) {
+                    params.deliveryEndDate = endTime;
+                }
+            } else {
+                //下单时间
+                if (startTime) {
+                    //收货时间
+                    params.createBeginDate = startTime;
+                }
+                if (endTime) {
+                    params.createEndDate = endTime;
+                }
+            }
+            if (customerId) {
+                params.merchantId = customerId;
+            }
+            if (curRouteId) {
+                params.routeId = curRouteId;
+            }
+            if (curQuotationId) {
+                params.quotationId = curQuotationId;
+            }
+            // console.log("getSearchParams--->params:", params);
+            return params;
+        }
+
+        //日期加一天
+        function getTomorrowDay(date, days) {
+            if (days == undefined || days == '') {
+                days = 1;
+            }
+            var date = new Date(date);
+            date.setDate(date.getDate() + days);
+            var month = date.getMonth() + 1;
+            var day = date.getDate();
+            return date.getFullYear() + '-' + getFormatDate(month) + '-' + getFormatDate(day);
+        }
+        function getFormatDate(arg) {
+            if (arg == undefined || arg == '') {
+                return '';
+            }
+            var re = arg + '';
+            if (re.length < 2) {
+                re = '0' + re;
+            }
+            return re;
+        }
+
+        //搜索订单信息
+        function searchSortingOrderList() {
+            var elemId = getElemIdWithTabType(curTabType);
+            var params = getSearchParams();
+            querySortingOrderList(elemId, params);
+        }
+
+        //获取查询条件数据并刷新页面
+        admin.req(ctx + "shop/order/getSortingQueryParams", {}, function (result) {
+            if (result) {
+                //设置商户列表可搜索值
+                if (result.merchantInfoList) {
+                    var select = document.getElementById('customerId');
+                    for (var i = 0; i < result.merchantInfoList.length; i++) {
+                        var data = result.merchantInfoList[i];
+                        var option = document.createElement("option");
+                        option.setAttribute("value", data.merchantId);
+                        option.innerText = data.merchantName;
+                        select.appendChild(option)
+                    }
+                    form.render('select');
+                }
+                //设置线路可搜索值
+                if (result.routeList) {
+                    $("#routeList").append("<button type=\"button\" class=\"layui-btn layui-btn-sm route-item layui-btn-selected\" data-route=\"" + "" + "\">全部</button>");
+                    for (var i = 0; i < result.routeList.length; i++) {
+                        var data = result.routeList[i];
+                        $("#routeList").append("<button type=\"button\" class=\"layui-btn layui-btn-sm route-item layui-btn-primary\" data-route=\"" + data.routeId + "\">" + data.routeName + "</button>");
+                    }
+                    // 切换线路
+                    var $reoutItem = $('.layui-btn.route-item');
+                    $reoutItem.click(function () {
+                        $reoutItem.removeClass('layui-btn-selected');
+                        $reoutItem.addClass('layui-btn-primary');
+                        $(this).removeClass('layui-btn-primary');
+                        $(this).addClass('layui-btn-selected');
+
+                        curRouteId = $(this).data('route');
+                        // console.log("查询线路数据--->" + curRouteId);
+                        searchSortingOrderList();
+                    });
+                }
+                //设置报价单可搜索值
+                if (result.quotationList) {
+                    $("#quotationList").append("<button type=\"button\" class=\"layui-btn layui-btn-sm quotation-item layui-btn-selected\" data-quotation=\"" + "" + "\">全部</button>");
+                    for (var i = 0; i < result.quotationList.length; i++) {
+                        var data = result.quotationList[i];
+                        $("#quotationList").append("<button type=\"button\" class=\"layui-btn layui-btn-sm quotation-item layui-btn-primary\" data-quotation=\"" + data.quotationId + "\" >" + data.quotationName + "</button>");
+                    }
+                    // 切换报价单
+                    var $quotationItem = $('.layui-btn.quotation-item');
+                    $quotationItem.click(function () {
+                        $quotationItem.removeClass('layui-btn-selected');
+                        $quotationItem.addClass('layui-btn-primary');
+                        $(this).removeClass('layui-btn-primary');
+                        $(this).addClass('layui-btn-selected');
+
+                        curQuotationId = $(this).data('quotation');
+                        // console.log("查询报价单数据--->" + curQuotationId);
+                        searchSortingOrderList();
+                    });
+                }
+            }
+        }, 'post');
+
+        //监听tab分类点击
+        $('.sorting-list-tab').on('click', function () {
+            var othis = $(this);
+            curTabType = othis.data('type');
+            var elemId = getElemIdWithTabType(curTabType);
+            var params = getSearchParams();
+            querySortingOrderList(elemId, params);
+        });
+
+        //切换tab类型查询数据
+        function querySortingOrderListWithTabType(dataType) {
+            var elemId = getElemIdWithTabType(dataType);
+            // var defaultListParams = {sortingStatus: dataType};
+            var defaultListParams = getSearchParams();
+            querySortingOrderList(elemId, defaultListParams);
+        };
+
+        //获取当前tab id值
+        function getElemIdWithTabType(tabType) {
+            var elemId = '';
+            if ('0' == tabType) {
+                elemId = '#sortingOrderCardList1';
+            } else if ('1' == tabType) {
+                elemId = '#sortingOrderCardList2';
+            } else if ('2' == tabType) {
+                elemId = '#sortingOrderCardList3';
+            }
+            return elemId;
+        }
+
+        //分拣列表默认查询全部订单
+        querySortingOrderListWithTabType(curTabType);
+
+        //查询订单列表数据
+        function querySortingOrderList(elemId, field) {
+            //重置订单打印选择
+            resetOrderPrintCheck();
+
+            //重置商品参数
+            curGoodSelectIndex = 0;
+            goodItemId2SwitchStatus = [];
+            //清空商品列表
+            var goodList = document.getElementById('sortingOrderDetailList');
+            goodList.innerHTML = '';
+
+            var params = {}
+            if (field != null) {
+                params = field;
+            }
+            // params.orderByColumn = 'last_modify_time';
+            // params.isAsc = 'desc'
+            var sortingOrderListUrl = "shop/order/listForSorting";
+            orderGridIns = dataGrid.render({
+                url: ctx + sortingOrderListUrl,
+                method: 'POST',
+                // elem: '#sortingOrderDetailList',
+                elem: elemId,
+                templet: '#sortingOrderCardItem',
+                request: {
+                    pageName: 'pageNum'
+                    , limitName: 'pageSize'
+                },
+                where: params,
+                loadMore: {limit: 20,text:'下面还有订单'}
+                , parseData: function (res) { //将原始数据解析成 table 组件所规定的数据
+                    return {
+                        "code": res.code, //解析接口状态
+                        "msg": res.msg, //解析提示文本
+                        "count": res.total, //解析数据长度
+                        "data": res.rows //解析数据列表
+                    };
+                },
+                done: function (dataList, curPage, count) {
+                    curTabOrderCount = count;
+                    // console.log("querySortingOrderList--->curPage:", curPage, "-->count:", count);
+                    if (curPage == 1 && count > 0) {
+                        //第一页渲染完成，校验当前列表数据，自动选中
+                        checkThenSelectSoringItem(elemId, dataList);
+                    }
+
+                    //监听支付按钮点击事件
+                    $('.go-pay-text').on('click', function () {
+                        var orderid = $(this).data("orderid") + '';
+                        // notice.msg('去支付：' +  orderid, {icon: 5});
+                        var payInfoUrl = 'shop/receipt/appList'
+                        var params = {orderIds: orderid};
+                        admin.req(ctx + payInfoUrl, params, function (result) {
+                            if (result && result.rows && result.rows.length > 0) {
+                                //遍历订单列表，获取对应订单的商品列表
+                                admin.confirm('确定支付吗?', function () {
+                                    var payUrl = 'xjpay/qrcode/' + result.rows[0].receiptId;
+                                    admin.req(payUrl, {}, function (data) {
+                                        if (data.tradeState == 'S') {
+                                            table.reload('dataTable');
+                                            admin.success('支付成功!');
+                                        } else {
+                                            if(data.code && data.code == 500){
+                                                notice.msg(data.msg, {icon: 3});
+                                            }else{
+                                                var payEditUrl = 'receipt/edit/' + result.rows[0].receiptId;
+                                                admin.openDialogView('付款单支付', payEditUrl, '800px', '480px');
+                                            }
+                                        }
+                                    }, 'get')
+                                });
+                            } else {
+                                notice.msg('没有查询到付款单信息', {icon: 3});
+                            }
+                        }, 'post')
+                    });
+
+                    //设置已分拣订单的背景颜色
+                    if(dataList && dataList.length > 0){
+                        //获取订单item元素列表
+                        var e = getElemIdWithTabType(curTabType);
+                        var $orderChildItems = $(e).children();
+                        for (var i= 0;i<dataList.length;i++){
+                            var index = (curPage - 1)* 7 + i;
+                            // var $orderItem = $orderChildItems.eq(index).find('.sorting-order-list-item');
+                            var $orderItem = $orderChildItems.eq(index);
+                            var orderStatus = $orderItem.data("orderstatus");   //获取当前订单状态
+                            // console.log('test viv --->orderstatus:' ,orderStatus);
+                            if(orderStatus && (orderStatus == '3' || orderStatus == '4')){
+                                // sorting-finish
+                                $orderItem.removeClass('sorting-finish');
+                                $orderItem.addClass('sorting-finish');
+                                // console.log('test viv --->sorting-finish:' ,orderStatus);
+                            }
+                        }
+                    }
+
+                    //渲染一下form，显示多选控件
+                    form.render();
+                }
+            });
+        }
+
+        //校验订单列表，自动选择订单
+        function checkThenSelectSoringItem(elemId, dataList) {
+            //判断订单状态，确认是否可以选中
+            var index = 0;
+            // if(curSelectIndex != 0 && curSelectIndex < dataList.length){
+            //     //还是选中之前的订单
+            // }else {
+            //     curSelectIndex = index;
+            // }
+            curSelectIndex = index;
+            //遍历页面元素，设置选中状态
+            var childItems = $(elemId).children();
+            childItems.eq(curSelectIndex).addClass('sorting-order-list-item-active');
+
+            //查询订单商品信息
+            curOrderObj = dataList[curSelectIndex];
+            querySortingOrderGoodsList(curOrderObj.orderId, curOrderObj.deptId);
+        }
+
+        //监听订单item点击
+        dataGrid.on('item(sortingOrderCardList1)', function (obj) {
+            changeSortingOrderSelectedStatus("#sortingOrderCardList1", obj.index, obj.data);
+        });
+        dataGrid.on('item(sortingOrderCardList2)', function (obj) {
+            changeSortingOrderSelectedStatus("#sortingOrderCardList2", obj.index, obj.data);
+        });
+        dataGrid.on('item(sortingOrderCardList3)', function (obj) {
+            changeSortingOrderSelectedStatus("#sortingOrderCardList3", obj.index, obj.data);
+        });
+
+        //改变订单选中状态样式
+        function changeSortingOrderSelectedStatus(elemId, itemIndex, itemData) {
+            curSelectIndex = itemIndex;
+            //遍历页面元素，设置选中状态
+            var childItems = $(elemId).children();
+            for (var i = 0; i < childItems.length; i++) {
+                childItems.eq(i).removeClass('sorting-order-list-item-active');
+            }
+            childItems.eq(curSelectIndex).addClass('sorting-order-list-item-active');
+
+            //查询订单商品信息
+            curOrderObj = itemData;
+            querySortingOrderGoodsList(curOrderObj.orderId, curOrderObj.deptId);
+        };
+
+        //打印出库单事件
+        $('#printOrderLabel').click(function () {
+            if(preparePrintOrderIds && preparePrintOrderIds.length > 0){
+                //有勾选就只打印勾选的订单
+                queryPrintOrderCheckOutList(preparePrintOrderIds,true);
+            }else{
+                //没有勾选订单，就打印默认订单
+                if (curOrderObj && curOrderObj.orderId) {
+                    if(curOrderObj.status == '3' || curOrderObj.status == '4'){
+                        updateOrderOdoPrintStatus(curOrderObj.orderId);
+
+                        var printOrderIds = [];
+                        printOrderIds.push(curOrderObj.orderId);
+                        queryPrintOrderCheckOutList(printOrderIds,true);
+
+                        // //先获取商品列表
+                        // var allgooddata = goodGridIns.getData();
+                        // printer.printHtml({
+                        //     html:
+                        //         getOrderPrintHtmlContent(curOrderObj,allgooddata)
+                        //     ,
+                        //     horizontal: true  // 横向打印
+                        // });
+                    }else{
+                        notice.msg('该订单未分拣完成，不能打印出库单', {icon: 3});
+                    }
+                } else {
+                    notice.msg('没有可操作订单', {icon: 5});
+                }
+            }
+        });
+
+        //打印标签事件
+        $('#printOrderGoodLabel1').click(function () {
+            //全部订单
+            queryPrintOrderCheckOutList([],false);
+        });
+        $('#printOrderGoodLabel2').click(function () {
+            //当前选择订单
+            if(preparePrintOrderIds && preparePrintOrderIds.length > 0){
+                //有勾选就只打印勾选的订单
+                queryPrintOrderCheckOutList(preparePrintOrderIds,false);
+            }else{
+                //没有勾选订单，就打印默认订单
+                if (curOrderObj && curOrderObj.orderId) {
+                    var printOrderIds = [];
+                    printOrderIds.push(curOrderObj.orderId);
+                    queryPrintOrderCheckOutList(printOrderIds,false);
+                } else {
+                    notice.msg('没有可操作订单', {icon: 5});
+                }
+            }
+        });
+
+        //获取单个订单打印html内容
+        function getOrderPrintHtmlContent(curOrderObj,allgooddata) {
+            //获取总的页码，每三个商品一页
+            var pageTotal = 1;
+            var pageSize = 5;
+            if (allgooddata.length <= pageSize) {
+                pageTotal = 1;
+            } else {
+                pageTotal = Math.ceil(allgooddata.length/pageSize);
+            }
+            // console.log('getOrderPrintHtmlContent-->goodCount:' + allgooddata.length + ' ,pageTotal:' + pageTotal);
+
+            var htmlContent = '';
+            for (var i =0;i<pageTotal;i++){
+                htmlContent += getPrintOnePage(curOrderObj,allgooddata,i,pageSize);
+            }
+            return htmlContent;
+        }
+
+        //获取一页高度打印内容html
+        function getPrintOnePage(curOrderObj,allgooddata,printGoodPageNo,pageSize) {
+            // page-break-after:always;   分页样式
+            var content = '';
+            content += '<div>'
+                // 表头
+                + '<div style="text-align: center;font-weight: bold;font-size: 16px">' + getMemeberPrintLabel(curOrderObj.printType) + '</div>'
+                //顶部订单号、订单商户信息、配送时间、打印时间
+                + '<div style="width: 100%;">'
+                + '<table style="width: 100%">' +
+                '        <tr>' +
+                '            <td style="width: 65%;color: #0c0c0c;font-weight: bold;font-size: 14px">订单号：' + curOrderObj.code + '</td>' +
+                '            <td style="width: 35%; text-align: right;font-size: 14px">配送区域：' + curOrderObj.deptName + '</td>' +
+                '        </tr>' +
+                '        <tr>' +
+                '            <td style="width: 65%;color: #0c0c0c;font-weight: bold;font-size: 15px">收货商户：' + curOrderObj.merchantName + '</td>' +
+                '            <td style="width: 35%;  text-align: right;font-size: 15px">交货日期：' + getYYYYmmdd(curOrderObj.deliveryDate) + '</td>' +
+                '        </tr>' +
+                '    </table>'
+                + '</div>'
+                //商品列表
+                + '<div style="width: 100%;">'
+                + '<table style="width:100%;border-collapse:collapse;text-align: center" cellpadding="0" cellspacing="0">' +
+                '       <tr>' +
+                '            <td style="width:28% ;border: 1px solid #000000;font-size: 15px">商品名</td>' +
+                '            <td style="width:18% ;border: 1px solid #000000;font-size: 15px">下单数</td>' +
+                '            <td style="width:18% ;border: 1px solid #000000;font-size: 15px">出库数</td>' +
+                '            <td style="width:18% ;border: 1px solid #000000;font-size: 15px">单价</td>' +
+                '            <td style="width:18% ;border: 1px solid #000000;font-size: 15px">出库金额</td>' +
+                '        </tr>' +
+                getOrderGoodTableHtml(printGoodPageNo,allgooddata, pageSize) +
+                '    </table>'
+                + '</div>'
+                //底部销售额、商户
+                + '<div style="width: 100%;">'
+                + '<table style="width: 100%">' +
+                '        <tr>' +
+                '            <td rowspan="2" style="width: 30%;height:55px ;font-weight: bold;font-size: 22px">' + '销售额：' + getSortingPrice(curOrderObj.sortingPrice) + '</td>' +
+                '            <td style="width: 40%;height:27px;font-weight: bold;text-align: left;font-size: 17px">' + '联系人：' + getContactInfo(curOrderObj) + '</td>' +
+                // '            <td rowspan="2" style="width: 30%;height:55px;font-weight: bold;text-align: right;font-size: 13px">' + '结算客户：' + curOrderObj.merchantName + '</td>' +
+                '            <td rowspan="2" style="width: 30%;height:55px;font-weight: bold;text-align: left;font-size: 22px">' + '收货人：'  + '</td>' +
+                '        </tr>' +
+                '        <tr>' +
+                '            <td style="width: 40%;height:27px;font-weight: bold;text-align: left;font-size: 17px">' + '业务员：' + getOpManagerInfo(curOrderObj) + '</td>' +
+                '        </tr>' +
+                '    </table>'
+                + '</div>'
+                + '</div>'
+
+            return content;
+        }
+
+        function getContactInfo(obj) {
+            var info = '';
+            // curOrderObj.contactName + ' ' + curOrderObj.contactPhone
+            if(obj.contactName){
+                info += obj.contactName + ' ';
+            }
+            if(obj.contactPhone){
+                info += obj.contactPhone;
+            }
+            return info;
+        }
+
+        function getOpManagerInfo(obj) {
+            var info = '';
+            // curOrderObj.contactName + ' ' + curOrderObj.contactPhone
+            if(obj.opmanagerName){
+                info += obj.opmanagerName + ' ';
+            }
+            if(obj.opmanagerPhone){
+                info += obj.opmanagerPhone;
+            }
+            return info;
+        }
+        
+        function getYYYYmmdd(time) {
+            if(time && time.length > 10){
+                return time.slice(0,10);
+            }else{
+                return time;
+            }
+        }
+
+        // 获取当前时间
+        function getCurTime() {
+            var dateTime
+            var yy = new Date().getFullYear()
+            var mm = new Date().getMonth() + 1
+            var dd = new Date().getDate()
+            var hh = new Date().getHours()
+            var mf = new Date().getMinutes() < 10 ? '0' + new Date().getMinutes() : new Date().getMinutes()
+            var ss = new Date().getSeconds() < 10 ? '0' + new Date().getSeconds() : new Date().getSeconds()
+            dateTime = yy + '-' + mm + '-' + dd + ' ' + hh + ':' + mf + ':' + ss
+            // console.log(dateTime)
+            return dateTime
+        };
+
+        //获取订单商品信息展示表格hmtl拼接内容
+        function getOrderGoodTableHtml(printGoodPageNo,allgooddata,pageSize) {
+            var alldata = allgooddata;
+            var content = '';
+            var pageStart = pageSize*printGoodPageNo;
+            // console.log('getOrderGoodTableHtml--->pageNo:' + printGoodPageNo + " ,pageSize:" + pageSize + " ,start:" + pageStart);
+            var max = pageStart + pageSize;
+            if(max > alldata.length){
+                max = alldata.length;
+            }
+            var count = 0;
+            for (var i = pageStart; i < max; i++) {
+                var item = alldata[i];
+                content += '       <tr>';
+                content += '            <td style="width:28% ;border: 1px solid #000000;font-size: 15px">' + item.goodName + '</td>';
+                content += '            <td style="width:18% ;border: 1px solid #000000;font-size: 15px">' + item.sortingQuantity + item.unitName + '</td>';
+                // content += '            <td style="width:18% ;border: 1px solid #000000;font-size: 15px">' + item.sortingWeight + '公斤' + '</td>';
+                content += '            <td style="width:18% ;border: 1px solid #000000;font-size: 15px">' + item.sortingWeight + item.mainUnitName + '</td>';
+                content += '            <td style="width:18% ;border: 1px solid #000000;font-size: 15px"> ' + item.price + '</td>';
+                content += '            <td style="width:18% ;border: 1px solid #000000;font-size: 15px">' + getSortingPrice(item.sortingPrice) + '</td>'
+                content += '        </tr>';
+                count++;
+            }
+            if (count < pageSize) {
+                //不足个数，填充空白
+                for (var i = 0; i < (pageSize - count); i++) {
+                    content += '       <tr>';
+                    content += '            <td style="width:28% ;opacity:0">' + '' + '</td>';
+                    content += '            <td style="width:18% ;opacity:0">' + ' ' + '</td>';
+                    content += '            <td style="width:18% ;opacity:0">' + ' ' + '</td>';
+                    content += '            <td style="width:18% ;opacity:0">' + ' ' + '</td>';
+                    content += '            <td style="width:18% ;opacity:0">' + '0' + '</td>'
+                    content += '        </tr>';
+                }
+            }
+
+            return content;
+        };
+
+        //获取分拣的金额
+        function getSortingPrice(sortingPrice){
+            if(sortingPrice){
+                return sortingPrice;
+            }else {
+                return '0'
+            }
+        };
+
+        //修改订单事件
+        $('#modifyOrder').click(function () {
+            if (curOrderObj && curOrderObj.orderId) {
+                if('1' === curOrderObj.financialAuditStatus){
+                    parent.layui.admin.confirm1('已审核订单，无法再修改', function (index) {
+                        parent.layer.close(index);
+                    });
+                }else{
+                    //本地状态可能未更新，查询接口确认一下是否可以修改
+                    var orderDetailUrl = "shop/order/listForSorting";
+                    var params = {}
+                    params.orderId = curOrderObj.orderId;
+                    admin.req(ctx + orderDetailUrl, params, function (result) {
+                        if(result && result.rows && result.rows.length == 1){
+                            if('1' === result.rows[0].financialAuditStatus){
+                                parent.layui.admin.confirm1('已审核订单，无法再修改', function (index) {
+                                    parent.layer.close(index);
+                                });
+                            }else{
+                                var editUrl = "shop/order/edit/{id}/order";
+                                editUrl = editUrl.replace("{id}", curOrderObj.orderId);
+                                parent.layui.admin.openUrl('修改订单信息', editUrl, '100%', '100%', function () {
+                                    //订单修改完成,刷新订单列表数据，因为订单有可能删除添加
+                                    querySortingOrderListWithTabType(curTabType);
+                                });
+                            }
+                        }else{
+                            notice.msg('订单状态异常，请进入订货单列表操作修改', {icon: 3});
+                        }
+                    }, 'post')
+                }
+            } else {
+                notice.msg('没有可操作订单', {icon: 5});
+            }
+        });
+
+        //新增订单事件
+        $('#addOrder').click(function () {
+            var addOrderUrl = "shop/order/addSortingOrder";
+            parent.layui.admin.openUrl('新增订单信息', addOrderUrl, '100%', '100%', function () {
+                //分拣列表默认查询全部订单
+                querySortingOrderListWithTabType(curTabType);
+            });
+        });
+
+        //查询订单商品数据
+        function querySortingOrderGoodsList(orderId, deptId) {
+            //重置商品参数
+            curGoodSelectIndex = 0;
+            goodItemId2SwitchStatus = [];
+            //清空商品列表
+            var goodList = document.getElementById('sortingOrderDetailList');
+            goodList.innerHTML = '';
+
+            var params = {}
+            params.orderId = orderId;
+            params.deptId = deptId;
+            var sortingOrderGoodsListUrl = "shop/order/goodListForSorting";
+            goodGridIns = dataGrid.render({
+                url: ctx + sortingOrderGoodsListUrl,
+                method: 'POST',
+                elem: '#sortingOrderDetailList',
+                templet: '#sortingOrderDetailItem',
+                request: {
+                    pageName: 'pageNum'
+                    , limitName: 'pageSize'
+                },
+                where: params
+                ,loadMore: {limit: 1000}
+                , parseData: function (res) { //将原始数据解析成 table 组件所规定的数据
+                    return {
+                        "code": res.code, //解析接口状态
+                        "msg": res.msg, //解析提示文本
+                        "count": res.total, //解析数据长度
+                        "data": res.rows //解析数据列表
+                    };
+                }
+                , done: function (dataList, curPage, count) {
+                    lastGoodSelectIndex = -1;
+                    curGoodSelectIndex = 0;  //默认选中第一个商品
+                    changeGoodItemSelectedBorder();
+                    // console.log("querySortingOrderGoodsList--->dataList:", dataList);
+                    //商品列表数据获取成功，获取分拣框的元素
+                    var $boxContent = $('.good-box-content.sorting-box');
+                    $boxContent.append("<button lay-event=\"selectSortingBox\" type=\"button\" class=\"layui-btn layui-btn-danger box-item\" style=\"margin-top: auto;margin-bottom: auto\" data-weight=\"0\">无框</button>");
+                    if (dataList) {
+                        var goodItem = dataList[0];
+                        if (goodItem.sortingBoxList) {
+                            for (var j = 0; j < goodItem.sortingBoxList.length; j++) {
+                                $boxContent.append("<button lay-event=\"selectSortingBox\" class=\"layui-btn layui-btn-primary layui-border-green box-item\" style=\"margin-top: auto;margin-bottom: auto\" data-weight=" + goodItem.sortingBoxList[j].boxWeight + " >" + goodItem.sortingBoxList[j].boxName + goodItem.sortingBoxList[j].boxWeight + "kg" + "</button>");
+                            }
+                        }
+                    }
+                    $boxContent.append("<div class=\"layui-input-inline\"><input class=\"layui-input box-count\" boxSeq = \"0\" name=\"actualNum\" type=\"text\" placeholder=\"\" style=\"width: 40px; margin-left: 5px\" oninput=\"value=value.replace(/[^\\d]/g,'')\"/></div>");
+
+                    //重量输入框的值改变时触发
+                    $("input[seq='0']").on("input", function (e) {
+                        //不做联动了，
+                        // var itemId = $(this).data("itemid");
+                        // var itemId1 = itemId + 100;
+                        // console.log("input seq=0--->itemId:" + itemId + "-->itemId1:" + itemId1);
+                        // var conversion = $("input[seq=\"" + itemId1 + "\"]").data('conversion');
+                        // if (conversion) {
+                        //     //动态计算副单位的数量
+                        //     var conValue = parseFloat(e.delegateTarget.value * conversion).toFixed(2); //只保留两位小数
+                        //     $("input[seq=\"" + itemId1 + "\"]").val(conValue)
+                        // }
+
+                        //重置分拣框选中
+                        // resetSortingBoxSelected();   TODO
+                    });
+
+                    //分拣筐点击触发重量输入框值变化
+                    $("input[boxSeq='0']").on("input", function (e) {
+                        //重置当前商品所有box选中状态
+                        // var $goodChildItems = $('#sortingOrderDetailList').children();
+                        // var $boxParent = $goodChildItems.eq(curGoodSelectIndex).find('.good-box-content.sorting-box');
+                        // var $item = $boxParent.find(".box-item");
+                        // $item.removeClass('layui-btn-danger');
+                        // $item.addClass('layui-btn-primary');
+
+                        //获取当前选中的分拣框子的基础重量
+                        var $itemP = $(this).parents(".good-box-content.sorting-box");
+                        var $item = $itemP.find(".box-item.layui-btn-danger");
+                        var itemWeight = $item.data('weight');
+                        // console.log("check itemWeight = " + itemWeight);
+                        var w = parseFloat(itemWeight);
+
+                        //设置重量输入框联动变化
+                        var value = e.delegateTarget.value;
+                        if(value){
+                        }else{
+                            value = 0;
+                        }
+                        // console.log("input boxSeq=0--->value:" + value);
+                        var s = parseFloat(value);
+                        //计算总的框子重量：单个框子重量*个数
+                        var ws = w * s;
+                        // console.log("total box weight:" + ws);
+                        var $itemP = $(this).parents(".sorting-order-good-list-item");
+                        // calculateActualWeightWithBox(ws, $itemP);   TODO
+                        // add-sorting-box-weight-tip
+
+                        var tipW = ws;
+                        if (ws > 0 && (ws + '').indexOf('.') != -1) {
+                            tipW = ws.toFixed(2);
+                        }
+                        //遍历页面元素，找到当前选中的元素,设置分拣框的提示重量
+                        var childItems = $('#sortingOrderDetailList').children();
+                        var $itemBoxWeightTip = childItems.eq(curGoodSelectIndex).find('.add-sorting-box-weight-tip');
+                        var tips = '(框重' + tipW + ')'
+                        $itemBoxWeightTip.html(tips);
+                    });
+                    $('.box-count').val('0');
+
+                    //需要在此处初始化数字键盘，输入框才能弹出
+                    numinp.init({
+                        // 123：123键置顶, 789：789键置顶
+                        topBtns: 123,
+                        // 右侧功能按钮
+                        rightBtns: true,
+                        // 监听键盘事件
+                        listening: true,
+                        // 批量配置默认小数精确度
+                        defaultPrec: ''
+                    });
+
+                    //设置已分拣订单商品的的背景颜色
+                    if(dataList && dataList.length > 0){
+                        //获取订单item元素列表
+                        var $goodChildItems = $('#sortingOrderDetailList').children();
+                        for (var i= 0;i<dataList.length;i++){
+                            var index = i;
+                            var $goodItem = $goodChildItems.eq(index);
+                            var sortingStatus = $goodItem.data("sortingstatus");   //获取当前订单状态
+                            // console.log('test viv --->sortingStatus:' ,sortingStatus);
+                            if(sortingStatus && (sortingStatus == '1')){
+                                // sorting-finish
+                                $goodItem.removeClass('sorting-finish');
+                                $goodItem.addClass('sorting-finish');
+                                // console.log('test viv --->sorting-finish:' ,sortingStatus);
+                            }else{
+                                $goodItem.removeClass('sorting-unfinish');
+                                $goodItem.addClass('sorting-unfinish');
+                            }
+                        }
+                    }
+
+                    //渲染一下form，显示开关控件
+                    form.render();
+                }
+            });
+        };
+
+        //监听电子秤设置开关
+        form.on('switch(autoWeightStatus)', function (data) {
+            //获取当前控件绑定的商品id
+            var itemid = $(this).data("itemid");
+            // console.log('开关点击--->', itemid);
+            // console.log('开关点击--->', this.checked);
+            if (this.checked) {
+                goodItemId2SwitchStatus[itemid] = 'on';
+            } else {
+                goodItemId2SwitchStatus[itemid] = 'off';
+            }
+            // console.log('开关点击--->', goodItemId2SwitchStatus);
+        });
+
+        //重置分拣框的选中状态为无框
+        function resetSortingBoxSelected() {
+            //重置缓存称重重量值
+            curInputSortingWeight = 0;
+
+            //重置当前商品所有box选中状态
+            var $goodChildItems = $('#sortingOrderDetailList').children();
+            var $boxParent = $goodChildItems.eq(curGoodSelectIndex).find('.good-box-content.sorting-box');
+            var $item = $boxParent.find(".box-item");
+            $item.removeClass('layui-btn-danger');
+            $item.addClass('layui-btn-primary');
+
+            //遍历页面元素，找到当前选中的元素
+            var childItems = $boxParent.children();
+            var $firstBox = childItems.eq(0);
+            $firstBox.removeClass('layui-btn-primary');
+            $firstBox.addClass('layui-btn-danger');
+
+            //无框时默认重置框子个数为0
+            $boxParent.find(".box-count").val('0');
+
+            //遍历页面元素，找到当前选中的元素,设置分拣框的提示重量
+            var $itemBoxWeightTip = $goodChildItems.eq(curGoodSelectIndex).find('.add-sorting-box-weight-tip');
+            var tips = '(框重0)'
+            $itemBoxWeightTip.html(tips);
+        };
+
+        //商品详情列表中按钮事件绑定
+        dataGrid.on('tool(sortingOrderDetailList)', function (obj) {
+            var data = obj.data;
+            // console.log("点击商品详情按钮--->", data);
+            //更改商品选中状态
+            //遍历商品列表,获取当前商品的index值
+            var dataAll = goodGridIns.getData();
+            for (var i = 0; i < dataAll.length; i++) {
+                var itemdata = dataAll[i];
+                if (itemdata.itemId === data.itemId) {
+                    curGoodSelectIndex = i;
+                    break;
+                }
+            }
+            changeGoodItemSelectedBorder();
+
+            if (obj.event === 'goodItemClick') {
+                // console.log("点击商品详情空白点击--->", data);
+            } else if (obj.event === 'goodOutStock') {
+                var dataAll = orderGridIns.getData();
+                var curOrderObj = dataAll[curSelectIndex];
+                if('1' === curOrderObj.financialAuditStatus){
+                    parent.layui.admin.confirm1('已审核订单，无法再重新分拣', function (index) {
+                        parent.layer.close(index);
+                    });
+                }else{
+                    if ('1' === data.sortingStatus) {
+                        parent.layui.admin.confirm('该商品已经分拣过，标记缺货会清空上次分拣数据，确定标记缺货吗？', function (index) {
+                            parent.layer.close(index);
+                            //重置分拣框子
+                            resetSortingBoxSelected();
+                            //标记缺货
+                            addSortingDetailRecord(data, data.orderId, data.itemId, 0, 0, 2, '1');
+                            obj.elem.find(".had-sorting-weight").text(0);
+                            obj.elem.find(".had-sorting-num").text(0);
+                        });
+                    } else {
+                        //重置分拣框子
+                        resetSortingBoxSelected();
+                        //标记缺货
+                        addSortingDetailRecord(data, data.orderId, data.itemId, 0, 0, 2, '1');
+                        obj.elem.find(".had-sorting-weight").text(0);
+                        obj.elem.find(".had-sorting-num").text(0);
+                    }
+                }
+            } else if (obj.event === 'goodPrintLabel') {
+                printer.printHtml({
+                    html:
+                        //商品列表
+                        '<div style="margin-top: 20px;width: 100%">'
+                        + '<table style="width:100%;border: 1px solid #000000;border-collapse:collapse;text-align: center" cellpadding="0" cellspacing="0">' +
+                        '       <tr>' +
+                        '            <td style="width:40% ;border: 1px solid #000000;">商品名</td>' +
+                        '            <td style="width:30% ;border: 1px solid #000000">下单数</td>' +
+                        '            <td style="width:30% ;border: 1px solid #000000">出库数</td>' +
+                        '        </tr>' +
+                        '       <tr>' +
+                        '            <td style="width:40% ;border: 1px solid #000000;">' + data.goodName + '</td>' +
+                        '            <td style="width:30% ;border: 1px solid #000000">' + data.quantity + data.unitName + '</td>' +
+                        '            <td style="width:30% ;border: 1px solid #000000">' + data.sortingWeight + '公斤' + '</td>' +
+                        '        </tr>' +
+                        ' </table>'
+                        + '</div>'
+                    ,
+                    horizontal: false  // 横向打印
+                });
+            } else if (obj.event === 'goodPrintSubLabel') {
+                printer.printHtml({
+                    html:
+                    //商品列表
+                        '<div style="margin-top: 20px;width: 100%">'
+                        + '<table style="width:100%;border: 1px solid #000000;border-collapse:collapse;text-align: center" cellpadding="0" cellspacing="0">' +
+                        '       <tr>' +
+                        '            <td style="width:40% ;border: 1px solid #000000;">商品名</td>' +
+                        '            <td style="width:30% ;border: 1px solid #000000">下单数</td>' +
+                        '            <td style="width:30% ;border: 1px solid #000000">出库数</td>' +
+                        '        </tr>' +
+                        '       <tr>' +
+                        '            <td style="width:40% ;border: 1px solid #000000;">' + data.goodName + '</td>' +
+                        '            <td style="width:30% ;border: 1px solid #000000">' + data.quantity + data.unitName + '</td>' +
+                        '            <td style="width:30% ;border: 1px solid #000000">' + data.sortingWeight + '公斤' + '</td>' +
+                        '        </tr>' +
+                        ' </table>'
+                        + '</div>'
+                    ,
+                    horizontal: false  // 横向打印
+                });
+            } else if (obj.event === 'addSortingWeight') {
+                var dataAll = orderGridIns.getData();
+                var curOrderObj = dataAll[curSelectIndex];
+                if('1' === curOrderObj.financialAuditStatus){
+                    parent.layui.admin.confirm1('已审核订单，无法再重新分拣', function (index) {
+                        parent.layer.close(index);
+                    });
+                }else{
+                    if ('1' === data.sortingStatus) {
+                        parent.layui.admin.confirm('该商品已经分拣过，重新分拣会清空上次分拣数据，确定重新分拣吗？', function (index) {
+                            parent.layer.close(index);
+
+                            //修改内存分拣状态为未分拣
+                            data.sortingStatus = '0';
+                            addSortingWeight(obj, true, true);
+                        });
+                    } else {
+                        addSortingWeight(obj, true, false);
+                    }
+                }
+            } else if (obj.event === 'saveSortingWeight') {
+                var dataAll = orderGridIns.getData();
+                var curOrderObj = dataAll[curSelectIndex];
+                if('1' === curOrderObj.financialAuditStatus){
+                    parent.layui.admin.confirm1('已审核订单，无法再重新分拣', function (index) {
+                        parent.layer.close(index);
+                    });
+                }else{
+                    if ('1' === data.sortingStatus) {
+                        parent.layui.admin.confirm('该商品已经分拣过，重新分拣会清空上次分拣数据，确定重新分拣吗？', function (index) {
+                            parent.layer.close(index);
+
+                            addSortingWeight(obj, false, true);
+                            var sortingWeight = obj.elem.find(".had-sorting-weight").text();  //已称重的数量
+                            var sortingNum = obj.elem.find(".had-sorting-num").text();  //已称重的数量
+                            var weight = parseFloat(sortingWeight);
+                            var num = parseFloat(sortingNum);
+
+                            if(!checkIfSortingWeightCorrect(data,weight,num)){
+                                parent.layui.admin.confirm('该商品分拣重量和下单重量相差超过10%，确定保存吗？', function (index1) {
+                                    parent.layer.close(index1);
+                                    addSortingDetailRecord(data, data.orderId, data.itemId, weight, num, 2, '0');
+                                });
+                            }else{
+                                addSortingDetailRecord(data, data.orderId, data.itemId, weight, num, 2, '0');
+                            }
+                        });
+                    } else {
+                        addSortingWeight(obj, false, false);
+                        var sortingWeight = obj.elem.find(".had-sorting-weight").text();  //已称重的数量
+                        var sortingNum = obj.elem.find(".had-sorting-num").text();  //已称重的数量
+                        var weight = parseFloat(sortingWeight);
+                        var num = parseFloat(sortingNum);
+
+                        if(!checkIfSortingWeightCorrect(data,weight,num)){
+                            parent.layui.admin.confirm('该商品分拣重量和下单重量相差超过10%，确定保存吗？', function (index1) {
+                                parent.layer.close(index1);
+                                addSortingDetailRecord(data, data.orderId, data.itemId, weight, num, 2, '0');
+                            });
+                        }else{
+                            addSortingDetailRecord(data, data.orderId, data.itemId, weight, num, 2, '0');
+                        }
+                    }
+                }
+
+            } else if (obj.event === 'selectSortingBox') {
+                //修改分拣筐选中样式
+                var $itemP = $(this).parents(".good-box-content.sorting-box");
+                var $item = $itemP.find(".box-item");
+                $item.removeClass('layui-btn-danger');
+                $item.addClass('layui-btn-primary');
+                $(this).removeClass('layui-btn-primary');
+                $(this).addClass('layui-btn-danger');
+
+                var weight = $(this).data('weight');
+                // console.log("点击的分拣筐重量--->", weight);
+                var w = parseFloat(weight);
+                //获取分拣框子的数量
+                var boxCount = $itemP.find(".box-count").val();
+                var c = parseFloat(boxCount);
+                // console.log("点击的分拣筐设置的数量--->", c);
+                //判断如果当前数量为0，但是分拣筐子基础重量大于0，则默认设置数量为1
+                if (c <= 0) {
+                    if (w > 0) {
+                        $itemP.find(".box-count").val('1');
+                        c = 1;
+                    }
+                }
+                //计算实际框子的重量
+                weight = w * c;
+                // console.log("点击的分拣筐总重量--->", weight);
+                // calculateActualWeightWithBox(weight, obj.elem);   TODO
+
+                var tipW = weight;
+                if (weight > 0 && (weight + '').indexOf('.') != -1) {
+                    tipW = weight.toFixed(2);
+                }
+                //遍历页面元素，找到当前选中的元素,设置分拣框的提示重量
+                var childItems = $('#sortingOrderDetailList').children();
+                var $itemBoxWeightTip = childItems.eq(curGoodSelectIndex).find('.add-sorting-box-weight-tip');
+                var tips = '(框重' + tipW + ')'
+                $itemBoxWeightTip.html(tips);
+            }
+        });
+
+        //检测分拣重量是否正确，如果与下单重量相差10%提示用户
+        function checkIfSortingWeightCorrect(goodItem, weight, num) {
+            //下单重量
+            var quantity = goodItem.quantity;
+            if (goodItem.unitId == goodItem.mainUnitId) {
+                //下单是主单位，直接取
+            } else {
+                //下单是副单位，则取另一个主单位重量
+                quantity = goodItem.quantity1;
+            }
+            var tempQ = parseFloat(quantity);
+            console.log('checkIfSortingWeightCorrect--->quantity = ' + tempQ + ' ,sortingWeight = ' + weight);
+            var ret = true;
+            if (tempQ > 0 && weight > 0) {
+                var disV = Math.abs(weight - tempQ);
+                // var v = Math.round(disV / tempQ);
+                var v = Math.round(disV / tempQ * 10000) / 100.00;
+                console.log('checkIfSortingWeightCorrect--->disV = ' + disV + ' ,result = ' + v);
+                if (v > 10) {
+                    ret = false;
+                }
+            }
+            console.log('checkIfSortingWeightCorrect--->ret = ' + ret);
+            return ret;
+        }
+
+        function getSoringBoxWeight(obj) {
+            //获取当前选中的分拣框子的基础重量
+            var $item = obj.elem.find(".box-item.layui-btn-danger");
+            var itemWeight = $item.data('weight');
+            console.log("getSoringBoxWeight itemWeight = " + itemWeight);
+            var w = parseFloat(itemWeight);
+
+            var boxCount = obj.elem.find(".box-count").val();
+            console.log("getSoringBoxWeight boxCount = " + boxCount);
+            //计算总的框子重量：单个框子重量*个数
+            var s = parseFloat(boxCount);
+            var ws = w * s;
+            console.log("getSoringBoxWeight ws = " + ws);
+            return ws;
+        }
+
+        //加入称重
+        function addSortingWeight(obj, needTip, resetWeight) {
+            var inputWeight = obj.elem.find(".add-sorting-weight").val();  //输入的重量
+            var inputNum = obj.elem.find(".add-sorting-num").val();  //输入的数量
+            // console.log("inputWeight--->" + inputWeight + "--->inputNum:" + inputNum);
+            if (inputWeight || inputNum) {
+                if (inputWeight) {
+                    var sortingWeight = obj.elem.find(".had-sorting-weight").text();  //已称重的数量
+                    // console.log("sortingWeight--->" + sortingWeight);
+                    var weight = parseFloat(inputWeight);
+
+                    //获取分拣框子重量，计算实际的净重量
+                    var boxTotalW = getSoringBoxWeight(obj);
+                    if(weight > boxTotalW){
+                        weight = weight - boxTotalW;
+                    }else{
+                        weight = 0;
+                    }
+
+                    //如果不是重置，则需要加上已分拣的重量
+                    if (!resetWeight) {
+                        weight += parseFloat(sortingWeight);
+                    }
+                    weight = parseFloat(weight).toFixed(2);
+                    obj.data.sortingWeight = weight;
+                    obj.elem.find(".had-sorting-weight").text(weight);
+                    obj.elem.find(".add-sorting-weight").val("");
+                }
+                if (inputNum) {
+                    var sortingNum = obj.elem.find(".had-sorting-num").text();  //已称重的数量
+                    // console.log("sortingNum--->" + sortingNum);
+                    //如果不是重置，则需要加上已分拣的数量
+                    var num = parseFloat(inputNum);
+                    //数量单位每次都做重置处理
+                    // if (!resetWeight) {
+                    //     num += parseFloat(sortingNum);
+                    // }
+                    // num = parseFloat(num).toFixed(2);  //数量不需要小数
+                    obj.data.sortingQuantity = num;
+                    obj.elem.find(".had-sorting-num").text(num);
+                    // obj.elem.find(".add-sorting-num").val("");
+                }
+                if (needTip) {
+                    notice.msg('加入成功', {icon: 1});
+                }
+
+                //重置分拣框子
+                resetSortingBoxSelected();
+            } else {
+                if (needTip) {
+                    notice.msg('请先称重或输入数量', {icon: 5});
+                }
+            }
+        }
+
+        //计算实际的称重重量
+        function calculateActualWeightWithBox(weight, elem) {
+            var inputWeight = elem.find(".add-sorting-weight").val();  //输入的重量
+            var showW = parseFloat(inputWeight);
+            if (weight) {
+                var w = parseFloat(weight);
+                if (w > 0) {
+                    if (curInputSortingWeight == 0) {
+                        if (inputWeight) {
+                            curInputSortingWeight = showW;
+                            // console.log("保存分拣初始重量--->", curInputSortingWeight);
+                        }
+                    }
+                    showW = curInputSortingWeight - w;
+                    if (showW < 0) {
+                        showW = 0;
+                    }
+                }
+                elem.find(".add-sorting-weight").val(showW);
+            } else {
+                if (weight == 0 || weight === '0') {
+                    if (curInputSortingWeight > 0) {
+                        showW = curInputSortingWeight;
+                        // console.log("恢复分拣初始重量--->", showW);
+                        elem.find(".add-sorting-weight").val(showW);
+                    }
+                }
+            }
+        }
+
+        //添加分拣详情记录
+        function addSortingDetailRecord(itemData, orderId, orderItemId, sortingWeight, sortingQuantity, sortingQuantityUnit, outStockStatus) {
+            var params = {};
+            params.orderId = orderId;
+            params.orderItemId = orderItemId;
+            params.sortingWeight = sortingWeight;
+            params.sortingQuantity = sortingQuantity;
+            params.sortingQuantityUnit = sortingQuantityUnit;
+            if (outStockStatus) {
+                params.outStockStatus = outStockStatus;
+            }
+
+            // 尺寸控制，提供有两种尺寸，默认是sm小型尺寸，还可以选md大型尺寸
+            // admin.showLoading({
+            //     elem: '#sortingMainRoot',
+            //     type: 1,
+            //     opacity: 0.5,
+            // });
+            notice.msg('正在保存，请稍后...', {icon: 4, close: true});
+
+            admin.req(ctx + "shop/sortingRecordDetail/add", params, function (result) {
+                if (result && result.code == 0) {
+                    //当前商品分拣完成，商品index自动+1
+                    var goodSize = goodGridIns.getData().length;
+                    if (curGoodSelectIndex < goodSize - 1) {
+                        //修改上一个商品的分拣状态颜色
+                        var childItems = $('#sortingOrderDetailList').children();
+                        var $curItem = childItems.eq(curGoodSelectIndex);
+                        $curItem.removeClass('sorting-unfinish');
+                        $curItem.removeClass('sorting-finish');
+                        $curItem.addClass('sorting-finish');
+
+                        curGoodSelectIndex = curGoodSelectIndex + 1;
+                    }else{
+                        //修改上一个商品的分拣状态颜色
+                        var childItems = $('#sortingOrderDetailList').children();
+                        var $curItem = childItems.eq(curGoodSelectIndex);
+                        $curItem.removeClass('sorting-unfinish');
+                        $curItem.removeClass('sorting-finish');
+                        $curItem.addClass('sorting-finish');
+                    }
+
+                    changeGoodItemSelectedBorder();
+                    //修改当前商品内存中的分拣状态为已分拣
+                    itemData.sortingStatus = '1';
+                    if (outStockStatus === '1') {
+                        notice.msg('标记缺货成功', {icon: 1});
+                    } else {
+                        notice.msg('保存成功', {icon: 1});
+                    }
+                    //判断当前选中订单商品是否全部分拣完成
+                    if (result.data && result.data.orderId) {
+                        orderGridIns.update(curSelectIndex, {orderGoodSortCount: result.data.orderGoodSortCount}, 1);
+                        if (result.data.orderGoodCount == result.data.orderGoodSortCount) {
+                            //订单分拣完成，更新订单缓存状态为已分拣
+                            orderGridIns.update(curSelectIndex, {status: '3'}, 1);
+                            //如果是分拣下单，分拣完成更新状态财务已审核
+                            if(curOrderObj && ((curOrderObj.source && curOrderObj.source === '3') || curOrderObj.deliveryType ==='2')){
+                                orderGridIns.update(curSelectIndex, {financialAuditStatus: '1'}, 1);
+                            }
+                            if (curSelectIndex < (curTabOrderCount - 1)) {
+                                //已分拣完成,自动切换下一个订单
+                                var elemId = getElemIdWithTabType(curTabType);
+                                var dataAll = orderGridIns.getData();
+                                if (dataAll) {
+                                    //先修改当前选中订单的分拣背景颜色
+                                    var $orderChildItems = $(elemId).children();
+                                    var $curOrderItem = $orderChildItems.eq(curSelectIndex);
+                                    $curOrderItem.removeClass('sorting-finish');
+                                    $curOrderItem.addClass('sorting-finish');
+
+                                    //自动切换选中下一个订单
+                                    var nexIndex = curSelectIndex + 1;
+                                    var nextData = dataAll[nexIndex];
+                                    changeSortingOrderSelectedStatus(elemId, nexIndex, nextData);
+                                }
+                            }
+                        }
+                    }
+                }
+                // admin.removeLoading('#sortingMainRoot');
+                notice.destroy();
+            }, 'post');
+        }
+
+        //处理电子秤websocket流程
+        var websocket = null;
+        var serialPorts = [];
+        var curConnectSerial = '';
+        var curConnectStatus = false;  //当前串口连接状态
+        //默认直接连接websocket
+        connectWs();
+
+        //连接websocket
+        function connectWs() {
+            //判断当前浏览器是否支持WebSocket, 主要此处要更换为自己的地址
+            if ('WebSocket' in window) {
+                // 尺寸控制，提供有两种尺寸，默认是sm小型尺寸，还可以选md大型尺寸
+                admin.showLoading({
+                    elem: '#bottomScale',
+                    type: 4,
+                    opacity: 0.4,
+                });
+                websocket = new WebSocket("ws://localhost:8089/websocket");
+            } else {
+                changeConnectBtnStatus(false);
+                notice.msg('当前浏览器不支持电子秤连接，请联系管理员', {icon: 5});
+                return;
+            }
+
+            serialPorts = [];
+            //连接发生错误的回调方法
+            websocket.onerror = function () {
+                // console.log("电子秤ws连接错误");
+                notice.msg('电子秤连接错误，请联系管理员', {icon: 5});
+                admin.removeLoading('#bottomScale');
+                changeConnectBtnStatus(false);
+            };
+
+            //连接成功建立的回调方法
+            websocket.onopen = function (event) {
+                // notice.msg('电子秤连接成功', {icon: 1});
+                // console.log("电子秤ws连接成功");
+                admin.removeLoading('#bottomScale');
+            }
+
+            //接收到消息的回调方法
+            websocket.onmessage = function (event) {
+                // console.log("接收到电子秤ws消息-->", event.data);
+                //解析消息内容
+                if (event.data) {
+                    var msgObj = JSON.parse(event.data);
+                    if (msgObj.fun) {
+                        if (msgObj.fun === 'online') {
+                            //ws上线消息
+                            // console.log("解析到电子秤上线信息-->", msgObj.msg);
+                            setSortingWeightToGood(msgObj.msg);
+                        } else if (msgObj.fun === 'notification') {
+                            // console.log("解析到电子秤串口信息-->", msgObj.msg);
+                            if (msgObj.msg) {
+                                if (msgObj.msg.indexOf('%23') != -1) {
+                                    //多个端口  NAME1@COM1#NAME2@COM2
+                                    serialPorts = msgObj.msg.split('%23');
+                                } else {
+                                    //一个端口
+                                    serialPorts.push(msgObj.msg);
+                                }
+                            }
+                            // console.log("解析到电子秤串口信息-->串口列表：", serialPorts);
+                            if (serialPorts && serialPorts.length > 0) {
+                                var select = document.getElementById('serialComId');
+                                select.innerHTML = ''; //清空选项
+
+                                var defaultOption = document.createElement("option");
+                                defaultOption.setAttribute("value", '');
+                                defaultOption.innerText = '请选择电子秤端口';
+                                select.appendChild(defaultOption);
+
+                                for (var i = 0; i < serialPorts.length; i++) {
+                                    var data = serialPorts[i];
+                                    var option = document.createElement("option");
+                                    if (data.indexOf('@') != -1) {
+                                        //如果包含串口名字，则value设置串口id
+                                        option.setAttribute("value", data.split('@')[1]);
+                                    } else {
+                                        option.setAttribute("value", data);
+                                    }
+                                    option.innerText = data;
+                                    select.appendChild(option)
+                                }
+                                form.render('select');
+                            }
+                        } else if (msgObj.fun === 'connection') {
+                            //电子秤连接消息
+                            // console.log("解析到电子秤串口连接消息-->", msgObj.msg);
+                            if (msgObj.msg && msgObj.msg === 'SUCCESS') {
+                                //连接成功，设置连接状态为成功
+                                changeConnectBtnStatus(true);
+                            } else {
+                                changeConnectBtnStatus(false);
+                            }
+                        } else if (msgObj.fun === 'weight') {
+                            //电子秤重量消息
+                            // console.log("解析到电子秤重量消息-->", msgObj.msg);
+                            if (msgObj.msg) {
+                                setSortingWeightToGood(msgObj.msg);
+                            }
+                        }
+                    }
+                }
+            }
+
+            //连接关闭的回调方法
+            websocket.onclose = function () {
+                // console.log("电子秤ws连接断开");
+                // notice.msg('电子秤连接断开', {icon: 5});
+                admin.removeLoading('#bottomScale');
+                changeConnectBtnStatus(false);
+            }
+
+            //监听窗口关闭事件，当窗口关闭时，主动去关闭websocket连接，防止连接还没断开就关闭窗口，server端会抛异常。
+            window.onbeforeunload = function () {
+                // console.log("监听到窗口关闭，主动断开电子秤ws连接");
+                websocket.close();
+            }
+        }
+
+        //发送消息
+        function sendWsMsg(msg) {
+            if (websocket) {
+                websocket.send(msg);
+            } else {
+                // console.log("ws对象为空,电子秤ws消息发送失败--->" + msg);
+            }
+        }
+
+        //关闭连接
+        function closeWs() {
+            if (websocket) {
+                websocket.close();
+            } else {
+                // console.log("ws对象为空,电子秤ws关闭失败");
+            }
+        }
+
+        //监听电子秤端口值改变
+        form.on('select(serialComId)', function (data) {
+            // console.log('serialComId change--->', data.value);
+            if (data && data.value) {
+                curConnectSerial = data.value;
+                sendWsMsg('CON@' + data.value);
+            }
+        });
+
+        //同步重量按钮点击
+        $('#syncScaleWeight').click(function () {
+            sendWsMsg('GET@' + curConnectSerial);
+        });
+
+        //未连接按钮点击，点击重新连接
+        $('#connectStatus').click(function () {
+            //先断开ws连接
+            closeWs();
+            //重新连接ws
+            setTimeout(connectWs(), 1500);
+        });
+
+        //设置分拣重量给当前选中的商品
+        function setSortingWeightToGood(autoWeight) {
+            // console.log('setSortingWeightToGood-->', autoWeight);
+            //判断当前商品自动设置电子秤开关是否开启
+            var switchStatus = true;
+            if (goodGridIns && goodGridIns.getData()) {
+                var alldata = goodGridIns.getData();
+                var itemid = alldata[curGoodSelectIndex].itemId;
+                // console.log('itemid-->', itemid);
+                var status = goodItemId2SwitchStatus[itemid];
+                // console.log('read status-->', status);
+                if (status && status === 'off') {
+                    switchStatus = false;
+                }
+            }
+            // console.log('switchStatus-->', switchStatus);
+            if (switchStatus) {
+                //遍历页面元素，找到当前选中的元素
+                var childItems = $('#sortingOrderDetailList').children();
+                var $itemWeight = childItems.eq(curGoodSelectIndex).find('.add-sorting-weight');
+                $itemWeight.val(autoWeight);
+            }
+            // console.log('setSortingWeightToGood-->finish');
+
+        }
+
+        //改变连接按钮的装填
+        function changeConnectBtnStatus(connected) {
+            // console.log('changeConnectBtnStatus--->', connected);
+            curConnectStatus = connected;
+            if (connected) {
+                $('#connectStatus').removeClass('layui-btn-danger');
+                var btn = document.getElementById("connectStatus");
+                btn.innerHTML = '已连接';
+            } else {
+                $('#connectStatus').removeClass('layui-btn-danger');
+                $('#connectStatus').addClass('layui-btn-danger');
+                var btn = document.getElementById("connectStatus");
+                btn.innerHTML = '未连接';
+            }
+        }
+
+        //设置商品item的选中边框样式  sorting-order-good-list-item item-default-border
+        function changeGoodItemSelectedBorder() {
+            //重置所有item选中边框
+            var $allItem = $('.sorting-order-good-list-item');
+            $allItem.removeClass('item-default-border');
+            $allItem.removeClass('item-active-border');
+            $allItem.addClass('item-default-border');
+            //设置当前选中的item选中边框
+            //遍历页面元素，找到当前选中的元素
+            var childItems = $('#sortingOrderDetailList').children();
+            // var $curItem = childItems.eq(curGoodSelectIndex).find('.sorting-order-good-list-item');
+            var $curItem = childItems.eq(curGoodSelectIndex);
+            $curItem.removeClass('item-default-border');
+            $curItem.addClass('item-active-border');
+
+            //不是选中同一个商品则需要重置
+            // console.log(' ---lastGoodSelectIndex:' + lastGoodSelectIndex + '  ,curGoodSelectIndex：' + curGoodSelectIndex );
+            if(lastGoodSelectIndex == -1 || curGoodSelectIndex != lastGoodSelectIndex){
+                //获取当前选中的商品的数据
+                var alldata = goodGridIns.getData();
+                var itemData = alldata[curGoodSelectIndex];
+                //不管是否分拣，每次选中都设置为下单的数量
+                //判断销售单位，如果和主单位相同则是公斤，否则是数量单位
+                if(itemData.unitId === itemData.mainUnitId){
+                    //下单为公斤，需要取转换后的quantity1数量
+                    $curItem.find('.add-sorting-num').val(itemData.quantity1);
+                }else{
+                    //下单为数量单位，直接取quantity数量
+                    $curItem.find('.add-sorting-num').val(itemData.quantity);
+                }
+            }
+            lastGoodSelectIndex = curGoodSelectIndex;
+        };
+
+        //打印配货单：全部订单
+        $('#printOrderMaterial1').click(function () {
+            if(!curRouteId){
+                notice.msg('请先选择需要打印的线路', {icon: 3});
+                return;
+            }
+            //查询当前线路的全部订单数据
+            queryPrintOrderMaterialList();
+        });
+        //打印配货单：未打印订单
+        $('#printOrderMaterial2').click(function () {
+            if(!curRouteId){
+                notice.msg('请先选择需要打印的线路', {icon: 3});
+                return;
+            }
+            //查询当前线路的全部订单数据
+            queryPrintOrderMaterialList('0');
+        });
+
+        function queryPrintOrderMaterialList(printStatus) {
+            var sortingOrderListUrl = "shop/order/listForSortingMaterial";
+            var params = getSearchParams();
+            params.pageNum = 1;
+            params.pageSize = 10000;  //默认最大数据
+            params.printUpdateType = '1';  //配货单状态
+            params.sortingStatus = '1';   //只查询未分拣的数据
+            if(printStatus === '0'){
+                params.printStatus = '0';   //只查询未打印的数据
+            }
+            admin.req(ctx + sortingOrderListUrl, params, function (result) {
+                if(result && result.rows && result.rows.length > 0){
+                    //遍历订单列表，获取对应订单的商品列表
+                    var materialHtmlContent = '';
+                    for(var i = 0;i<result.rows.length;i++){
+                        if(result.rows[i].sortingMaterialItemVOS && result.rows[i].sortingMaterialItemVOS.length > 0){
+                            materialHtmlContent += getPrintOrderGoodsMaterialHtmlContent(result.rows[i],result.rows[i].sortingMaterialItemVOS);
+                        }
+                    }
+                    printer.printHtml({
+                        html:
+                        materialHtmlContent
+                        ,
+                        horizontal: true  // 横向打印
+                    });
+                }else{
+                    notice.msg('没有订单需要打印', {icon: 3});
+                }
+            }, 'post')
+        }
+
+        //获取单个订单打印内容html
+        function getPrintOrderGoodsMaterialHtmlContent(curOrderObj,goodsList) {
+            var content = '';
+            content += '<div>'
+                //顶部订单号、订单商户信息、配送时间、打印时间
+                + '<div style="width: 100%;margin-top: 20px;">'
+                + '<table style="width: 100%">' +
+                // '        <tr>' +
+                // '            <td style="width: 50%;color: #0c0c0c;font-weight: bold">订单号：' + curOrderObj.code + '</td>' +
+                // '        </tr>' +
+                '        <tr>' +
+                '            <td style="width: 50%;color: #0c0c0c;font-weight: bold">收货商户：' + curOrderObj.merchantName + '</td>' +
+                '        </tr>' +
+                '    </table>'
+                + '</div>'
+                //商品列表
+                + '<div style="width: 100%;margin-top: 5px;">'
+                + '<table style="width:100%;border: 1px solid #000000;border-collapse:collapse;text-align: center" cellpadding="0" cellspacing="0">' +
+                '       <tr>' +
+                '            <td style="width:28% ;border: 1px solid #000000;">商品名</td>' +
+                '            <td style="width:18% ;border: 1px solid #000000">下单数</td>' +
+                '            <td style="width:18% ;border: 1px solid #000000">备注</td>' +
+                '        </tr>' +
+                getOrderGoodMaterialTableHtml(goodsList) +
+                '    </table>'
+                + '</div>'
+                + '</div>'
+            return content;
+        }
+
+        //获取订单商品信息展示表格hmtl拼接内容
+        function getOrderGoodMaterialTableHtml(goodsList) {
+            var alldata = goodsList;
+            var content = '';
+            for (var i = 0; i < alldata.length; i++) {
+                var item = alldata[i];
+                content += '       <tr>';
+                content += '            <td style="width:28% ;border: 1px solid #000000;">' + item.goodName + '</td>';
+                content += '            <td style="width:18% ;border: 1px solid #000000">' + item.quantity + item.unitName + '</td>';
+                content += '            <td style="width:18% ;border: 1px solid #000000">' + item.comment + '</td>';
+                content += '        </tr>';
+            }
+            return content;
+        };
+
+        //获取当前商户出库单表头标题
+        function getMemeberPrintLabel(printType) {
+            var printLabel = '湖南湘佳电子商务有限公司出库单'; //默认的打印标签
+            if(memberPrintDict && memberPrintDict.length > 0){
+                for (var i =0 ;i<memberPrintDict.length;i++){
+                    if(printType){
+                        if(memberPrintDict[i].dictValue === printType){
+                            printLabel = memberPrintDict[i].dictLabel;
+                            break;
+                        }
+                    }else{
+                        //取默认的
+                        if(memberPrintDict[i].isDefault === 'Y'){
+                            printLabel = memberPrintDict[i].dictLabel;
+                            break;
+                        }
+                    }
+                }
+            }
+            console.log('getMemeberPrintLabel --->',printLabel);
+            return printLabel;
+        }
+
+        //更新出库单打印状态
+        function updateOrderOdoPrintStatus(orderId) {
+            var updatePrintUrl = "shop/order/updateStoreGoodsOrderOdoPrintByIds";
+            var params = {};
+            params.orderId = orderId;
+            admin.req(ctx + updatePrintUrl, params, function (result) {
+                if(result && result.code == 0){
+                    orderGridIns.update(curSelectIndex, {odoPrintStatus: '1'}, 1);
+                    //渲染一下form
+                    form.render();
+                }
+            }, 'post')
+        }
+
+        //监听多选框点击事件  主要是通过 lay-filter="test"  来监听
+        form.on('checkbox(orderPrintCheck)', function (data) {
+            var orderId = $(this).data("orderid");
+            if( data.elem.checked){　　　　　　//判断当前多选框是选中还是取消选中
+               if(preparePrintOrderIds && preparePrintOrderIds.length >= 50){
+                   notice.msg('最多选择50个订单打印', {icon: 3});
+                   $(this).prop('checked', false);
+               }else{
+                   var orderStatus = $(this).data("orderstatus");
+                   console.log('test orderstatus--->',orderStatus);
+                   if(orderStatus == '3' || orderStatus == '4'){
+                       preparePrintOrderIds.push(orderId);
+                   }else{
+                       notice.msg('该订单未分拣完成，不能多选打印', {icon: 3});
+                       $(this).prop('checked', false);
+                   }
+               }
+            }else{
+                if(preparePrintOrderIds && preparePrintOrderIds.length > 0){
+                    preparePrintOrderIds.forEach(function(item, index, arr) {
+                        if(item === orderId) {
+                            arr.splice(index, 1);
+                        }
+                    });
+                }
+            }
+            console.log('preparePrintOrderIds--->',preparePrintOrderIds);
+        });
+
+        function resetOrderPrintCheck() {
+            preparePrintOrderIds = [];
+            $('.print-select').prop('checked', false);
+            //渲染一下form
+            form.render();
+        }
+
+        function queryPrintOrderCheckOutList(printOrderIds,isCheckOut) {
+            var sortingOrderListUrl = "shop/order/listForSortingMaterial";
+            var params = {};
+            params.pageNum = 1;
+            params.pageSize = 10000;  //默认最大数据
+            if(isCheckOut){
+                params.printUpdateType = '2';  //配货单状态
+            }
+            params.orderIds = printOrderIds.toString();
+            if(printOrderIds && printOrderIds.length > 0){
+            }else{
+                if(!isCheckOut){
+                    params = getSearchParams();
+                    params.pageNum = 1;
+                    params.pageSize = 10000;  //默认最大数据
+                }
+            }
+
+            admin.req(ctx + sortingOrderListUrl, params, function (result) {
+                if(result && result.rows && result.rows.length > 0){
+                    //遍历订单列表，获取对应订单的商品列表
+                    var orderHtmlContent = '';
+                    var updateOrderIds = [];
+                    for(var i = 0;i<result.rows.length;i++){
+                        if(result.rows[i].sortingMaterialItemVOS && result.rows[i].sortingMaterialItemVOS.length > 0){
+                            if(isCheckOut){
+                                //出库单
+                                orderHtmlContent += getOrderPrintHtmlContent(result.rows[i],result.rows[i].sortingMaterialItemVOS);
+                                updateOrderIds.push(result.rows[i].orderId);
+                            }else{
+                                //标签：一个商品一页指
+                                for (var j = 0;j<result.rows[i].sortingMaterialItemVOS.length;j++){
+                                    var goodItem = result.rows[i].sortingMaterialItemVOS[j];
+                                    var onePageItem = getPrintOrderGoodLabelOnePage(result.rows[i],goodItem);
+                                    var pageTotal = 1;
+                                    var quantity = goodItem.sortingQuantity;
+                                    if(result.rows[i].status == '3' || result.rows[i].status == '4'){
+                                        //已分拣
+                                    }else{
+                                        //未分拣，判断后使用副单位数量 和 副单位名称
+                                        // if(goodItem.unitId == goodItem.mainUnitId){
+                                        //     //下单是主单位，则取另外一个副单位
+                                        //     quantity = goodItem.quantity1;
+                                        // }else{
+                                            //下单是副单位，直接取
+                                            quantity = goodItem.quantity;
+                                        // }
+                                    }
+
+                                    if(quantity && quantity > 10){
+                                       var pageTotal = Math.ceil(quantity/10);
+                                       if(pageTotal > 200){
+                                           pageTotal = 200;
+                                       }
+                                    }
+                                    for(var p = 0;p<pageTotal;p++){
+                                        orderHtmlContent += onePageItem;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    printer.printHtml({
+                        html:
+                        orderHtmlContent
+                        ,
+                        horizontal: true  // 横向打印
+                    });
+
+                    if(isCheckOut){
+                        //更新订单打印状态
+                        var allOrderData = orderGridIns.getData();
+                        if(updateOrderIds && updateOrderIds.length > 0 && allOrderData && allOrderData.length > 0){
+                            for (var i =0;i<allOrderData.length;i++){
+                                if(updateOrderIds.indexOf(allOrderData[i].orderId) != -1){
+                                    orderGridIns.update(i, {odoPrintStatus: '1'}, 1);
+                                }
+                            }
+                        }
+                    }
+
+                    //重置打印选中
+                    resetOrderPrintCheck();
+                }else{
+                    notice.msg('没有订单需要打印', {icon: 3});
+                }
+            }, 'post')
+        }
+
+        //获取一页高度打印内容html
+        function getPrintOrderGoodLabelOnePage(orderObj,goodItem) {
+            // page-break-after:always;   分页样式
+            var content = '';
+            //客户名称
+            var name = orderObj.merchantName;
+            // if(name && name.length > 10){
+            //     name = name.slice(0,8) + '...'
+            // }
+            //商品名称
+            var goodName = goodItem.goodName;
+            // if(goodName && goodName.length > 10){
+            //     goodName = goodName.slice(0,8) + '...'
+            // }
+            //商品数量：副单位数量
+            var quantity = goodItem.sortingQuantity;
+            //商品单位：副单位名称
+            var unitName = goodItem.subUnitName;
+            if(orderObj.status == '3' || orderObj.status == '4'){
+                //已分拣，直接使用分拣数量，副单位名称
+            }else{
+                //未分拣，判断后使用副单位数量 和 副单位名称
+                // if(goodItem.unitId == goodItem.mainUnitId){
+                //     //下单是主单位，则取另外一个副单位
+                //     quantity = goodItem.quantity1;
+                //     unitName = goodItem.unitName1;
+                // }else{
+                    //下单是副单位，直接取
+                    quantity = goodItem.quantity;
+                    unitName = goodItem.unitName;
+                // }
+            }
+
+            content +=
+                //顶部订单号、订单商户信息、配送时间、打印时间
+                '<div>' +
+                '            <div style="padding-top:25px;text-align: center;width: 100%;color: #0c0c0c;font-size: 17px;font-weight: bold;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;">' + name + '</div>' +
+                '            <div style="margin-top:20px;text-align: center;width: 100%;color: #0c0c0c;font-size: 17px;font-weight: bold;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;">' + goodName + '</div>' +
+                '            <div style="margin-top:20px;text-align: center;width: 100%;color: #0c0c0c;font-size: 17px;font-weight: bold;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;">' + quantity + unitName + '</div>'
+                + '</div>'
+            // '<table style="width: 100%">' +
+                // '        <tr>' +
+                // '            <td style="text-align: center;width: 100%;color: #0c0c0c;font-size: 10px">' + orderObj.merchantName + '</td>' +
+                // '        </tr>' +
+                // '        <tr>' +
+                // '            <td style="text-align: center;width: 100%;color: #0c0c0c;font-size: 10px">' + goodItem.goodName + '</td>' +
+                // '        </tr>' +
+                // '        <tr>' +
+                // '            <td style="text-align: center;width: 100%;color: #0c0c0c;font-size: 10px">'+ goodItem.sortingWeight + goodItem.mainUnitName + '</td>' +
+                // '        </tr>' +
+                // '    </table>'
+            return content;
+        }
+    });
+</script>
+
+</body>
+</html>

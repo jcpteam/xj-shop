@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaboot.shop.mapper.StoreGoodsSpuConversionNewMapper">
+    
+    <resultMap type="StoreGoodsSpuConversionNew" id="StoreGoodsSpuConversionNewResult">
+        <result property="id"    column="id"    />
+        <result property="deptId"    column="dept_id"    />
+        <result property="spuNo"    column="spu_no"    />
+        <result property="spuName"    column="spu_name"    />
+        <result property="conversion"    column="conversion"    />
+    </resultMap>
+
+    <sql id="selectStoreGoodsSpuConversionNewVo">
+        select id, dept_id, spu_no, spu_name, conversion from store_goods_spu_conversion_new
+    </sql>
+
+    <select id="selectStoreGoodsSpuConversionNewList" parameterType="StoreGoodsSpuConversionNew" resultMap="StoreGoodsSpuConversionNewResult">
+        <include refid="selectStoreGoodsSpuConversionNewVo"/>
+        <where>  
+            <if test="deptId != null  and deptId != ''"> and dept_id = #{deptId}</if>
+            <if test="spuNo != null  and spuNo != ''"> and spu_no = #{spuNo}</if>
+            <if test="spuName != null  and spuName != ''"> and spu_name like concat('%', #{spuName}, '%')</if>
+            <if test="conversion != null "> and conversion = #{conversion}</if>
+        </where>
+    </select>
+    
+    <select id="selectStoreGoodsSpuConversionNewById" parameterType="Long" resultMap="StoreGoodsSpuConversionNewResult">
+        <include refid="selectStoreGoodsSpuConversionNewVo"/>
+        where id = #{id}
+    </select>
+        
+    <insert id="insertStoreGoodsSpuConversionNew" parameterType="StoreGoodsSpuConversionNew" useGeneratedKeys="true" keyProperty="id">
+        insert into store_goods_spu_conversion_new
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="deptId != null  and deptId != ''">dept_id,</if>
+            <if test="spuNo != null  and spuNo != ''">spu_no,</if>
+            <if test="spuName != null  and spuName != ''">spu_name,</if>
+            <if test="conversion != null ">conversion,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="deptId != null  and deptId != ''">#{deptId},</if>
+            <if test="spuNo != null  and spuNo != ''">#{spuNo},</if>
+            <if test="spuName != null  and spuName != ''">#{spuName},</if>
+            <if test="conversion != null ">#{conversion},</if>
+         </trim>
+    </insert>
+
+    <update id="updateStoreGoodsSpuConversionNew" parameterType="StoreGoodsSpuConversionNew">
+        update store_goods_spu_conversion_new
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="deptId != null  and deptId != ''">dept_id = #{deptId},</if>
+            <if test="spuNo != null  and spuNo != ''">spu_no = #{spuNo},</if>
+            <if test="spuName != null  and spuName != ''">spu_name = #{spuName},</if>
+            <if test="conversion != null ">conversion = #{conversion},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteStoreGoodsSpuConversionNewById" parameterType="Long">
+        delete from store_goods_spu_conversion_new where id = #{id}
+    </delete>
+
+    <delete id="deleteStoreGoodsSpuConversionNewByIds" parameterType="String">
+        delete from store_goods_spu_conversion_new where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+    
+</mapper>

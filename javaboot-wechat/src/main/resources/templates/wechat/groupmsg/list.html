@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+	<meta charset="utf-8"/>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<title>消息群发</title>
+	<link rel="stylesheet" href="../../../static/assets/libs/layui/css/layui.css" th:href="@{/assets/libs/layui/css/layui.css}"/>
+	<link rel="stylesheet" href="../../../static/assets/module/admin.css?v=316" th:href="@{/assets/module/admin.css}"/>
+	<!--[if lt IE 9]>
+	<script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+	<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+	<![endif]-->
+	<style>
+		#dictTable + .layui-table-view .layui-table-tool-temp {
+			padding-right: 0;
+		}
+
+		#dictTable + .layui-table-view .layui-table-body tbody > tr td {
+			cursor: pointer;
+		}
+
+		#dictTable + .layui-table-view .layui-table-body tbody > tr.layui-table-click {
+			background-color: #fff3e0;
+		}
+
+		#dictTable + .layui-table-view .layui-table-body tbody > tr.layui-table-click td:last-child > div:before {
+			position: absolute;
+			right: 6px;
+			content: "\e602";
+			font-size: 12px;
+			font-style: normal;
+			font-family: layui-icon !important;
+			-webkit-font-smoothing: antialiased;
+			-moz-osx-font-smoothing: grayscale;
+		}
+
+	</style>
+</head>
+<body>
+
+<!-- 正文开始 -->
+<div class="layui-fluid">
+	<div class="layui-row layui-col-space15">
+		<div class="layui-col-md3">
+			<div class="layui-card">
+				<div class="layui-card-body" style="padding: 10px;">
+					<!-- 表格工具栏1 -->
+					<form class="layui-form toolbar">
+						<div class="layui-form-item">
+							<div class="layui-inline" style="max-width: 140px;">
+								<input name="name" class="layui-input" placeholder="输入公众号名称"/>
+							</div>
+							<div class="layui-inline">
+								<button class="layui-btn layui-btn-sm icon-btn" lay-filter="dictTbSearch" lay-submit>
+									<i class="layui-icon">&#xe615;</i>搜索
+								</button>
+							</div>
+						</div>
+					</form>
+					<!-- 数据表格1 -->
+					<table id="dictTable" lay-filter="dictTable"></table>
+				</div>
+			</div>
+		</div>
+
+		<div class="layui-col-md9">
+			<div class="layui-card">
+				<div class="layui-card-body" style="padding: 10px;">
+					<!-- 搜索区 -->
+					<form class="layui-form toolbar" th:onsubmit="return false" lay-filter="inputForm" id="inputForm">
+						<div class="layui-form-item">
+							<div class="layui-inline">
+								<label class="layui-form-label label-auto">消息类型：</label>
+								<div class="layui-input-inline">
+									<select name="type" lay-verify="required">
+										<option value=""></option>
+										<option value="0">文本</option>
+										<option value="1">图片</option>
+										<option value="2">语音</option>
+										<option value="3">视频</option>
+										<option value="4">地理位置</option>
+										<option value="5">音乐</option>
+									</select>
+								</div>
+							</div>
+							<div class="layui-inline">
+								<label class="layui-form-label label-auto">是否已读：</label>
+								<div class="layui-input-inline">
+									<select name="readFlag" lay-verify="required">
+										<option value=""></option>
+										<option value="0">已读</option>
+										<option value="1">未读</option>
+									</select>
+								</div>
+							</div>
+							<div class="layui-inline" style="padding-left: 13px;">
+								<button class="layui-btn layui-btn-sm icon-btn" lay-submit lay-filter="searchBtn" id="searchBtn">
+									<i class="layui-icon layui-icon-search"></i>搜索
+								</button>
+								<button class="layui-btn layui-btn-sm icon-btn" type="reset">
+									<i class="layui-icon layui-icon-refresh"></i>重置
+								</button>
+							</div>
+						</div>
+					</form>
+
+					<table class="layui-table" id="dataTable" lay-filter="dataTable"></table>
+				</div>
+			</div>
+		</div>
+
+	</div>
+</div>
+
+
+<!-- js部分 -->
+<script type="text/javascript" src="../../../static/assets/libs/layui/layui.js" th:src="@{/assets/libs/layui/layui.js}"></script>
+<script type="text/javascript" src="../../../static/assets/js/common.js?v=316" th:src="@{/assets/js/common.js}"></script>
+
+<script type="text/javascript" th:inline="javascript">
+	var ctx = [[@{/}]];
+	var datas = [[${@dict.getType('wechat_type')}]];
+</script>
+<script type="text/javascript" th:inline="none">
+	layui.use(['index', 'dataGrid', 'element', 'dropdown', 'layer', 'form', 'table', 'util', 'laydate', 'ext'], function () {
+		var $ = layui.jquery;
+		var layer = layui.layer;
+		var form = layui.form;
+		var table = layui.table;
+		var util = layui.util;
+		var laydate = layui.laydate;
+		var ext = layui.ext;
+		var admin = layui.admin;
+		var index = layui.index;
+
+		var prefix = ctx + "wechat/msg";
+		var url = prefix + "/list";
+		var createUrl = prefix + "/add";
+		var updateUrl = prefix + "/edit/{id}";
+		var removeUrl = prefix + "/remove";
+		var exportUrl = prefix + "/export";
+		var syncUrl = prefix + "/sync";
+
+		//公众号列表
+		table.render({
+			elem: '#dictTable'
+			,url: ctx + "wechat/account/list"
+			,method: 'POST'
+			,toolbar: ['<p>',
+				'<button lay-event="add" class="layui-btn layui-btn-sm icon-btn"><i class="layui-icon">&#xe654;</i>添加</button>&nbsp;',
+				'<button lay-event="edit" class="layui-btn layui-btn-sm layui-btn-warm icon-btn"><i class="layui-icon">&#xe642;</i>修改</button>&nbsp;',
+				'<button lay-event="del" class="layui-btn layui-btn-sm layui-btn-danger icon-btn"><i class="layui-icon">&#xe640;</i>删除</button>',
+				'</p>'].join('')
+			,defaultToolbar: []
+			,height: 'full-100'
+			,cellMinWidth: 80
+			//,page: true
+			,request: {
+				pageName: 'pageNum' //页码的参数名称，默认：page
+				,limitName: 'pageSize' //每页数据量的参数名，默认：limit
+			}
+			//,limit: 10
+			,cols: [[
+				{type: 'checkbox'}
+				,{field: 'name', title: '公众号名称'}
+			]]
+			,parseData: function(res){ //将原始数据解析成 table 组件所规定的数据
+				return {
+					"code": res.code, //解析接口状态
+					"msg": res.msg, //解析提示文本
+					"count": res.total, //解析数据长度
+					"data": res.rows //解析数据列表
+				};
+			}
+		});
+
+		/* 表格搜索 */
+		form.on('submit(dictTbSearch)', function (data) {
+			table.reload('dictTable', {where: data.field});
+			return false;
+		});
+
+		/* 监听行单击事件 */
+		table.on('row(dictTable)', function (obj) {
+			//selObj = obj;
+			obj.tr.addClass('layui-table-click').siblings().removeClass('layui-table-click');
+			table.reload('dataTable', {where: {}});
+		});
+
+
+		//用户消息列表
+		table.render({
+			elem: '#dataTable'
+			,url: url
+			,method: 'POST'
+			,toolbar: '#toolbarHead'
+			,height: 'full-100'
+			,cellMinWidth: 80
+			,page: true
+			,request: {
+				pageName: 'pageNum' //页码的参数名称，默认：page
+				,limitName: 'pageSize' //每页数据量的参数名，默认：limit
+			}
+			,limit: 10
+			,cols: [[
+				{type: 'checkbox'}
+				,{field: 'type', title: '消息类型'}
+				,{field: 'headimgUrl', title: '用户', templet:function(res){
+						return '<img src="' + res.headimgUrl + '" width="30px" height="30px">';
+					}}
+				,{field: 'nickName', title: '昵称'}
+				,{field: 'repContent', title: '内容'}
+				,{field: 'readFlag', title: '是否已读'}
+				,{field: 'createTime', title: '时间'}
+				// ,{field: 'subscribe', title: '是否订阅'}
+				// ,{field: 'openId', title: '用户标识'}
+				// ,{field: 'subscribeScene', title: '关注渠道'}
+				// ,{field: 'subscribeTime', title: '关注时间'}
+				// ,{field: 'country', title: '国家'}
+				// ,{field: 'province', title: '省份'}
+				// ,{field: 'city', title: '城市'}
+				// ,{field: 'language', title: '语言'}
+				// ,{field: 'latitude', title: '经度'}
+				// ,{field: 'longitude', title: '纬度'}
+				,{field: 'operate', title: '操作', width: 80, toolbar: '#toolbarRow', fixed: 'right'}
+			]]
+			,parseData: function(res){ //将原始数据解析成 table 组件所规定的数据
+				return {
+					"code": res.code, //解析接口状态
+					"msg": res.msg, //解析提示文本
+					"count": res.total, //解析数据长度
+					"data": res.rows //解析数据列表
+				};
+			}
+		});
+		//头工具栏事件
+		table.on('toolbar(dataTable)', function(obj){
+			switch(obj.event){
+				case 'add':
+					active.add();
+					break;
+				case 'edit':
+					var checkStatus = table.checkStatus('dataTable')
+							, checkData = checkStatus.data; //得到选中的数据
+					var id = null;
+					if (id == null) {
+						if (checkData.length === 0) {
+							return admin.info('请选择一条数据');
+						} else if (checkData.length > 1) {
+							return admin.info('只能选择一条数据编辑');
+						} else {
+							id = checkData[0].id;
+						}
+					}
+					active.edit(id);
+					break;
+				case 'import':
+					break;
+				case 'export':
+					$.modal.loading("正在导出数据，请稍后...");
+					$.post(exportUrl, $("#inputForm").serializeArray(), function(result) {
+						if (result.code == web_status.SUCCESS) {
+							window.location.href = ctx + "common/download?fileName=" + encodeURI(result.msg) + "&delete=" + true;
+						} else if (result.code == web_status.WARNING) {
+							$.modal.alertWarning(result.msg)
+						} else {
+							$.modal.alertError(result.msg);
+						}
+						$.modal.closeLoading();
+					});
+					break;
+				case 'sync':
+					active.sync();
+					break;
+			};
+		});
+
+		//行工具栏事件
+		table.on('tool(dataTable)', function (obj) {
+			var data = obj.data;
+			if (obj.event === 'view') {
+				active.view(data.id);
+			} else if (obj.event === 'edit') {
+				active.edit(data.id);
+			} else if (obj.event === 'del') {
+				active.del(data.id);
+			}
+		});
+
+		//事件
+		var active = {
+			sync: function () {
+				admin.confirm('同步用户需要一定时间，用户量越大、用时越久，请耐心等待，勿重复提交；确认此操作吗?', function() {
+					admin.req(syncUrl, null, function (res) {
+						if (res.code == 0) {
+							table.reload('dataTable');
+							admin.success(res.msg);
+						} else {
+							admin.error(res.msg);
+						}
+					},'post')
+				});
+			}
+			,view: function (id) {
+				var viewUrl = updateUrl.replace("{id}", id);
+				admin.openDialog('查看公众号', viewUrl, '800px', '480px');
+			}
+			,add: function () {
+				admin.openDialog('新增公众号', createUrl, '800px', '480px');
+			}
+			,edit: function (id) {
+				var editUrl = updateUrl.replace("{id}", id);
+				admin.openDialog('编辑公众号', editUrl, '800px', '480px');
+			}
+			,del: function(id){
+				admin.confirm('确定删除吗?',function(){
+					admin.req(removeUrl, {ids: id}, function (data) {
+						if (data.code == 0) {
+							table.reload('dataTable');
+							admin.success('删除成功!');
+						} else {
+							admin.error(data.msg);
+						}
+					},'post')
+				});
+			}
+		}
+	});
+</script>
+</body>
+
+</html>

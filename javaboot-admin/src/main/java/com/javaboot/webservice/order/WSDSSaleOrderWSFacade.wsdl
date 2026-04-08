@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions targetNamespace="http://test.xiangjiamuye.com:6888/ormrpc/services/WSDSSaleOrderWSFacade" xmlns:apachesoap="http://xml.apache.org/xml-soap" xmlns:impl="http://test.xiangjiamuye.com:6888/ormrpc/services/WSDSSaleOrderWSFacade" xmlns:intf="http://test.xiangjiamuye.com:6888/ormrpc/services/WSDSSaleOrderWSFacade" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:tns1="urn:client.dssaleorderwsfacade" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:wsdlsoap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<!--WSDL created by Apache Axis version: 1.4.1-SNAPSHOT
+Built on Jun 15, 2017 (10:55:06 UTC)-->
+ <wsdl:types>
+  <schema targetNamespace="urn:client.dssaleorderwsfacade" xmlns="http://www.w3.org/2001/XMLSchema">
+   <import namespace="http://schemas.xmlsoap.org/soap/encoding/"/>
+   <complexType name="WSInvokeException">
+    <sequence/>
+   </complexType>
+  </schema>
+ </wsdl:types>
+
+   <wsdl:message name="WSInvokeException">
+
+      <wsdl:part name="fault" type="tns1:WSInvokeException">
+
+      </wsdl:part>
+
+   </wsdl:message>
+
+   <wsdl:message name="crtSaleOrderBillResponse">
+
+      <wsdl:part name="crtSaleOrderBillReturn" type="xsd:string">
+
+      </wsdl:part>
+
+   </wsdl:message>
+
+   <wsdl:message name="crtSaleOrderBillRequest">
+
+      <wsdl:part name="data" type="xsd:string">
+
+      </wsdl:part>
+
+   </wsdl:message>
+
+   <wsdl:portType name="WSDSSaleOrderWSFacadeSrvProxy">
+
+      <wsdl:operation name="crtSaleOrderBill" parameterOrder="data">
+
+         <wsdl:input message="impl:crtSaleOrderBillRequest" name="crtSaleOrderBillRequest">
+
+       </wsdl:input>
+
+         <wsdl:output message="impl:crtSaleOrderBillResponse" name="crtSaleOrderBillResponse">
+
+       </wsdl:output>
+
+         <wsdl:fault message="impl:WSInvokeException" name="WSInvokeException">
+
+       </wsdl:fault>
+
+      </wsdl:operation>
+
+   </wsdl:portType>
+
+   <wsdl:binding name="WSDSSaleOrderWSFacadeSoapBinding" type="impl:WSDSSaleOrderWSFacadeSrvProxy">
+
+      <wsdlsoap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+
+      <wsdl:operation name="crtSaleOrderBill">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="crtSaleOrderBillRequest">
+
+            <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://webservice.saleorder.dianshang.webservice.eas.kingdee.com" use="encoded"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="crtSaleOrderBillResponse">
+
+            <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://test.xiangjiamuye.com:6888/ormrpc/services/WSDSSaleOrderWSFacade" use="encoded"/>
+
+         </wsdl:output>
+
+         <wsdl:fault name="WSInvokeException">
+
+            <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="WSInvokeException" namespace="http://test.xiangjiamuye.com:6888/ormrpc/services/WSDSSaleOrderWSFacade" use="encoded"/>
+
+         </wsdl:fault>
+
+      </wsdl:operation>
+
+   </wsdl:binding>
+
+   <wsdl:service name="WSDSSaleOrderWSFacadeSrvProxyService">
+
+      <wsdl:port binding="impl:WSDSSaleOrderWSFacadeSoapBinding" name="WSDSSaleOrderWSFacade">
+
+         <wsdlsoap:address location="http://test.xiangjiamuye.com:6888/ormrpc/services/WSDSSaleOrderWSFacade"/>
+
+      </wsdl:port>
+
+   </wsdl:service>
+
+</wsdl:definitions>

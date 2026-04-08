@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+	<meta charset="utf-8">
+	<title>修改生成信息</title>
+	<meta name="renderer" content="webkit">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+	<link rel="stylesheet" href="../../../static/assets/libs/layui/css/layui.css" th:href="@{/assets/libs/layui/css/layui.css}"/>
+	<link rel="stylesheet" href="../../../static/assets/module/admin.css" th:href="@{/assets/module/admin.css}"/>
+	<link rel="stylesheet" th:href="@{/assets/module/enhance/enhance.css}"/>
+	<style>
+		.layui-form-label {
+			width: 100px;  /* 这里修改标题宽度 */
+		}
+
+		.layui-input-block {
+			margin-left: 130px;  /* 这里要比上面始终大30px */
+		}
+
+		/* 解决数据表格下拉框被遮挡 */
+		.layui-table-cell{
+			overflow: visible !important;
+		}
+		.layui-table-box{
+			overflow:visible;
+		}
+		.layui-table-body{
+			overflow:visible;
+		}
+	</style>
+
+</head>
+
+
+
+<body class="bg-white">
+<div class="layui-card">
+	<div class="layui-card-body">
+		<div class="layui-form" th:object="${table}" id="inputForm" lay-filter="inputForm" th:action="@{/tool/gen/edit}" >
+			<input name="tableId" type="hidden" th:field="*{tableId}" />
+			<div class="layui-tab">
+				<ul class="layui-tab-title">
+					<li class="layui-this">基本信息</li>
+					<li>字段信息</li>
+					<li>生成信息</li>
+				</ul>
+
+				<div class="layui-tab-content">
+					<!-- 基本信息 -->
+					<div class="layui-tab-item layui-show">
+						<div class="layui-row">
+							<div class="layui-form-item">
+								<label class="layui-form-label layui-form-required">表名称:</label>
+								<div class="layui-input-block">
+									<input name="tableName" class="layui-input" type="text" placeholder="请输入表名称" th:field="*{tableName}" lay-verType="tips" lay-verify="required">
+								</div>
+							</div>
+							<div class="layui-form-item">
+								<label class="layui-form-label layui-form-required">表描述:</label>
+								<div class="layui-input-block">
+									<input name="tableName" class="layui-input" type="text" placeholder="请输入表描述" th:field="*{tableComment}" lay-verType="tips" lay-verify="required">
+								</div>
+							</div>
+							<div class="layui-form-item">
+								<label class="layui-form-label layui-form-required">实体类名称:</label>
+								<div class="layui-input-block">
+									<input name="tableName" class="layui-input" type="text" placeholder="请输入实体类名称" th:field="*{className}" lay-verType="tips" lay-verify="required">
+								</div>
+							</div>
+							<div class="layui-form-item">
+								<label class="layui-form-label layui-form-required">作者:</label>
+								<div class="layui-input-block">
+									<input name="tableName" class="layui-input" type="text" placeholder="请输入作者名称" th:field="*{functionAuthor}" lay-verType="tips" lay-verify="required">
+								</div>
+							</div>
+							<div class="layui-form-item">
+								<label class="layui-form-label">备注:</label>
+								<div class="layui-input-block">
+									<textarea name="remark" maxlength="500" class="layui-textarea" rows="3">[[*{remark}]]</textarea>
+								</div>
+							</div>
+						</div>
+					</div>
+					<!-- 字段信息 -->
+					<div class="layui-tab-item">
+						<table class="layui-table row-editable-table" id="dataTable" lay-filter="dataTable"></table>
+					</div>
+					<!-- 生成信息 -->
+					<div class="layui-tab-item">
+						<div class="layui-row">
+							<div class="layui-form-item">
+								<label class="layui-form-label layui-form-required">生成模板:</label>
+								<div class="layui-input-inline">
+									<select id="tplCategory" name='tplCategory' lay-filter='tplCategory'>
+										<option value="crud" th:field="*{tplCategory}">单表（增删改查）</option>
+										<option value="tree" th:field="*{tplCategory}">树表（增删改查）</option>
+									</select>
+								</div>
+								<div class="layui-form-mid layui-word-aux">选择生成的模板</div>
+							</div>
+							<div class="layui-form-item">
+								<label class="layui-form-label layui-form-required">生成包路径:</label>
+								<div class="layui-input-inline">
+									<input name="packageName" class="layui-input" type="text" placeholder="请输入生成包路径" th:field="*{packageName}" lay-verType="tips" lay-verify="required">
+								</div>
+								<div class="layui-form-mid layui-word-aux">生成在哪个java包下，例如 com.javaboot.system</div>
+							</div>
+							<div class="layui-form-item">
+								<label class="layui-form-label layui-form-required">生成模块名:</label>
+								<div class="layui-input-inline">
+									<input name="moduleName" class="layui-input" type="text" placeholder="请输入生成模块名" th:field="*{moduleName}" lay-verType="tips" lay-verify="required">
+								</div>
+								<div class="layui-form-mid layui-word-aux">可理解为子系统名，例如 system</div>
+							</div>
+							<div class="layui-form-item">
+								<label class="layui-form-label layui-form-required">生成业务名:</label>
+								<div class="layui-input-inline">
+									<input name="businessName" class="layui-input" type="text" placeholder="请输入生成业务名" th:field="*{businessName}" lay-verType="tips" lay-verify="required">
+								</div>
+								<div class="layui-form-mid layui-word-aux">可理解为功能英文名，例如 user</div>
+							</div>
+							<div class="layui-form-item">
+								<label class="layui-form-label layui-form-required">生成功能名:</label>
+								<div class="layui-input-inline">
+									<input name="functionName" class="layui-input" type="text" placeholder="请输入生成功能名" th:field="*{functionName}" lay-verType="tips" lay-verify="required">
+								</div>
+								<div class="layui-form-mid layui-word-aux">用作类描述，例如 用户</div>
+							</div>
+
+							<div class="layui-hide" id="otherInfo">
+								<div class="layui-form-item">
+									<label class="layui-form-label">树编码字段:</label>
+									<div class="layui-input-inline">
+										<select id="treeCode" name='params[treeCode]'>
+											<option value="">请选择树编码字段</option>
+											<option th:each="column : ${table.columns}" th:text="${column.columnName + '：' + column.columnComment}" th:value="${column.columnName}" th:field="*{treeCode}"></option>
+										</select>
+									</div>
+									<div class="layui-form-mid layui-word-aux">树显示的编码字段名， 如：dept_id</div>
+								</div>
+								<div class="layui-form-item">
+									<label class="layui-form-label">树父编码字段:</label>
+									<div class="layui-input-inline">
+										<select id="treeParentCode" name='params[treeParentCode]'>
+											<option value="">请选择树父编码字段</option>
+											<option th:each="column : ${table.columns}" th:text="${column.columnName + '：' + column.columnComment}" th:value="${column.columnName}" th:field="*{treeParentCode}"></option>
+										</select>
+									</div>
+									<div class="layui-form-mid layui-word-aux">树显示的父编码字段名， 如：parent_Id</div>
+								</div>
+								<div class="layui-form-item">
+									<label class="layui-form-label">树名称字段:</label>
+									<div class="layui-input-inline">
+										<select id="treeName" name='params[treeName]' >
+											<option value="">请选择树名称字段</option>
+											<option th:each="column : ${table.columns}" th:text="${column.columnName + '：' + column.columnComment}" th:value="${column.columnName}" th:field="*{treeName}"></option>
+										</select>
+									</div>
+									<div class="layui-form-mid layui-word-aux">树节点的显示名称字段名， 如：dept_name</div>
+								</div>
+							</div>
+
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="layui-form-item layui-hide">
+				<button id="submitBtn" class="layui-btn" lay-filter="submitBtn" lay-submit>保存</button>
+				<button id="closeBtn" class="layui-btn layui-btn-primary" ew-event="closeDialog">关闭</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- 头工具栏 -->
+<script type="text/html" id="toolbarHead">
+	<div class="layui-btn-container">
+		<button class="layui-btn layui-btn-normal layui-btn-sm" lay-event="add"><i class="layui-icon layui-icon-addition"></i>新增</button>
+	</div>
+</script>
+
+<!-- 行工具栏 -->
+<script type="text/html" id="toolbarRow">
+	<a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
+
+<!-- 字段列主键 -->
+<script type="text/html" id="columnId">
+	<input name="columns[{{d.LAY_TABLE_INDEX}}].columnId" class="layui-input" type="text" value="{{d.columnId}}"/>
+</script>
+<!-- 字段列名 -->
+<script type="text/html" id="columnName">
+	<input name="columns[{{d.LAY_TABLE_INDEX}}].columnName" class="layui-input" type="text" value="{{d.columnName}}" lay-verType="tips" lay-verify="required" />
+</script>
+<!-- 字段描述 -->
+<script type="text/html" id="columnComment">
+	<input name="columns[{{d.LAY_TABLE_INDEX}}].columnComment" class="layui-input" type="text" value="{{d.columnComment}}" lay-verType="tips" lay-verify="required" />
+</script>
+<!-- 物理类型 -->
+<script type="text/html" id="columnType">
+	<input name="columns[{{d.LAY_TABLE_INDEX}}].columnType" class="layui-input" type="text" value="{{d.columnType}}" lay-verType="tips" lay-verify="required" />
+</script>
+<!-- JAVA属性 -->
+<script type="text/html" id="javaField">
+	<input name="columns[{{d.LAY_TABLE_INDEX}}].javaField" class="layui-input" type="text" value="{{d.javaField}}" lay-verType="tips" lay-verify="required" />
+</script>
+<!-- 插入 -->
+<script type="text/html" id="isInsert">
+	<input type="checkbox" name="columns[{{d.LAY_TABLE_INDEX}}].isInsert" value="{{d.isInsert}}" lay-filter="ck" lay-skin="primary" {{d.isInsert==='1' ? ' checked':''}}>
+</script>
+<!-- 编辑 -->
+<script type="text/html" id="isEdit">
+	<input type="checkbox" name="columns[{{d.LAY_TABLE_INDEX}}].isEdit" value="{{d.isEdit}}" lay-filter="ck" lay-skin="primary" {{d.isEdit==='1' ? ' checked':''}}>
+</script>
+<!-- 列表 -->
+<script type="text/html" id="isList">
+	<input type="checkbox" name="columns[{{d.LAY_TABLE_INDEX}}].isList" value="{{d.isList}}" lay-filter="ck" lay-skin="primary" {{d.isList==='1' ? ' checked':''}}>
+</script>
+<!-- 查询 -->
+<script type="text/html" id="isQuery">
+	<input type="checkbox" name="columns[{{d.LAY_TABLE_INDEX}}].isQuery" value="{{d.isQuery}}" lay-filter="ck" lay-skin="primary" {{d.isQuery==='1' ? ' checked':''}}>
+</script>
+<!-- 必填 -->
+<script type="text/html" id="isRequired">
+	<input type="checkbox" name="columns[{{d.LAY_TABLE_INDEX}}].isRequired" value="{{d.isRequired}}" lay-filter="ck" lay-skin="primary" {{d.isRequired==='1' ? ' checked':''}}>
+</script>
+<!-- 字典 -->
+<script type="text/html" id="dictType">
+	<input name="columns[{{d.LAY_TABLE_INDEX}}].dictType" class="layui-input icon-search" type="text" value="{{d.dictType}}"/>
+</script>
+<!-- java类型 -->
+<script type="text/html" id="javaTypeTpl">
+	<select name='columns[{{d.LAY_TABLE_INDEX}}].javaType'>
+		<option value="Long" {{d.javaType ==='Long' ? 'selected':''}}>Long</option>
+		<option value="String" {{d.javaType ==='String' ? 'selected':''}}>String</option>
+		<option value="Integer" {{d.javaType ==='Integer' ? 'selected':''}}>Integer</option>
+		<option value="Double" {{d.javaType ==='Double' ? 'selected':''}}>Double</option>
+		<option value="BigDecimal" {{d.javaType ==='BigDecimal' ? 'selected':''}}>BigDecimal</option>
+		<option value="Date" {{d.javaType ==='Date' ? 'selected':''}}>Date</option>
+	</select>
+</script>
+
+<!-- 查询方式 -->
+<script type="text/html" id="queryTypeTpl">
+	<select name='columns[{{d.LAY_TABLE_INDEX}}].queryType'>
+		<option value="EQ" {{d.queryType==='EQ' ? 'selected':''}}>=</option>
+		<option value="NE" {{d.queryType==='NE' ? 'selected':''}}>!=</option>
+		<option value="GT" {{d.queryType==='GT' ? 'selected':''}}>></option>
+		<option value="GTE" {{d.queryType==='GTE' ? 'selected':''}}>>=</option>
+		<option value="LT" {{d.queryType==='LT' ? 'selected':''}}><</option>
+		<option value="LTE" {{d.queryType==='LTE' ? 'selected':''}}><=</option>
+		<option value="LIKE" {{d.queryType==='LIKE' ? 'selected':''}}>Like</option>
+		<option value="BETWEEN" {{d.queryType==='BETWEEN' ? 'selected':''}}>Between</option>
+	</select>
+</script>
+
+<!-- 显示类型 -->
+<script type="text/html" id="htmlTypeTpl">
+	<select name='columns[{{d.LAY_TABLE_INDEX}}].htmlType'>
+		<option value="input" {{d.htmlType==='input' ? 'selected':''}}>文本框</option>
+		<option value="textarea" {{d.htmlType==='textarea' ? 'selected':''}}>文本域</option>
+		<option value="select" {{d.htmlType==='select' ? 'selected':''}}>下拉框</option>
+		<option value="radio" {{d.htmlType==='radio' ? 'selected':''}}>单选框</option>
+		<option value="checkbox" {{d.htmlType==='checkbox' ? 'selected':''}}>复选框</option>
+		<option value="datetime" {{d.htmlType==='datetime' ? 'selected':''}}>日期控件</option>
+	</select>
+</script>
+
+<script type="text/javascript" src="../../../static/assets/libs/layui/layui.js" th:src="@{/assets/libs/layui/layui.js}"></script>
+<script type="text/javascript" src="../../../static/assets/js/common.js" th:src="@{/assets/js/common.js}"></script>
+<script th:inline="javascript">
+	var ctx = [[@{/}]];
+	var tableId = [[${tableId}]];
+</script>
+<script th:inline="none">
+	layui.use(['index', 'element', 'form', 'formX', 'table', 'soulTable', 'ext'], function(){
+		var $ = layui.$;
+		var form = layui.form;
+		var formX = layui.formX;
+		var layer = layui.layer;
+		var table = layui.table;
+		var admin = layui.admin;
+		var element = layui.element;
+		var soulTable = layui.soulTable;
+
+		var prefix = ctx + "tool/gen";
+
+		var data = [];
+		admin.req(prefix + "/column/list", {'tableId': tableId}, function (res) {
+			console.log('post:' + JSON.stringify(res))
+			data = res.rows;
+			table.reload('dataTable', {
+				data:  res.rows
+				,limit: 50
+			})
+		},'POST')
+
+		table.render({
+			id: 'dataTable',
+			elem: '#dataTable'
+			//,url: prefix + "/column/list"
+			,data: data
+			,method: 'POST'
+			,toolbar: '#toolbarHead'
+			,height: '500'
+			,drag: false // 关闭拖拽列功能
+			//,cellMinWidth: 30
+			//,page: false
+			// ,request: {
+			// 	pageName: 'pageNum' //页码的参数名称，默认：page
+			// 	,limitName: 'pageSize' //每页数据量的参数名，默认：limit
+			// }
+			//,limit: 50
+			,where: {'tableId': tableId}
+			,rowDrag: {trigger: '.laytable-cell-numbers',  done: function(obj) {
+				// 完成时（松开时）触发
+				// 如果拖动前和拖动后无变化，则不会触发此方法
+				console.log(obj.row) // 当前行数据
+				console.log('cache::' + obj.cache) // 改动后全表数据
+				console.log(obj.oldIndex) // 原来的数据索引
+				console.log(obj.newIndex) // 改动后数据索引
+
+					table.reload('dataTable', {
+						data:  obj.cache
+					})
+			}}
+			,cols: [[
+				{type: 'checkbox', fixed: 'left'}
+				,{type: 'numbers',title: '序号', fixed: 'left', templet:'<div></div>'}
+				,{field: 'columnId', title: '字段列主键', hide: true, templet: '#columnId'}
+				,{field: 'columnName', title: '字段列名', width: 150, templet: '#columnName'}
+				,{field: 'columnComment', title: '字段描述', width: 120, templet: '#columnComment'}
+				,{field: 'columnType', title: '物理类型', width: 120, templet: '#columnType'}
+				,{field: 'javaType', title: 'Java类型', width: 120, templet: '#javaTypeTpl'}
+				,{field: 'javaField', title: 'Java属性', width: 120, templet: '#javaField'}
+				,{field: 'isInsert', title: '插入', width: 60, templet: '#isInsert'}
+				,{field: 'isEdit', title: '编辑', width: 60, templet: '#isEdit'}
+				,{field: 'isList', title: '列表', width: 60, templet: '#isList'}
+				,{field: 'isQuery', title: '查询', width: 60, templet: '#isQuery'}
+				,{field: 'queryType', title: '查询方式', width: 100, templet: '#queryTypeTpl'}
+				,{field: 'isRequired', title: '必填', width: 60, templet: '#isRequired'}
+				,{field: 'htmlType', title: '显示类型', width: 150, templet: '#htmlTypeTpl'}
+				,{field: 'dictType', title: '字典类型', templet: '#dictType'}
+				,{field:'operate', title: '操作', width: 60, toolbar: '#toolbarRow', fixed: 'right'}
+			]]
+			,parseData: function(res){ //将原始数据解析成 table 组件所规定的数据
+				return {
+					"code": res.code, //解析接口状态
+					"msg": res.msg, //解析提示文本
+					"count": res.total, //解析数据长度
+					"data": res.rows //解析数据列表
+				};
+			}
+			,done: function() {
+				// 在 done 中开启
+				soulTable.render(this)
+			}
+		});
+
+
+		//头工具栏事件
+		table.on('toolbar(dataTable)', function(obj){
+			switch(obj.event){
+				case 'add':
+					var newData = {"searchValue":null,"createBy":"","createTime":"","updateBy":null,"updateTime":"","remark":null,"params":{},"columnId":7,"tableId":null,"columnName":"","columnComment":"","columnType":"","javaType":"","javaField":"","isPk":"","isIncrement":"","isRequired":null,"isInsert":"","isEdit":null,"isList":null,"isQuery":null,"queryType":"","htmlType":"","dictType":"","sort":1,"list":false,"required":false,"pk":true,"query":false,"edit":false,"superColumn":false,"insert":false,"usableColumn":false,"increment":true};
+					//newData.columnId = '';
+					newData.tableId = tableId;
+					newData.javaType = 'String';
+					data.push(newData);
+					table.reload('dataTable', {
+						data: data
+					})
+
+					break;
+			};
+		});
+
+		//行工具栏事件
+		table.on('tool(dataTable)', function (obj) {
+			var tr = obj.tr;
+			if (obj.event === 'del') {
+				obj.del(); //删除对应行（tr）的DOM结构，并更新缓存
+				let index = $(tr).attr('data-index');
+				console.log('index;' + index);
+				data.splice(index, 1);
+				table.reload('dataTable', {
+					data: data
+				})
+			}
+		});
+
+		//监听模板选择
+		form.on('select(tplCategory)', function(data){
+			var value = data.value;
+			tplCategoryVisible(value);
+		});
+
+		form.on('checkbox(ck)', function(data){
+			if(data.elem.checked){
+				$(data.elem).val('1');
+			} else{
+				$(data.elem).val('0');
+			}
+			// console.log(data.elem); //得到checkbox原始DOM对象
+			// console.log(data.elem.checked); //是否被选中，true或者false
+			// console.log(data.value); //复选框value值，也可以通过data.elem.value得到
+			// console.log(data.othis); //得到美化后的DOM对象
+		});
+
+		function tplCategoryVisible(tplCategory) {
+			if("crud" == tplCategory){
+				form.val("inputForm",{
+					"params[treeCode]": "",
+					"params[treeParentCode]": "",
+					"params[treeName]": ""
+				});
+				$("#otherInfo").addClass("layui-hide");
+
+			} else if("tree" == tplCategory){
+				$("#otherInfo").removeClass("layui-hide");
+			}
+		}
+
+	})
+</script>
+</body>
+</html>

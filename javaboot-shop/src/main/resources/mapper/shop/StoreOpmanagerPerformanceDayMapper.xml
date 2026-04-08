@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaboot.shop.mapper.StoreOpmanagerPerformanceDayMapper">
+    
+    <resultMap type="StoreOpmanagerPerformanceDay" id="StoreOpmanagerPerformanceDayResult">
+        <result property="id"    column="id"    />
+        <result property="opmanagerId"    column="opmanager_id"    />
+        <result property="performanceDay"    column="performance_day"    />
+        <result property="totalPrice"    column="total_price"    />
+        <result property="costPrice"    column="cost_price"    />
+        <result property="profitPrice"    column="profit_price"    />
+        <result property="comment"    column="comment"    />
+        <result property="status"    column="status"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="lastModifyTime"    column="last_modify_time"    />
+    </resultMap>
+
+    <sql id="selectStoreOpmanagerPerformanceDayVo">
+        select id, opmanager_id, performance_day, total_price, cost_price, profit_price, comment, status, create_time, last_modify_time from store_opmanager_performance_day
+    </sql>
+
+    <select id="selectStoreOpmanagerPerformanceDayList" parameterType="StoreOpmanagerPerformanceDay" resultMap="StoreOpmanagerPerformanceDayResult">
+        select t.id, t.opmanager_id, t.performance_day, t.total_price, t.cost_price, t.profit_price, t.comment, t.status, t.create_time, t.last_modify_time,
+              su.user_name as opmanagerName
+        from store_opmanager_performance_day t
+        left join sys_user su on t.opmanager_id = su.user_id
+        <where>
+            and t.status != '0'
+            <if test="opmanagerId != null  and opmanagerId != ''"> and t.opmanager_id = #{opmanagerId}</if>
+            <if test="performanceDay != null  and performanceDay != ''"> and t.performance_day = #{performanceDay}</if>
+            <if test="totalPrice != null "> and t.total_price = #{totalPrice}</if>
+            <if test="costPrice != null "> and t.cost_price = #{costPrice}</if>
+            <if test="profitPrice != null "> and t.profit_price = #{profitPrice}</if>
+            <if test="comment != null  and comment != ''"> and t.comment = #{comment}</if>
+            <if test="status != null  and status != ''"> and t.status = #{status}</if>
+            <if test="lastModifyTime != null "> and t.last_modify_time = #{lastModifyTime}</if>
+            <if test="opmanagerName != null  and opmanagerName != ''"> and su.user_name like concat('%', #{opmanagerName}, '%')</if>
+        </where>
+    </select>
+    
+    <select id="selectStoreOpmanagerPerformanceDayById" parameterType="Long" resultMap="StoreOpmanagerPerformanceDayResult">
+        <include refid="selectStoreOpmanagerPerformanceDayVo"/>
+        where id = #{id}
+    </select>
+        
+    <insert id="insertStoreOpmanagerPerformanceDay" parameterType="StoreOpmanagerPerformanceDay" useGeneratedKeys="true" keyProperty="id">
+        insert into store_opmanager_performance_day
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="opmanagerId != null  and opmanagerId != ''">opmanager_id,</if>
+            <if test="performanceDay != null  and performanceDay != ''">performance_day,</if>
+            <if test="totalPrice != null ">total_price,</if>
+            <if test="costPrice != null ">cost_price,</if>
+            <if test="profitPrice != null ">profit_price,</if>
+            <if test="comment != null  and comment != ''">comment,</if>
+            <if test="status != null  and status != ''">status,</if>
+            <if test="createTime != null ">create_time,</if>
+            <if test="lastModifyTime != null ">last_modify_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="opmanagerId != null  and opmanagerId != ''">#{opmanagerId},</if>
+            <if test="performanceDay != null  and performanceDay != ''">#{performanceDay},</if>
+            <if test="totalPrice != null ">#{totalPrice},</if>
+            <if test="costPrice != null ">#{costPrice},</if>
+            <if test="profitPrice != null ">#{profitPrice},</if>
+            <if test="comment != null  and comment != ''">#{comment},</if>
+            <if test="status != null  and status != ''">#{status},</if>
+            <if test="createTime != null ">#{createTime},</if>
+            <if test="lastModifyTime != null ">#{lastModifyTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateStoreOpmanagerPerformanceDay" parameterType="StoreOpmanagerPerformanceDay">
+        update store_opmanager_performance_day
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="opmanagerId != null  and opmanagerId != ''">opmanager_id = #{opmanagerId},</if>
+            <if test="performanceDay != null  and performanceDay != ''">performance_day = #{performanceDay},</if>
+            <if test="totalPrice != null ">total_price = #{totalPrice},</if>
+            <if test="costPrice != null ">cost_price = #{costPrice},</if>
+            <if test="profitPrice != null ">profit_price = #{profitPrice},</if>
+            <if test="comment != null  and comment != ''">comment = #{comment},</if>
+            <if test="status != null  and status != ''">status = #{status},</if>
+            <if test="createTime != null ">create_time = #{createTime},</if>
+            <if test="lastModifyTime != null ">last_modify_time = #{lastModifyTime},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteStoreOpmanagerPerformanceDayById" parameterType="Long">
+        delete from store_opmanager_performance_day where id = #{id}
+    </delete>
+
+    <delete id="deleteStoreOpmanagerPerformanceDayByIds" parameterType="String">
+        delete from store_opmanager_performance_day where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+    
+</mapper>

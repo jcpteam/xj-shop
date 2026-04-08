@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaboot.shop.mapper.StoreSortingPerformanceStandMapper">
+    
+    <resultMap type="StoreSortingPerformanceStand" id="StoreSortingPerformanceStandResult">
+        <result property="id"    column="id"    />
+        <result property="customerType"    column="customer_type"    />
+        <result property="spuNo"    column="spu_no"    />
+        <result property="performUnitId"    column="perform_unit_id"    />
+        <result property="goodUnitId"    column="good_unit_id"    />
+        <result property="unitRatio"    column="unit_ratio"    />
+        <result property="sortingWeightRatio"    column="sorting_weight_ratio"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="lastModifyTime"    column="last_modify_time"    />
+    </resultMap>
+
+    <sql id="selectStoreSortingPerformanceStandVo">
+--         select id, customer_type, spu_no, perform_unit_id, good_unit_id, unit_ratio, sorting_weight_ratio, create_time, last_modify_time from store_sorting_performance_stand
+        select ps.id, ps.customer_type, ps.spu_no, ps.perform_unit_id, ps.good_unit_id, ps.unit_ratio, ps.sorting_weight_ratio, ps.create_time, ps.last_modify_time,
+               gs.name as spuName,
+                (case ps.perform_unit_id
+                    when 1 then '公斤'
+                    when 2 then '只'
+                    when 3 then '盒'
+                    else '公斤'
+                    end) as performUnitName,
+                (case ps.good_unit_id
+                    when 1 then '主'
+                    when 2 then '副'
+                    when 3 then '副'
+                    else '主'
+                    end) as goodUnitName
+        from store_sorting_performance_stand ps
+        left join store_goods_spu gs on ps.spu_no = gs.spu_no
+    </sql>
+
+    <select id="selectStoreSortingPerformanceStandList" parameterType="StoreSortingPerformanceStand" resultMap="StoreSortingPerformanceStandResult">
+        <include refid="selectStoreSortingPerformanceStandVo"/>
+        <where>  
+            <if test="customerType != null  and customerType != ''"> and ps.customer_type = #{customerType}</if>
+            <if test="spuNo != null  and spuNo != ''"> and ps.spu_no = #{spuNo}</if>
+            <if test="spuName != null  and spuName != ''"> and gs.name like concat('%', #{spuName}, '%')</if>
+        </where>
+    </select>
+    
+    <select id="selectStoreSortingPerformanceStandById" parameterType="Long" resultMap="StoreSortingPerformanceStandResult">
+        <include refid="selectStoreSortingPerformanceStandVo"/>
+        where ps.id = #{id}
+    </select>
+        
+    <insert id="insertStoreSortingPerformanceStand" parameterType="StoreSortingPerformanceStand" useGeneratedKeys="true" keyProperty="id">
+        insert into store_sorting_performance_stand
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="customerType != null  and customerType != ''">customer_type,</if>
+            <if test="spuNo != null  and spuNo != ''">spu_no,</if>
+            <if test="performUnitId != null ">perform_unit_id,</if>
+            <if test="goodUnitId != null ">good_unit_id,</if>
+            <if test="unitRatio != null ">unit_ratio,</if>
+            <if test="sortingWeightRatio != null ">sorting_weight_ratio,</if>
+            <if test="createTime != null ">create_time,</if>
+            <if test="lastModifyTime != null ">last_modify_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="customerType != null  and customerType != ''">#{customerType},</if>
+            <if test="spuNo != null  and spuNo != ''">#{spuNo},</if>
+            <if test="performUnitId != null ">#{performUnitId},</if>
+            <if test="goodUnitId != null ">#{goodUnitId},</if>
+            <if test="unitRatio != null ">#{unitRatio},</if>
+            <if test="sortingWeightRatio != null ">#{sortingWeightRatio},</if>
+            <if test="createTime != null ">#{createTime},</if>
+            <if test="lastModifyTime != null ">#{lastModifyTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateStoreSortingPerformanceStand" parameterType="StoreSortingPerformanceStand">
+        update store_sorting_performance_stand
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="customerType != null  and customerType != ''">customer_type = #{customerType},</if>
+            <if test="spuNo != null  and spuNo != ''">spu_no = #{spuNo},</if>
+            <if test="performUnitId != null ">perform_unit_id = #{performUnitId},</if>
+            <if test="goodUnitId != null ">good_unit_id = #{goodUnitId},</if>
+            <if test="unitRatio != null ">unit_ratio = #{unitRatio},</if>
+            <if test="sortingWeightRatio != null ">sorting_weight_ratio = #{sortingWeightRatio},</if>
+            <if test="createTime != null ">create_time = #{createTime},</if>
+            <if test="lastModifyTime != null ">last_modify_time = #{lastModifyTime},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteStoreSortingPerformanceStandById" parameterType="Long">
+        delete from store_sorting_performance_stand where id = #{id}
+    </delete>
+
+    <delete id="deleteStoreSortingPerformanceStandByIds" parameterType="String">
+        delete from store_sorting_performance_stand where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <select id="selectStoreSortingPerformanceStandWithOrderItemId" parameterType="StoreSortingPerformanceStand" resultMap="StoreSortingPerformanceStandResult">
+        SELECT * FROM store_sorting_performance_stand ssps
+            join
+                (select sgoi.spu_no,sgo.merchant_id,
+                  case sm.customer_type
+                      when '1' then '大客户'
+                      when '2' then '批发客户'
+                      when '3' then '零散客户'
+                      when '4' then '平台客户'
+                      else '大客户'
+                  end as customer_type
+                from store_goods_order_item sgoi
+                join store_goods_order sgo on sgoi.order_id = sgo.order_id
+                join store_member sm on sgo.merchant_id = sm.id
+                <if test="orderItemId != null  and orderItemId != ''">
+                    where sgoi.item_id = #{orderItemId}
+                </if>
+                ) tt
+            on ssps.spu_no = tt.spu_no and ssps.customer_type = tt.customer_type
+        where 1=1
+    </select>
+
+</mapper>

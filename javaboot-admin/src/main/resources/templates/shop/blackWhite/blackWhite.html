@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('黑白名单列表')" />
+</head>
+<body>
+
+
+
+<!-- 正文开始 -->
+<div class="layui-fluid">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-card">
+            <!-- 搜索区 -->
+            <form class="layui-form toolbar" th:onsubmit="return false" lay-filter="inputForm" id="inputForm">
+                <div class="layui-form-item">
+
+                    <div class="layui-inline">
+                        <label class="layui-form-label label-auto">用户账号：</label>
+                        <div class="layui-input-inline">
+                            <input class="layui-input" name="searchKey" type="text" placeholder="账户ID/账号/客户名称"/>
+                        </div>
+                    </div>
+
+                    <div class="layui-inline">
+                        <label class="layui-form-label label-auto">黑白类型：</label>
+                        <div class="layui-input-inline">
+
+                            <select th:with="type=${typeList}" name="type" id="type"  lay-search>
+                                <option   value="">所有</option>
+                                <option  th:each="dict:${type}"  th:value="${dict.dictValue}" th:text="${{dict.dictLabel}}"></option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-inline" >
+                        <label class="layui-form-label label-auto">所属区域：</label>
+                        <div class="layui-input-inline">
+                            <select name="deptId"   id="deptId"  lay-search >
+                                <option  value="" th:checked="true">选择区域</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-inline" style="padding-left: 13px;">
+                        <button class="layui-btn layui-btn-sm icon-btn" lay-submit lay-filter="searchBtn" id="searchBtn">
+                            <i class="layui-icon layui-icon-search"></i>搜索
+                        </button>
+                        <button class="layui-btn layui-btn-sm icon-btn" type="reset">
+                            <i class="layui-icon layui-icon-refresh"></i>重置
+                        </button>
+                        <a class="layui-btn layui-btn-primary form-search-expand layui-hide" data-expand="true">
+                            展开 <i class="layui-icon layui-icon-down"></i>
+                        </a>
+                    </div>
+                </div>
+            </form>
+
+            <table class="layui-table" id="dataTable" lay-filter="dataTable"></table>
+        </div>
+
+    </div>
+</div>
+
+<!-- 头工具栏 -->
+<script type="text/html" id="toolbarHead">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-normal layui-btn-sm" lay-event="add" shiro:hasPermission="shop:blackWhite:add"><i class="layui-icon layui-icon-addition"></i>新增</button>
+        <button class="layui-btn layui-btn-warm layui-btn-sm" lay-event="edit" shiro:hasPermission="shop:blackWhite:edit"><i class="layui-icon layui-icon-edit"></i>修改</button>
+        <button class="layui-btn layui-btn-warm layui-btn-sm" lay-event="batchEdit" shiro:hasPermission="shop:blackWhite:edit"><i class="layui-icon layui-icon-edit"></i>批量黑白名单</button>
+        </div>
+</script>
+
+<!-- 行工具栏 -->
+<script type="text/html" id="toolbarRow">
+    <a class="layui-btn layui-btn-xs" lay-event="view" shiro:hasPermission="shop:blackWhite:edit">查看</a>
+    <a class="layui-btn layui-btn-xs" lay-event="edit" shiro:hasPermission="shop:blackWhite:edit">修改</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del" shiro:hasPermission="shop:blackWhite:remove">删除</a>
+</script>
+
+<!-- js部分 -->
+<th:block th:include="include :: footer" />
+<script type="text/javascript" th:inline="javascript">
+    var ctx = [[@{/}]];
+    var customerDictData = [[${@dict.getType('store_member_type')}]];
+</script>
+<script type="text/javascript" th:inline="none">
+    layui.use(['index', 'layer', 'form', 'table', 'util', 'ext'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        var table = layui.table;
+        var util = layui.util;
+        var laydate = layui.laydate;
+        var ext = layui.ext;
+        var admin = layui.admin;
+        var index = layui.index;
+
+        var prefix = ctx + "shop/blackWhite";
+        var listUrl = prefix + "/list";
+        var createUrl = prefix + "/add";
+        var updateUrl = prefix + "/edit/{id}";
+        var updateTypeUrl = prefix + "/update/type";
+        var removeUrl = prefix + "/remove";
+        var exportUrl = prefix + "/export";
+
+        admin.req(ctx + "system/dept/getLoginUserDept", { }, function (result) {
+            var select= document.getElementById('deptId');
+            deptList= result.data;
+            for (var i=0;i<result.data.length;i++) {
+                var data= result.data[i];
+                var option = document.createElement("option");
+                option.setAttribute("value", data.value);
+                option.innerText =data.name;
+                if(select){
+                    select.appendChild(option)
+                }
+            }
+            form.render('select');
+        },'get',{async: false})
+
+        table.render({
+            elem: '#dataTable'
+            ,url: listUrl
+            ,method: 'POST'
+            ,toolbar: '#toolbarHead'
+            ,defaultToolbar:[]
+            ,height: 'full-100'
+            ,cellMinWidth: 80
+            ,page: true
+            ,request: {
+                pageName: 'pageNum' //页码的参数名称，默认：page
+                ,limitName: 'pageSize' //每页数据量的参数名，默认：limit
+            }
+            ,limit: 10
+            ,cols: [[
+                {type: 'checkbox'}
+                ,{field: 'blackWhiteId', title: 'id', hide: true}
+                ,{field: 'merchantName', title: '客户名称'}
+                ,{field: 'merchantType', title: '客户类型', templet:function (d) {
+                        return $.table.selectDictLabel(customerDictData, d.merchantType);
+                    }}
+                ,{field: 'deptName', title: '所属区域'}
+                ,{field: 'typeName', title: '黑白名单类型'}
+                ,{field: 'createTime', title: '创建时间'}
+                ,{field: 'operate', title: '操作', minWidth: 200, toolbar: '#toolbarRow', fixed: 'right'}
+            ]]
+            ,parseData: function(res){ //将原始数据解析成 table 组件所规定的数据
+                return {
+                    "code": res.code, //解析接口状态
+                    "msg": res.msg, //解析提示文本
+                    "count": res.total, //解析数据长度
+                    "data": res.rows //解析数据列表
+                };
+            }
+        });
+
+
+        //监听搜索
+        form.on('submit(searchBtn)', function (data) {
+            var field = data.field;
+            //执行重载
+            table.reload('dataTable', {
+                where: field
+                ,page:{curr:1}
+            });
+        });
+
+        //头工具栏事件
+        table.on('toolbar(dataTable)', function(obj){
+            switch(obj.event){
+                case 'add':
+                    active.add();
+                    break;
+                case 'edit':
+                    var checkStatus = table.checkStatus('dataTable')
+                            , checkData = checkStatus.data; //得到选中的数据
+                    var id = null;
+                    if (id == null) {
+                        if (checkData.length === 0) {
+                            return admin.info('请选择一条数据');
+                        } else if (checkData.length > 1) {
+                            return admin.info('只能选择一条数据编辑');
+                        } else {
+                            id = checkData[0].blackWhiteId;
+                        }
+                    }
+                    active.edit(id);
+                    break;
+                case 'batchEdit':
+                    active.batchEdit();
+                    break;
+                case 'import':
+                    break;
+                case 'export':
+                    $.modal.loading("正在导出数据，请稍后...");
+                    $.post(exportUrl, $("#inputForm").serializeArray(), function(result) {
+                        if (result.code == web_status.SUCCESS) {
+                            window.location.href = ctx + "common/download?fileName=" + encodeURI(result.msg) + "&delete=" + true;
+                        } else if (result.code == web_status.WARNING) {
+                            $.modal.alertWarning(result.msg)
+                        } else {
+                            $.modal.alertError(result.msg);
+                        }
+                        $.modal.closeLoading();
+                    });
+                    break;
+            };
+        });
+
+        //行工具栏事件
+        table.on('tool(dataTable)', function (obj) {
+            var data = obj.data;
+            if (obj.event === 'view') {
+                active.view(data.blackWhiteId);
+            } else if(obj.event === 'edit'){
+                active.edit(data.blackWhiteId);
+            } else if (obj.event === 'del') {
+                active.del(data.blackWhiteId);
+            }
+        });
+
+        //事件
+        var active = {
+            batchEdit: function () {
+                var checkStatus = table.checkStatus('dataTable')
+                        , checkData = checkStatus.data; //得到选中的数据
+
+                if (checkData.length === 0) {
+                    return admin.info('请选择数据');
+                }
+                var ids = [];
+                var obj = {};
+                layui.each(checkData, function (index, item) {
+                    if (obj[item.type] == undefined) {
+                        obj[item.type] = 1;
+                    } else {
+                        obj[item.type]++;
+                    }
+                    ids.push(item.blackWhiteId)
+                });
+                var isTypeForver = false
+                var isSame = false
+                layui.each( Object.keys(obj),function (index,item) {
+                    if(item == '2'){
+                        isTypeForver = true;
+                    }
+                    if(index > 0) {
+                        isSame = true
+                    }
+                })
+                if (isTypeForver) {
+                    return admin.info('永久白名单不能批量设置！');
+                }
+                if (isSame) {
+                    return admin.info('选中的数据里同时存在黑名单和白名单，只能选中一种类型的名单！');
+                }
+                admin.confirm('确定批量设置么？', function () {
+                    admin.req(updateTypeUrl, {ids: ids.join(','), type:Object.keys(obj)[0] === '0' ? '1' : '0' }, function (result) {
+                        if (result.code == 0) {
+                            table.reload('dataTable');
+                            admin.success('操作成功!');
+                        } else {
+                            admin.error(result.msg);
+                        }
+                    },'post')
+                });
+            }
+            ,view: function (id) {
+                var editUrl = updateUrl.replace("{id}", id);
+                admin.openDialogView('查看黑白名单', editUrl, '800px', '480px');
+            }
+            ,add: function () {
+                admin.openDialog('新增黑白名单', createUrl, '800px', '480px');
+            }
+            ,edit: function (id) {
+                var editUrl = updateUrl.replace("{id}", id);
+                admin.openDialog('修改黑白名单', editUrl, '800px', '480px');
+            }
+            ,del: function(id){
+                admin.confirm('确定删除吗?',function(){
+                    admin.req(removeUrl, {ids: id}, function (data) {
+                        if (data.code == 0) {
+                            table.reload('dataTable');
+                            admin.success('删除成功!');
+                        } else {
+                            admin.error(data.msg);
+                        }
+                    },'post')
+                });
+            }
+        }
+    });
+</script>
+
+</body>
+</html>

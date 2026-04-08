@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaboot.shop.mapper.StoreGoodsQuotationGoodsMapper">
+    
+    <resultMap type="com.javaboot.shop.vo.StoreGoodsQuotationGoodsVO" id="StoreGoodsQuotationGoodsResult">
+        <result property="goodsId"    column="goods_id"    />
+        <result property="quotationId"    column="quotation_id"    />
+        <result property="quotationName"    column="quotation_name"    />
+        <result property="deptName"    column="dept_name"    />
+        <result property="spuNo"    column="spu_no"    />
+        <result property="spuName"    column="spu_name"    />
+        <result property="goodsCode"    column="goods_code"    />
+        <result property="goodsImg"    column="goods_img"    />
+        <result property="unitIds"    column="unit_ids"    />
+        <result property="price"    column="price"    />
+        <result property="classifyId"    column="classify_id"    />
+        <result property="propertyName"    column="property_name"    />
+        <result property="goodsSubtitle"    column="goods_subtitle"    />
+        <result property="goodsIntroduce"    column="goods_introduce"    />
+        <result property="level"    column="level"    />
+        <result property="merchantId"    column="merchant_id"    />
+        <result property="status"    column="status"    />
+        <result property="saleNum"    column="sale_num"    />
+        <result property="salePercent"    column="sale_percent"    />
+        <result property="url"    column="url"    />
+        <result property="description"    column="description"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="lastModifyTime"    column="last_modify_time"    />
+    </resultMap>
+
+
+
+    <select id="selectStoreGoodsQuotationGoodsList" parameterType="com.javaboot.shop.dto.StoreGoodsQuotationGoodsQueryDTO" resultMap="StoreGoodsQuotationGoodsResult">
+        SELECT
+        t1.*,
+        t2.classify_id,
+        t2.NAME AS spu_name,
+        t2.image AS goods_img,
+        t2.CODE AS goods_code,
+        t2.description,
+        t3.quotation_name,
+        t3.dept_id,
+        t4.dept_name
+        FROM
+        store_goods_quotation_goods t1
+        INNER JOIN store_goods_spu t2 ON t1.spu_no = t2.spu_no
+        INNER JOIN store_goods_quotation t3 ON t1.quotation_id = t3.quotation_id
+        INNER JOIN sys_dept t4 ON t3.dept_id = t4.dept_id
+        <where>
+            and t1.status != 0 and t2.status != 0 and t3.status != 0
+            <if test="searchKey != null and searchKey!=''"> and (t1.property_name like concat('%', #{searchKey}, '%') or t2.name like concat('%', #{searchKey}, '%') or t2.code like concat('%', #{searchKey}, '%') )</if>
+            <if test="spuNo != null and spuNo != ''"> and t1.spu_no = #{spuNo}</if>
+            <if test="unitIds != null  and unitIds != ''"> and t1.unit_ids = #{unitIds}</if>
+            <if test="deptId != null  and deptId != ''"> and t3.dept_id = #{deptId}</if>
+            <if test="quotationId != null "> and t1.quotation_id = #{quotationId}</if>
+            <if test="classifyId != null and classifyId!= ''"> and t2.classify_id = #{classifyId}</if>
+            <if test="propertyName != null  and propertyName != ''"> and t1.property_name like concat('%', #{propertyName}, '%')</if>
+            <if test="status != null  and status != ''"> and t1.status = #{status}</if>
+            <if test="loginUserDeptId != null  and loginUserDeptId !='' and (deptId==null or deptId=='')">
+                AND  t3.dept_id IN (
+                SELECT
+                dept_id
+                FROM
+                sys_dept
+                WHERE
+                find_in_set( #{loginUserDeptId}, ancestors )  or dept_id=#{loginUserDeptId}
+                )
+            </if>
+            <if test="goodsIdList != null and goodsIdList.size()>0">
+                AND t1.goods_id in
+                <foreach collection="goodsIdList" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    
+    <select id="selectStoreGoodsQuotationGoodsById" parameterType="Long" resultMap="StoreGoodsQuotationGoodsResult">
+        select * from store_goods_quotation_goods
+        where goods_id = #{goodsId}
+    </select>
+        
+    <insert id="insertStoreGoodsQuotationGoods" parameterType="com.javaboot.shop.domain.StoreGoodsQuotationGoods" useGeneratedKeys="true" keyProperty="goodsId">
+        insert into store_goods_quotation_goods
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="goodsId != null ">goods_id,</if>
+            <if test="quotationId != null ">quotation_id,</if>
+            <if test="spuNo != null ">spu_no,</if>
+            <if test="unitIds != null  and unitIds != ''">unit_ids,</if>
+            <if test="price != null ">price,</if>
+            <if test="propertyName != null  and propertyName != ''">property_name,</if>
+            <if test="goodsSubtitle != null  and goodsSubtitle != ''">goods_subtitle,</if>
+            <if test="goodsIntroduce != null  and goodsIntroduce != ''">goods_introduce,</if>
+            <if test="level != null  and level != ''">level,</if>
+            <if test="merchantId != null ">merchant_id,</if>
+            <if test="status != null  and status != ''">status,</if>
+            <if test="url != null  and url != ''">url,</if>
+            create_time,last_modify_time
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="goodsId != null ">#{goodsId},</if>
+            <if test="quotationId != null ">#{quotationId},</if>
+            <if test="spuNo != null ">#{spuNo},</if>
+            <if test="unitIds != null  and unitIds != ''">#{unitIds},</if>
+            <if test="price != null ">#{price},</if>
+            <if test="propertyName != null  and propertyName != ''">#{propertyName},</if>
+            <if test="goodsSubtitle != null  and goodsSubtitle != ''">#{goodsSubtitle},</if>
+            <if test="goodsIntroduce != null  and goodsIntroduce != ''">#{goodsIntroduce},</if>
+            <if test="level != null  and level != ''">#{level},</if>
+            <if test="merchantId != null ">#{merchantId},</if>
+            <if test="status != null  and status != ''">#{status},</if>
+            <if test="url != null  and url != ''">#{url},</if>
+            now(),now()
+         </trim>
+    </insert>
+
+    <update id="updateStoreGoodsQuotationGoods" parameterType="com.javaboot.shop.domain.StoreGoodsQuotationGoods">
+        update store_goods_quotation_goods
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="quotationId != null ">quotation_id = #{quotationId},</if>
+            <if test="unitIds != null  and unitIds != ''">unit_ids = #{unitIds},</if>
+            <if test="price != null ">price = #{price},</if>
+            <if test="propertyName != null  and propertyName != ''">property_name = #{propertyName},</if>
+            <if test="goodsSubtitle != null  and goodsSubtitle != ''">goods_subtitle = #{goodsSubtitle},</if>
+            <if test="goodsIntroduce != null  and goodsIntroduce != ''">goods_introduce = #{goodsIntroduce},</if>
+            <if test="level != null  and level != ''">level = #{level},</if>
+            <if test="merchantId != null ">merchant_id = #{merchantId},</if>
+            <if test="status != null  and status != ''">status = #{status},</if>
+            <if test="spuNo != null  and spuNo != ''">spu_no = #{spuNo},</if>
+            <if test="url != null  and url != ''">url = #{url},</if>
+            <if test="createTime != null ">create_time = #{createTime},</if>
+            last_modify_time = now()
+        </trim>
+        where goods_id = #{goodsId}
+    </update>
+
+
+
+    <update id="deleteStoreGoodsQuotationGoodsById" parameterType="Long">
+        update store_goods_quotation_goods set status=0,last_modify_time = now()  where goods_id = #{goodsId}
+    </update>
+
+    <update id="deleteStoreGoodsQuotationGoodsByIds" parameterType="String">
+        update store_goods_quotation_goods set status=0,last_modify_time = now() where goods_id in
+        <foreach item="goodsId" collection="array" open="(" separator="," close=")">
+            #{goodsId}
+        </foreach>
+    </update>
+    <update id="updateSaleNum" parameterType="com.javaboot.shop.dto.StoreGoodsQuotationGoodsSaleNumDTO">
+<!--        update store_goods_quotation_goods-->
+<!--        set last_modify_time = now(),-->
+<!--        <choose>-->
+<!--            <when test="isAdd">-->
+<!--                sale_num=round((sale_num+#{buyNum}),2)-->
+<!--                where goods_id = #{goodsId}-->
+<!--            </when>-->
+<!--            <otherwise>-->
+<!--                sale_num=round((sale_num-#{buyNum}),2)   where goods_id = #{goodsId} AND sale_num&gt;=#{buyNum}-->
+<!--            </otherwise>-->
+<!--        </choose>-->
+        update store_sale_setting
+        set last_modify_time = now(),
+        <choose>
+            <when test="isAdd">
+                setting_quanintiy=round((setting_quanintiy+#{buyNum}),2)
+                where spu_no = #{spuNo}
+            </when>
+            <otherwise>
+                setting_quanintiy=round((setting_quanintiy-#{buyNum}),2)
+                where spu_no = #{spuNo} AND setting_quanintiy&gt;=#{buyNum}
+            </otherwise>
+        </choose>
+        AND create_time >= #{startTime} AND create_time &lt;= #{endTime}
+        AND dept_id = #{deptId}
+        <!-- AND status = '1' -->
+    </update>
+
+    <select id="selectGoodsNameNum" parameterType="com.javaboot.shop.dto.StoreGoodsQuotationGoodsQueryDTO" resultType="java.lang.Integer">
+        SELECT count(t2.property_name)
+        FROM store_goods_quotation t1, store_goods_quotation_goods t2
+        WHERE t1.quotation_id = t2.quotation_id
+        AND t1.quotation_id = #{quotationId}
+        AND t2.property_name = #{propertyName}
+        AND t1.status != '0'
+        AND t2.status != '0'
+        <if test="goodsId != null and goodsId != '' ">AND t2.goods_id != #{goodsId}</if>
+
+    </select>
+</mapper>

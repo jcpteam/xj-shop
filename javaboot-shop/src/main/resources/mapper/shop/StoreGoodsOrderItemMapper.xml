@@ -1,0 +1,427 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaboot.shop.mapper.StoreGoodsOrderItemMapper">
+
+    <resultMap type="com.javaboot.shop.vo.StoreGoodsOrderItemVO" id="StoreGoodsOrderItemResult">
+        <result property="itemId"    column="item_id"    />
+        <result property="orderId"    column="order_id"    />
+        <result property="goodsId"    column="goods_id"    />
+        <result property="spuNo"    column="spu_no"    />
+        <result property="quantity"    column="quantity"    />
+        <result property="amount"    column="amount"    />
+        <result property="price"    column="price"    />
+        <result property="discount"    column="discount"    />
+        <result property="sortingPrice"    column="sorting_price"    />
+        <result property="comment"    column="comment"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="unitId"    column="unit_id"    />
+        <result property="lastModifyTime"    column="last_modify_time"    />
+        <result property="sortingWeight"    column="sorting_weight"    />
+        <result property="sortingQuantity"    column="sorting_quantity"    />
+        <result property="oldSortingWeight"    column="old_sorting_weight"    />
+        <result property="srcSortingQuantity"    column="src_sorting_quantity"    />
+        <result property="srcSortingWeight"    column="src_sorting_weight"    />
+        <result property="sortingQuantityUnit"    column="sorting_quantity_unit"    />
+        <result property="sortingDay"    column="sorting_day"    />
+        <result property="sortingUserId"    column="sorting_user_id"    />
+    </resultMap>
+
+    <sql id="selectStoreGoodsOrderItemVo">
+        select distinct sgo.item_id,sgo.unit_id,sgo.spu_no, sgo.order_id, sgo.goods_id, sgo.quantity, sgo.amount, sgo.price,sgo.sorting_price, sgo.comment, sgo.create_time, sgo.last_modify_time,
+              sgo.print_status,sgo.sorting_status,sgo.discount,sgo.old_sorting_weight,sgo.src_sorting_weight,sgo.src_sorting_quantity,
+              ssd.sorting_weight,ssd.sorting_quantity,ssd.sorting_quantity_unit,ssd.sorting_day,ssd.sorting_user_id
+        from store_goods_order_item sgo
+        left join store_sorting_detail ssd on sgo.item_id = ssd.order_item_id and ssd.status = '1'
+    </sql>
+
+    <select id="selectStoreGoodsOrderItemList" parameterType="com.javaboot.shop.domain.StoreGoodsOrderItem" resultMap="StoreGoodsOrderItemResult">
+        <include refid="selectStoreGoodsOrderItemVo"/>
+        <where>
+            <if test="orderId != null "> and sgo.order_id = #{orderId}</if>
+            <if test="goodsId != null "> and sgo.goods_id = #{goodsId}</if>
+            <if test="quantity != null "> and sgo.quantity = #{quantity}</if>
+            <if test="amount != null "> and sgo.amount = #{amount}</if>
+            <if test="price != null "> and sgo.price = #{price}</if>
+            <if test="comment != null  and comment != ''"> and sgo.comment = #{comment}</if>
+            <if test="lastModifyTime != null "> and sgo.last_modify_time = #{lastModifyTime}</if>
+            <if test="orderIds != null and orderIds.size()>0 ">
+                and sgo.order_id in
+                <foreach collection="orderIds" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+
+            </if>
+        </where>
+    </select>
+
+    <select id="selectStoreGoodsOrderItemById" parameterType="Long" resultMap="StoreGoodsOrderItemResult">
+        <include refid="selectStoreGoodsOrderItemVo"/>
+        where sgo.item_id = #{itemId}
+    </select>
+
+    <insert id="insertStoreGoodsOrderItem" parameterType="com.javaboot.shop.domain.StoreGoodsOrderItem" useGeneratedKeys="true" keyProperty="itemId">
+        insert into store_goods_order_item
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="itemId != null ">item_id,</if>
+            <if test="orderId != null ">order_id,</if>
+            <if test="goodsId != null ">goods_id,</if>
+            <if test="quantity != null ">quantity,</if>
+            <if test="amount != null ">amount,</if>
+            <if test="price != null ">price,</if>
+            <if test="discount != null ">discount,</if>
+            <if test="sortingPrice != null ">sorting_price,</if>
+            <if test="comment != null  and comment != ''">comment,</if>
+            <if test="unitId != null  and unitId != ''">unit_id,</if>
+            <if test="spuNo != null  and spuNo != ''">spu_no,</if>
+            create_time,last_modify_time
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="itemId != null ">#{itemId},</if>
+            <if test="orderId != null ">#{orderId},</if>
+            <if test="goodsId != null ">#{goodsId},</if>
+            <if test="quantity != null ">#{quantity},</if>
+            <if test="amount != null ">#{amount},</if>
+            <if test="price != null ">#{price},</if>
+            <if test="discount != null ">#{discount},</if>
+            <if test="sortingPrice != null ">#{sortingPrice},</if>
+            <if test="comment != null  and comment != ''">#{comment},</if>
+            <if test="unitId != null  and unitId != ''">#{unitId},</if>
+            <if test="spuNo != null  and spuNo != ''">#{spuNo},</if>
+            now(),now()
+        </trim>
+    </insert>
+
+    <update id="updateStoreGoodsOrderItem" parameterType="com.javaboot.shop.domain.StoreGoodsOrderItem">
+        update store_goods_order_item
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="orderId != null ">order_id = #{orderId},</if>
+            <if test="goodsId != null ">goods_id = #{goodsId},</if>
+            <if test="quantity != null ">quantity = #{quantity},</if>
+            <if test="amount != null ">amount = #{amount},</if>
+            <if test="price != null ">price = #{price},</if>
+            <if test="discount != null ">discount = #{discount},</if>
+            <if test="sortingPrice != null ">sorting_price = #{sortingPrice},</if>
+            <if test="oldSortingWeight != null ">old_sorting_weight = #{oldSortingWeight},</if>
+            <if test="srcSortingWeight != null ">src_sorting_weight = #{srcSortingWeight},</if>
+            <if test="srcSortingQuantity != null ">src_sorting_quantity = #{srcSortingQuantity},</if>
+            <if test="comment != null">comment = #{comment},</if>
+            <if test="createTime != null ">create_time = #{createTime},</if>
+            <if test="unitId != null  and unitId != ''">unit_id=#{unitId},</if>
+            <if test="spuNo != null  and spuNo != ''">spu_no=#{spuNo},</if>
+            <if test="sortingStatus != null  and sortingStatus != ''">sorting_status=#{sortingStatus},</if>
+            <if test="printStatus != null  and printStatus != ''">print_status=#{printStatus},</if>
+            last_modify_time = now()
+        </trim>
+        where item_id = #{itemId}
+    </update>
+
+    <delete id="deleteStoreGoodsOrderItemById" parameterType="Long">
+        delete from store_goods_order_item where item_id = #{itemId}
+    </delete>
+
+    <delete id="deleteStoreGoodsOrderItemByOrderId" parameterType="Long">
+        delete from store_goods_order_item where order_id = #{orderId}
+    </delete>
+
+    <delete id="deleteStoreGoodsOrderItemByIds" parameterType="String">
+        delete from store_goods_order_item where item_id in
+        <foreach item="itemId" collection="array" open="(" separator="," close=")">
+            #{itemId}
+        </foreach>
+    </delete>
+
+    <select id="selectOrderItemNum" parameterType="StoreGoodsOrderItem" resultMap="StoreGoodsOrderItemResult">
+    SELECT
+        t3.spu_no,
+        sum(t2.quantity) quantity,
+        t2.unit_id
+    FROM
+        store_goods_order t1,
+        store_goods_order_item t2,
+        store_goods_quotation_goods t3
+    WHERE
+        t1.order_id = t2.order_id
+        AND t2.goods_id = t3.goods_id
+        AND t1.status != '0'
+        AND t1.dept_id = #{deptId}
+        AND t1.create_time >= #{startTime} AND t2.create_time &lt;= #{endTime}
+    GROUP BY t3.spu_no, t2.unit_id
+    </select>
+
+    <select id="selectOrderGoodsNum" parameterType="StoreGoodsOrderItem" resultMap="StoreGoodsOrderItemResult">
+        SELECT
+            t3.goods_id,
+            sum(t2.quantity) quantity,
+            t2.unit_id
+        FROM
+            store_goods_order t1,
+            store_goods_order_item t2,
+            store_goods_quotation_goods t3
+        WHERE
+            t1.order_id = t2.order_id
+            AND t2.goods_id = t3.goods_id
+            AND t1.status IN('2','3','4')
+            AND t1.dept_id = #{deptId}
+            AND t1.create_time >= #{startTime} AND t2.create_time &lt;= #{endTime}
+        GROUP BY t3.goods_id, t2.unit_id
+    </select>
+
+    <select id="selectOrderSpuConversionNum" parameterType="StoreGoodsOrderItem" resultMap="StoreGoodsOrderItemResult">
+        SELECT
+        sum(quantity) quantity,
+        spu_no
+        FROM
+        (
+        SELECT
+        t2.spu_no,
+        t2.goods_id,
+        t2.unit_id,
+        t2.quantity old_quantity,
+        t3.main_unit_id,
+        t4.sub_unit_id,
+        t5.main_case_sub,
+        t5.sub_case_main,
+        (CASE WHEN t2.unit_id = t3.main_unit_id
+        AND t4.sub_unit_id != t3.main_unit_id
+        AND t5.sub_case_main IS NOT NULL THEN
+        ROUND(t2.quantity / t5.sub_case_main, 2) ELSE t2.quantity
+        END) quantity,
+        t6.sorting_quantity
+        FROM
+        store_goods_order t1
+        JOIN store_goods_order_item t2 ON t1.order_id = t2.order_id
+        LEFT JOIN store_sorting_detail t6 ON t2.item_id = t6.order_item_id AND t6.status = '1'
+        JOIN store_goods_spu_unit t3 ON t2.spu_no = t3.spu_no
+        JOIN store_goods_spu_unit t4 ON t2.spu_no = t4.spu_no
+        LEFT JOIN store_goods_spu_unit_conversion t5 ON t2.spu_no = t5.spu_no
+        AND t1.dept_id = t5.dept_id
+        WHERE
+        t1.STATUS IN('1','2','3','4')
+        AND t1.dept_id = #{deptId}
+        AND t1.create_time >= #{startTime} AND t1.create_time &lt;= #{endTime}
+        <if test="spuNo != null  and spuNo != ''">AND t2.spu_no=#{spuNo}</if>
+        ) tb
+        GROUP BY
+        tb.spu_no
+    </select>
+
+    <select id="selectOrderGoodsConversionNum" parameterType="StoreGoodsOrderItem" resultMap="StoreGoodsOrderItemResult">
+        SELECT
+        sum(quantity) quantity,
+        goods_id
+        FROM
+        (
+        SELECT
+        t2.spu_no,
+        t2.goods_id,
+        t2.unit_id,
+        t2.quantity old_quantity,
+        t3.main_unit_id,
+        t4.sub_unit_id,
+        t5.main_case_sub,
+        t5.sub_case_main,
+        (CASE WHEN t2.unit_id = t3.main_unit_id
+        AND t4.sub_unit_id != t3.main_unit_id
+        AND t5.sub_case_main IS NOT NULL THEN
+        ROUND(t2.quantity / t5.sub_case_main, 2) ELSE t2.quantity
+        END) quantity,
+        t6.sorting_quantity
+        FROM
+        store_goods_order t1
+        JOIN store_goods_order_item t2 ON t1.order_id = t2.order_id
+        LEFT JOIN store_sorting_detail t6 ON t2.item_id = t6.order_item_id AND t6.status = '1'
+        JOIN store_goods_spu_unit t3 ON t2.spu_no = t3.spu_no
+        JOIN store_goods_spu_unit t4 ON t2.spu_no = t4.spu_no
+        LEFT JOIN store_goods_spu_unit_conversion t5 ON t2.spu_no = t5.spu_no
+        AND t1.dept_id = t5.dept_id
+        WHERE
+        t1.STATUS != '0'
+        AND t1.dept_id = #{deptId}
+        AND t1.create_time >= #{startTime} AND t1.create_time &lt;= #{endTime}
+        <if test="goodsId != null  and goodsId != ''">AND t2.goods_id=#{goodsId}</if>
+        ) tb
+        GROUP BY
+        tb.goods_id
+    </select>
+
+    <resultMap type="com.javaboot.shop.vo.StoreGoodsOrderSortingItemVO" id="StoreGoodsOrderItemResultForSorting">
+        <result property="itemId"    column="item_id"    />
+        <result property="orderId"    column="order_id"    />
+        <result property="goodsId"    column="goods_id"    />
+        <result property="spuNo"    column="spu_no"    />
+        <result property="quantity"    column="quantity"    />
+        <result property="amount"    column="amount"    />
+        <result property="price"    column="price"    />
+        <result property="sortingPrice"    column="sorting_price"    />
+        <result property="comment"    column="comment"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="unitId"    column="unit_id"    />
+        <result property="lastModifyTime"    column="last_modify_time"    />
+        <result property="sortingWeight"    column="sorting_weight"    />
+        <result property="sortingQuantity"    column="sorting_quantity"    />
+        <result property="sortingQuantityUnit"    column="sorting_quantity_unit"    />
+        <result property="sortingDay"    column="sorting_day"    />
+        <result property="sortingUserId"    column="sorting_user_id"    />
+    </resultMap>
+
+    <sql id="selectStoreGoodsOrderItemVoForSorting">
+        select sgo.item_id,sgo.unit_id,sgo.spu_no, sgo.order_id, sgo.goods_id, sgo.quantity, sgo.amount, sgo.price,sgo.sorting_price, ifnull(sgo.comment,'无') as comment, sgo.create_time, sgo.last_modify_time,
+        sgo.print_status,sgo.sorting_status,
+        ifnull(ssd.sorting_weight,0) as sorting_weight,ifnull(ssd.sorting_quantity,0) as sorting_quantity,ssd.sorting_quantity_unit,ssd.sorting_day,ssd.sorting_user_id,
+        ifnull(sgc.name,'无') as classifyName,ifnull(sgs.name,'') as spuName,ifnull(sgqg.property_name,'无') as goodName,
+        sgsu.main_unit_id,sgsu.sub_unit_id,sgsuc.sub_case_main,sgsuc.main_case_sub
+        from store_goods_order_item sgo
+        left join store_sorting_detail ssd on sgo.item_id = ssd.order_item_id and ssd.status = '1'
+        left join store_goods_spu sgs on sgo.spu_no = sgs.spu_no
+        left join store_goods_classify sgc on sgs.classify_id = sgc.classify_id
+        left join store_goods_quotation_goods sgqg on sgo.goods_id = sgqg.goods_id
+        left join store_goods_spu_unit sgsu on sgo.spu_no = sgsu.spu_no
+        left join store_goods_spu_unit_conversion sgsuc on sgo.spu_no = sgsuc.spu_no
+        <if test="deptId != null "> and sgsuc.dept_id = #{deptId}</if>
+    </sql>
+
+    <select id="selectStoreGoodsOrderItemListForSorting" parameterType="com.javaboot.shop.domain.StoreGoodsOrderItem" resultMap="StoreGoodsOrderItemResultForSorting">
+        <include refid="selectStoreGoodsOrderItemVoForSorting"/>
+        <where>
+            <if test="orderId != null "> and sgo.order_id = #{orderId}</if>
+            <if test="goodsId != null "> and sgo.goods_id = #{goodsId}</if>
+            <if test="quantity != null "> and sgo.quantity = #{quantity}</if>
+            <if test="amount != null "> and sgo.amount = #{amount}</if>
+            <if test="price != null "> and sgo.price = #{price}</if>
+            <if test="comment != null  and comment != ''"> and sgo.comment = #{comment}</if>
+            <if test="lastModifyTime != null "> and sgo.last_modify_time = #{lastModifyTime}</if>
+            <if test="orderIds != null and orderIds.size()>0 ">
+                and sgo.order_id in
+                <foreach collection="orderIds" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+        GROUP BY sgo.item_id
+    </select>
+
+    <select id="selectOrderItemComments" parameterType="com.javaboot.shop.domain.StoreGoodsOrderItem" resultMap="StoreGoodsOrderItemResult">
+        SELECT
+            DISTINCT t2.comment
+        FROM
+            store_goods_order t1,
+            store_goods_order_item t2
+        WHERE
+            t1.merchant_id = #{merchantId}
+            AND t2.spu_no = #{spuNo}
+            AND t1.order_id = t2.order_id
+            AND locate(#{keywords},t2.comment ) > 0
+    </select>
+
+
+    <select id="selectExportGoodsOrderItemList" parameterType="com.javaboot.shop.domain.StoreGoodsOrderItem" resultType="com.javaboot.shop.dto.StoreGoodsOrderExportDTO">
+        SELECT
+        tb1.*,
+        (CASE WHEN tb1.settlement_type = '1'  THEN tb1.merchantName ELSE  tb2.nickname END ) settlementName
+        FROM
+        (
+        SELECT DISTINCT
+        t1.CODE,
+        t1.dept_id,
+        t5.dept_name deptName,
+        t1.create_time createTime,
+        t1.delivery_date deliveryDate,
+        t2.spu_no spuNo,
+        t4.NAME spuName,
+        t2.price,
+        t2.comment,
+        t2.goods_id goodsId,
+        t7.property_name goodsName,
+        IFNULL( t2.sorting_price, 0 ) amount,
+        IFNULL( t3.sorting_weight, 0 ) weight,
+        IFNULL( t3.sorting_quantity, 0 ) quantity,
+        t6.nickname merchantName,
+        t6.customer_no,
+        t6.settlement_type,
+        t6.super_customer,
+        case t1.status
+        when '0' then '删除'
+        when '1' then '待审核'
+        when '2' then '待分拣'
+        when '3' then '已分拣'
+        when '4' then '已完成'
+        when '5' then '已作废'
+        end as status,
+        case t1.pay_status
+        when '0' then '未付款'
+        when '1' then '已付款'
+        end as payStatus,
+        case t1.receipt_status
+        when '0' then '未生成'
+        when '1' then '已生成'
+        end as receiptStatus
+        FROM
+        store_goods_order t1
+        JOIN store_goods_order_item t2 ON t1.order_id = t2.order_id
+        AND t1.STATUS != '0'
+        LEFT JOIN store_sorting_detail t3 ON t2.item_id = t3.order_item_id AND t3.STATUS = '1'
+        AND t3.STATUS = '1'
+        JOIN store_goods_quotation_goods t7 ON t7.goods_id = t2.goods_id
+        JOIN store_goods_spu t4 ON t2.spu_no = t4.spu_no
+        JOIN sys_dept t5 ON t5.dept_id = t1.dept_id
+        JOIN store_member t6 ON t1.merchant_id = t6.id
+
+        <where>
+            <if test="deptId != null  and deptId != ''">and t1.dept_id = #{deptId}</if>
+            <if test="loginUserDeptId != null  and loginUserDeptId !='' and (deptId==null or deptId=='')">
+                AND  t1.dept_id IN (
+                SELECT
+                dept_id
+                FROM
+                sys_dept
+                WHERE
+                find_in_set( #{loginUserDeptId}, ancestors )  or dept_id=#{loginUserDeptId}
+                )
+            </if>
+            <if test="deliveryBeginDate != null and deliveryBeginDate!='' and deliveryEndDate != null and deliveryEndDate!='' ">
+                and t1.delivery_date
+                BETWEEN
+                DATE_FORMAT(#{deliveryBeginDate},'%Y-%m-%d %H:%i:%s')
+                AND DATE_FORMAT(#{deliveryEndDate},'%Y-%m-%d %H:%i:%s')
+            </if>
+            <if test="createBeginDate != null and createBeginDate!='' and createEndDate != null and createEndDate!='' ">
+                and t1.create_time  BETWEEN
+                DATE_FORMAT(#{createBeginDate},'%Y-%m-%d %H:%i:%s')
+                AND DATE_FORMAT(#{createEndDate},'%Y-%m-%d %H:%i:%s')
+            </if>
+            <if test="statusList != null  and statusList.size()>0">
+                and (t1.status in
+                <foreach item="statusValue" collection="statusList" open="(" separator="," close=")">
+                    #{statusValue}
+                </foreach>
+                <if test="typeKey=='afterSales'">
+                    or t1.old_status = 3
+                </if>
+                )
+            </if>
+            <if test="orderKey != null and orderKey!='' ">
+                and
+                (
+                t1.code like concat('%', #{orderKey}, '%')
+                or
+                t4.code like concat('%', #{orderKey}, '%')
+                )
+            </if>
+            <if test="deliveryKey != null and deliveryKey!='' ">
+                and
+                (
+                t6.nickname like concat('%', #{deliveryKey}, '%')
+                OR
+                t6.phone like concat('%', #{deliveryKey}, '%')
+                )
+            </if>
+        </where>
+
+        ) tb1
+        LEFT JOIN store_member tb2 ON tb1.super_customer = tb2.customer_no
+
+    </select>
+
+</mapper>

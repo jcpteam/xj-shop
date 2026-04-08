@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('付款单列表')" />
+</head>
+<body>
+
+
+
+<!-- 正文开始 -->
+<div class="layui-fluid">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-card">
+            <!-- 搜索区 -->
+            <form class="layui-form toolbar" th:onsubmit="return false" lay-filter="inputForm" id="inputForm">
+                <div class="layui-form-item">
+
+                    <div class="layui-inline">
+                        <label class="layui-form-label label-auto">客户：</label>
+                        <div class="layui-input-inline">
+                            <input class="layui-input" name="merchantName" type="text" placeholder="请输入客户名称"/>
+                        </div>
+                    </div>
+                    <div class="layui-inline"  >
+                        <label class="layui-form-label label-auto">支付状态:</label>
+                        <div class="layui-input-inline">
+                            <select name="payStatus" th:with="type=${payStatusList}">
+                                <option value="">所有</option>
+                                <option th:each="dict : ${type}" th:text="${dict.dictLabel}" th:value="${dict.dictValue}"></option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-inline label-auto" >
+                        <label class="layui-form-label label-auto">所属区域：</label>
+                        <div class="layui-input-inline">
+                            <select name="deptId"   id="deptId"  lay-search >
+                                <option  value="" th:checked="true">选择区域</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-inline label-auto"  >
+                        <label class="layui-form-label label-auto">金额范围:</label>
+                        <div class="layui-input-inline">
+                            <input name="minAmount" style="float: left;width: 40%" type="number" min="0"   placeholder="最小值" class="layui-input"/>
+                            <span style="float: left;width: 10%;padding-top: 10px;text-align: center;">-</span>
+                            <input name="maxAmount"  style="float: left;width: 40%" type="number"  min="0"   placeholder="最大值" class="layui-input"/>
+
+                        </div>
+                    </div>
+                    <div class="layui-inline label-auto" >
+                        <label class="layui-form-label label-auto">支付时间：</label>
+                        <div class="layui-input-inline">
+                            <input id="payDate" type="text" placeholder="请选择开始和结束日期" class="layui-input date-icon" autocomplete="off"/>
+                            <input id="payBeginDate" type="hidden" name="payBeginDate">
+                            <input id="payEndDate" type="hidden" name="payEndDate">
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label label-auto" style="width: 100px">付款单时间：</label>
+                        <div class="layui-input-inline">
+                            <input id="receiptDate" type="text" placeholder="请选择开始和结束日期" class="layui-input date-icon" autocomplete="off"/>
+                            <input id="receiptBeginDate" type="hidden" name="receiptBeginDate">
+                            <input id="receiptEndDate" type="hidden" name="receiptEndDate">
+                        </div>
+                    </div>
+                    <div class="layui-inline" style="padding-left: 13px;">
+                        <button class="layui-btn layui-btn-sm icon-btn" lay-submit lay-filter="searchBtn" id="searchBtn">
+                            <i class="layui-icon layui-icon-search"></i>搜索
+                        </button>
+                        <button class="layui-btn layui-btn-sm icon-btn" type="reset" id="restBtn">
+                            <i class="layui-icon layui-icon-refresh"></i>重置
+                        </button>
+                        <button class="layui-btn layui-btn-sm icon-btn" id="downloadTemplate">模板下载</button>
+                        <button id="importData" class="layui-btn layui-btn-normal layui-btn-sm" shiro:hasPermission="shop:receipt:edit">
+                            <i class="layui-icon layui-icon-upload"></i>导入</button>
+                        <a class="layui-btn layui-btn-primary form-search-expand layui-hide" data-expand="true">
+                            展开 <i class="layui-icon layui-icon-down"></i>
+                        </a>
+                    </div>
+                </div>
+            </form>
+
+            <table class="layui-table" id="dataTable" lay-filter="dataTable"></table>
+        </div>
+
+    </div>
+</div>
+
+
+<!-- 行工具栏 -->
+<script type="text/html" id="toolbarRow">
+
+    {{#  if (d.orderIds !='-1'){ }}
+    <a class="layui-btn layui-btn-xs" lay-event="view" shiro:hasPermission="shop:receipt:edit">查看订单</a>
+    {{#  } }}
+<!--    {{#  if (d.status !=2){ }}-->
+<!--    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="updateStatus" shiro:hasPermission="shop:receipt:update">作废</a>-->
+<!--    {{#  } }}-->
+    {{#  if (d.payStatus ==0){ }}
+    <a class="layui-btn layui-btn-xs" lay-event="detail" shiro:hasPermission="shop:receipt:edit">支付</a>
+    <a class="layui-btn layui-btn-xs" lay-event="edit" shiro:hasPermission="shop:receipt:edit">上传凭证</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del" shiro:hasPermission="shop:receipt:remove">删除</a>
+    {{#  } }}
+
+    {{#  if (d.payStatus ==1 && d.payType == '3'){ }}
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="delCerticate" shiro:hasPermission="shop:receipt:remove">删除凭证</a>
+    {{#  } }}
+</script>
+
+<!-- js部分 -->
+<th:block th:include="include :: footer" />
+<script type="text/javascript" th:inline="javascript">
+    var ctx = [[@{/}]];
+</script>
+<script type="text/javascript" th:inline="none">
+    layui.use(['index', 'layer', 'form', 'table', 'util', 'ext','element','upload','laydate'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        var table = layui.table;
+        var util = layui.util;
+        var laydate = layui.laydate;
+        var ext = layui.ext;
+        var admin = layui.admin;
+        var index = layui.index;
+
+        //日期范围
+        laydate.render({
+            elem: '#payDate'
+            //,type: 'datetime'
+            , range: '~'
+            , done: function (value, date, endDate) {
+                if (value != null && value != '') {
+                    var b = $.trim(value.split('~')[0]);
+                    var e = $.trim(value.split('~')[1]);
+                    $("#payBeginDate").val(b);
+                    $("#payEndDate").val(e);
+                }
+            }
+        });
+
+        //日期范围
+        laydate.render({
+            elem: '#receiptDate'
+            // , type: 'datetime'
+            , range: '~'
+            , done: function (value, date, endDate) {
+                if (value != null && value != '') {
+                    var b = $.trim(value.split('~')[0]);
+                    var e = $.trim(value.split('~')[1]);
+                    $("#receiptBeginDate").val(b);
+                    $("#receiptEndDate").val(e);
+                }
+            }
+        });
+
+        $("#restBtn").click(function () {
+            $("input[type='hidden']").val("")
+        })
+
+        var prefix = ctx + "shop/receipt";
+        var payUrl = ctx + "shop/xjpay/qrcode/{id}";
+        var listUrl = prefix + "/list";
+        var createUrl = prefix + "/add";
+        var updateUrl = prefix + "/edit/{id}";
+        var certificateUrl = prefix + "/certificate/{id}";
+        var orderListUrl = prefix + "/order/list/{id}";
+        var updateSaveUrl = prefix + "/edit";
+        var removeUrl = prefix + "/remove";
+        var exportUrl = prefix + "/export";
+        var delCertUrl = prefix + "/del/certificate";
+        queryList()
+        function queryList(field) {
+            var params = {}
+            if (field != null) {
+                params = field;
+            }
+
+            params.orderByColumn = 'last_modify_time';
+            params.isAsc = 'desc'
+            table.render({
+                elem: '#dataTable'
+                , url: listUrl
+                , method: 'POST'
+                , height: 'full-100'
+                , cellMinWidth: 80
+                ,toolbar: true
+                ,defaultToolbar:[{title:'导出',layEvent: 'LAYTABLE_EXCEL',icon: 'layui-icon-export'}]
+                , page: true
+                , request: {
+                    pageName: 'pageNum' //页码的参数名称，默认：page
+                    , limitName: 'pageSize' //每页数据量的参数名，默认：limit
+                }
+                ,where:params
+                , limit: 10
+                , cols: [[
+                    {type: 'checkbox'}
+                    , {field: 'receiptId', title: 'null', hide: true}
+                    , {field: 'merchantName', title: '结算客户'}
+                    , {field: 'deptName', title: '所属区域'}
+                    , {field: 'code', title: '收款单号'}
+                    , {field: 'amount', title: '金额'}
+                    , {field: 'balance', title: '账户余额'}
+                    , {field: 'payStatusName', title: '支付状态'}
+                    , {field: 'payTypeName', title: '支付方式'}
+                    , {field: 'comment', title: '备注'}
+                    , {field: 'creatorName', title: '操作人'}
+                    , {field: 'createTime', title: '创建时间'}
+                    , {field: 'lastModifyTime', title: '支付时间',templet:function (d) {
+                            if(d.payStatus == '1') {
+                                return d.lastModifyTime;
+                            } else {
+                                return  '';
+                            }
+                    }}
+                    //, {field: 'statusName', title: '状态'}
+                    , {field: 'operate', title: '操作', minWidth: 270, toolbar: '#toolbarRow', fixed: 'right'}
+                ]]
+                , parseData: function (res) { //将原始数据解析成 table 组件所规定的数据
+                    return {
+                        "code": res.code, //解析接口状态
+                        "msg": res.msg, //解析提示文本
+                        "count": res.total, //解析数据长度
+                        "data": res.rows //解析数据列表
+                    };
+                }
+            });
+        }
+
+        // 查询所属区域
+        admin.req(ctx + "system/dept/getLoginUserDept", { }, function (result) {
+            var select= document.getElementById('deptId');
+            deptList= result.data;
+            for (var i=0;i<result.data.length;i++) {
+                var data= result.data[i];
+                var option = document.createElement("option");
+                option.setAttribute("value", data.value);
+                option.innerText =data.name;
+                if(select){
+                    select.appendChild(option)
+                }
+            }
+            form.render('select');
+        },'get',{async: false})
+
+        //监听搜索
+        form.on('submit(searchBtn)', function (data) {
+            var field = data.field;
+            //执行重载
+            table.reload('dataTable', {
+                where: field
+                ,page:{curr:1}
+            });
+        });
+
+        //头工具栏事件
+        table.on('toolbar(dataTable)', function(obj){
+            switch(obj.event){
+                case 'add':
+                    active.add();
+                    break;
+                case 'edit':
+                    var checkStatus = table.checkStatus('dataTable')
+                            , checkData = checkStatus.data; //得到选中的数据
+                    var id = null;
+                    if (id == null) {
+                        if (checkData.length === 0) {
+                            return admin.info('请选择一条数据');
+                        } else if (checkData.length > 1) {
+                            return admin.info('只能选择一条数据编辑');
+                        } else {
+                            id = checkData[0].receiptId;
+                        }
+                    }
+                    active.edit(id);
+                    break;
+                case 'delCerticate':
+                    active.delCerticate(id);
+                    break;
+                case 'batchdel':
+                    active.batchdel();
+                    break;
+                case 'import':
+                    break;
+                case 'export':
+                    $.modal.loading("正在导出数据，请稍后...");
+                    $.post(exportUrl, $("#inputForm").serializeArray(), function(result) {
+                        if (result.code == web_status.SUCCESS) {
+                            window.location.href = ctx + "common/download?fileName=" + encodeURI(result.msg) + "&delete=" + true;
+                        } else if (result.code == web_status.WARNING) {
+                            $.modal.alertWarning(result.msg)
+                        } else {
+                            $.modal.alertError(result.msg);
+                        }
+                        $.modal.closeLoading();
+                    });
+                    break;
+                case 'LAYTABLE_EXCEL':
+                    $.modal.loading("正在导出数据，请稍后...");
+                    $.post(exportUrl, $("#inputForm").serializeArray(), function(result) {
+                        if (result.code == web_status.SUCCESS) {
+                            window.location.href = ctx + "common/download?fileName=" + encodeURI(result.msg) + "&delete=" + true;
+                        } else if (result.code == web_status.WARNING) {
+                            $.modal.alertWarning(result.msg)
+                        } else {
+                            $.modal.alertError(result.msg);
+                        }
+                        $.modal.closeLoading();
+                    });
+                    break;
+            };
+        });
+
+        //行工具栏事件
+        table.on('tool(dataTable)', function (obj) {
+            var data = obj.data;
+            if (obj.event === 'detail') {
+                active.detail(data.receiptId);
+            }else if (obj.event === 'view') {
+                active.view(data.receiptId);
+            } else if(obj.event === 'edit'){
+                active.edit(data.receiptId);
+            } else if (obj.event === 'del') {
+                active.del(data.receiptId);
+            } else if (obj.event === 'updateStatus') {
+                active.updateStatus(data.receiptId);
+            } else if(obj.event === 'delCerticate') {
+                active.delCerticate(data.receiptId);
+            }
+        });
+
+        //事件
+        var active = {
+            updateStatus:function (receiptId) {
+                admin.req(updateSaveUrl, {receiptId: receiptId,status:2}, function (result) {
+                    if (result.code == 0) {
+                        table.reload('dataTable');
+                        admin.success('操作成功!');
+                    } else {
+                        admin.error(result.msg);
+                    }
+                },'post')
+            },
+            delCerticate:function (receiptId) {
+                admin.req(delCertUrl, {receiptId: receiptId}, function (result) {
+                    if (result.code == 0) {
+                        table.reload('dataTable');
+                        admin.success('操作成功!');
+                    } else {
+                        admin.error(result.msg);
+                    }
+                },'post')
+            },
+            batchdel: function () {
+                var checkStatus = table.checkStatus('dataTable')
+                        , checkData = checkStatus.data; //得到选中的数据
+
+                if (checkData.length === 0) {
+                    return admin.info('请选择数据');
+                }
+
+                var ids = [];
+                layui.each(checkData, function (index, item) {
+                    ids.push(item.receiptId);
+                });
+
+                admin.confirm('确定删除吗？', function () {
+                    admin.req(removeUrl, {ids: ids.join(',')}, function (result) {
+                        if (result.code == 0) {
+                            table.reload('dataTable');
+                            admin.success('删除成功!');
+                        } else {
+                            admin.error(result.msg);
+                        }
+                    },'post')
+                });
+            }
+            ,view: function (id) {
+                var editUrl = orderListUrl.replace("{id}", id);
+                parent.layui.admin.openUrl('查看付款单', editUrl, '100%','100%');
+            }
+            ,detail: function (id) {
+
+                admin.confirm('确定支付吗?',function(){
+                    admin.req(payUrl.replace("{id}", id), {}, function (data) {
+                        if (data.tradeState == 'S') {
+                            table.reload('dataTable');
+                            admin.success('支付成功!');
+                        } else {
+                            var editUrl = updateUrl.replace("{id}", id);
+                            admin.openDialogView('付款单支付', editUrl, '800px', '480px');
+                        }
+                    },'get')
+                });
+
+
+            }
+            ,add: function () {
+                admin.openDialog('新增付款单', createUrl, '800px', '480px');
+            }
+            ,edit: function (id) {
+                var editUrl = certificateUrl.replace("{id}", id);
+                admin.openDialog('修改付款单', editUrl, '800px', '480px');
+            }
+            ,del: function(id){
+                admin.confirm('确定删除吗?',function(){
+                    admin.req(removeUrl, {ids: id}, function (data) {
+                        if (data.code == 0) {
+                            table.reload('dataTable');
+                            admin.success('删除成功!');
+                        } else {
+                            admin.error(data.msg);
+                        }
+                    },'post')
+                });
+            }
+        }
+
+        layui.upload.render({
+            elem: "#importData",//导入id
+            url: prefix + "/import",
+            size: '3072',
+            accept: "file",
+            exts: 'xls|xlsx',
+            before: function(obj){//参数
+                $.modal.loading("文件导入中，请稍后...");
+            },
+            done: function (result) {
+                $.modal.closeLoading();
+                if (result.status == 0) {
+                    table.reload('dataTable');
+                }
+                if (result.message != null) {
+                    table.reload('dataTable');
+                    layer.msg(result.message)
+                }
+            }
+        });
+
+        $("#downloadTemplate").on('click', function(){
+            // $.modal.loading("模板文件下载中，请稍后...");
+            // $.post(exportUrl, {}, function(result) {
+            //     window.location.href = ctx + "common/download?fileName=" + encodeURI(result.msg);
+            //     $.modal.closeLoading();
+            // });
+            window.location.href = ctx + "common/download?fileName=" + encodeURI("对账单.xlsx");
+        })
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaboot.shop.mapper.StoreBlackWhiteMapper">
+    
+    <resultMap type="com.javaboot.shop.vo.StoreBlackWhiteVO" id="StoreBlackWhiteResult">
+        <result property="blackWhiteId"    column="black_white_id"    />
+        <result property="accountId"    column="account_id"    />
+        <result property="merchantId"    column="merchant_id"    />
+        <result property="deptId"    column="dept_id"    />
+        <result property="type"    column="type"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="lastModifyTime"    column="last_modify_time"    />
+        <result property="status"    column="status"    />
+    </resultMap>
+
+    <sql id="selectStoreBlackWhiteVo">
+        select * from store_black_white
+    </sql>
+
+    <select id="selectStoreBlackWhiteList" parameterType="StoreBlackWhite" resultMap="StoreBlackWhiteResult">
+        <include refid="selectStoreBlackWhiteVo"/>
+        <where>
+          and status=1
+            <if test="searchKey != null  and searchKey != ''">
+                AND (
+                 EXISTS (
+                        SELECT
+                        1
+                        FROM
+                        store_payment_account s1
+                        WHERE
+                        s1.account_id=account_id AND
+                        (
+                            s1.account_number like concat('%', #{searchKey}, '%')
+                                    OR
+                            s1.member_id like concat('%', #{searchKey}, '%')
+                        )
+                )
+
+                    OR EXISTS (
+                    SELECT
+                    1
+                    FROM
+                    store_member s1
+                    WHERE
+                    s1.id=merchant_id AND
+
+                    s1.nickname like concat('%', #{searchKey}, '%')
+
+                    )
+                )
+             </if>
+            <if test="deptId != null  and deptId != ''">
+                AND  dept_id IN (
+                SELECT
+                dept_id
+                FROM
+                sys_dept
+                WHERE
+                find_in_set( #{deptId}, ancestors )  or dept_id=#{deptId}
+                )
+             </if>
+            <if test="type != null  and type != ''"> and type = #{type}</if>
+            <if test="lastModifyTime != null "> and last_modify_time = #{lastModifyTime}</if>
+            <if test="status != null  and status != ''"> and status = #{status}</if>
+            <if test="accountId != null  and accountId != ''"> and account_id = #{accountId}</if>
+        </where>
+    </select>
+    
+    <select id="selectStoreBlackWhiteById" parameterType="Long" resultMap="StoreBlackWhiteResult">
+        <include refid="selectStoreBlackWhiteVo"/>
+        where black_white_id = #{blackWhiteId}
+    </select>
+        
+    <insert id="insertStoreBlackWhite" parameterType="StoreBlackWhite" useGeneratedKeys="true" keyProperty="blackWhiteId">
+        insert into store_black_white
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="accountId != null  ">account_id,</if>
+            <if test="merchantId != null  and merchantId != ''">merchant_id,</if>
+            <if test="deptId != null  and deptId != ''">dept_id,</if>
+            <if test="type != null  and type != ''">type,</if>
+            <if test="createTime != null ">create_time,</if>
+            <if test="lastModifyTime != null ">last_modify_time,</if>
+            <if test="status != null  and status != ''">status,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="accountId != null  ">#{accountId},</if>
+            <if test="merchantId != null  and merchantId != ''">#{merchantId},</if>
+            <if test="deptId != null  and deptId != ''">#{deptId},</if>
+            <if test="type != null  and type != ''">#{type},</if>
+            <if test="createTime != null ">#{createTime},</if>
+            <if test="lastModifyTime != null ">#{lastModifyTime},</if>
+            <if test="status != null  and status != ''">#{status},</if>
+         </trim>
+    </insert>
+
+    <update id="updateStoreBlackWhite" parameterType="StoreBlackWhite">
+        update store_black_white
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="accountId != null  ">account_id=#{accountId},</if>
+            <if test="merchantId != null  and merchantId != ''">merchant_id = #{merchantId},</if>
+            <if test="deptId != null  and deptId != ''">dept_id = #{deptId},</if>
+            <if test="type != null  and type != ''">type = #{type},</if>
+            <if test="createTime != null ">create_time = #{createTime},</if>
+            <if test="lastModifyTime != null ">last_modify_time = #{lastModifyTime},</if>
+            <if test="status != null  and status != ''">status = #{status},</if>
+        </trim>
+        where black_white_id = #{blackWhiteId}
+    </update>
+
+    <update id="deleteStoreBlackWhiteById" parameterType="Long">
+        update store_black_white set status=0,last_modify_time = now() where black_white_id = #{blackWhiteId}
+    </update>
+
+    <update id="deleteStoreBlackWhiteByIds" parameterType="String">
+        update store_black_white set status=0,last_modify_time = now() where black_white_id in
+        <foreach item="blackWhiteId" collection="array" open="(" separator="," close=")">
+            #{blackWhiteId}
+        </foreach>
+    </update>
+
+    <update id="updateStoreBlackWhiteType" parameterType="map">
+        update store_black_white set type=#{type},last_modify_time = now() where black_white_id in
+        <foreach item="blackWhiteId" collection="idList" open="(" separator="," close=")">
+            #{blackWhiteId}
+        </foreach>
+    </update>
+
+    <delete id="deleteStoreBlackWhiteByAccount" parameterType="String">
+        delete from  store_black_white where account_id = #{accountId}
+    </delete>
+</mapper>

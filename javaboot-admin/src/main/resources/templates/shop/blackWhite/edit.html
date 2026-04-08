@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('修改黑白名单')" />
+</head>
+<body class="bg-white">
+
+<!-- 正文开始 -->
+<form class="layui-form bg-white" id="inputForm" th:onsubmit="return false" th:action="@{/shop/blackWhite/edit}" th:object="${storeBlackWhite}">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <div class="layui-row">
+                <div class="layui-form-item">
+                    <input name="blackWhiteId" th:field="*{blackWhiteId}"  id="blackWhiteId" type="hidden" >
+                    <input name="deptId"  th:field="*{deptId}"   id="deptId" type="hidden" >
+                    <input name="merchantId"  id="merchantId" type="hidden" >
+                    <label class="layui-form-label layui-form-required">账户:</label>
+                    <div class="layui-input-block">
+                        <select   th:field="*{accountId}"  th:with="type=${accountList}" name="accountId" id="accountId" lay-filter="accountId" lay-search lay-verType="tips"
+                                  lay-verify="required" disabled>
+                            <option value="">请选择账户</option>
+                            <option th:each="dict : ${type}" th:text="${dict.accountNumber}" th:value="${dict.accountId}"></option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label layui-form-required">客户名称:</label>
+                    <div class="layui-input-block">
+                        <select   th:field="*{accountId}"  th:with="type=${accountList}" name="storeName" id="storeName" lay-filter="storeName" lay-search lay-verType="tips"
+                                  lay-verify="required" disabled>
+                            <option value="">请选择账户</option>
+                            <option th:each="dict : ${type}" th:text="${dict.storeName}" th:value="${dict.accountId}"></option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label layui-form-required">类型:</label>
+                    <div class="layui-input-block">
+                        <select   th:field="*{type}" th:with="type=${typeList}" name="type" id="type" lay-filter="type" lay-search lay-verType="tips"
+                                 lay-verify="required">
+                            <option th:each="dict : ${type}" th:text="${dict.dictLabel}" th:value="${dict.dictValue}"></option>
+                        </select>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-hide">
+        <button id="submitBtn" class="layui-btn" lay-filter="submitBtn" lay-submit>保存</button>
+        <button id="closeBtn" class="layui-btn layui-btn-primary" ew-event="closeDialog">关闭</button>
+    </div>
+</form>
+
+<th:block th:include="include :: footer" />
+<script th:inline="javascript">
+    var ctx = [[@{/}]];
+        var prefix = ctx + "shop/blackWhite";
+        var accountList = [[${accountList}]];
+        var typeList = [[${typeList}]];
+</script>
+<script th:inline="none">
+    layui.use(['index', 'form', 'formX', 'table', 'laydate', 'upload', 'ext'], function(){
+        var $ = layui.$;
+        var form = layui.form;
+        var formX = layui.formX;
+        var layer = layui.layer;
+        var table = layui.table;
+        var admin = layui.admin;
+        var upload = layui.upload;
+        var laydate = layui.laydate;
+        form.on("select(accountId)", function (data) {
+            accountList.forEach(function (item) {
+                if(data.value==item.accountId){
+                    $("#deptId").val(item.deptId)
+                    $("#merchantId").val(item.memberId)
+                    return
+                }
+            })
+
+        });
+
+
+    })
+</script>
+</body>
+</html>

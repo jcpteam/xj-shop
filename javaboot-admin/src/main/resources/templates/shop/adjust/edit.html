@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('新增入库单')"/>
+</head>
+<body class="bg-white">
+<style>
+    .div-row{
+        width: 20%;
+        float: left;
+    }
+</style>
+<!-- 正文开始 -->
+<form class="layui-form bg-white" id="inputForm" th:onsubmit="return false" th:object="${storeGoodsWarehouseAdjust}">
+    <div class="layui-card"  style="margin-bottom: 60px">
+        <div class="layui-card-body">
+            <div class="layui-row">
+                <div class="div-row">
+                    <input name="adjustId" th:field="*{adjustId}" type="hidden">
+                    <label class="layui-form-label layui-form-required">源仓库:</label>
+                    <div class="layui-input-block" style="width: 200px">
+                        <select th:field="*{sourceWarehouseId}" th:with="type=${houseList}" name="sourceWarehouseId" id="sourceWarehouseId" lay-filter="sourceWarehouseId" lay-search lay-verType="tips"
+                                lay-verify="required">
+                            <option   value="">选择源仓库</option>
+                            <option  th:each="dict:${type}"  th:value="${dict.storeId}" th:text="${{dict.storeName}}"></option>
+                        </select>
+                    </div>
+                </div>
+                <div class="div-row">
+                    <label class="layui-form-label layui-form-required">目标仓库:</label>
+                    <div class="layui-input-block" style="width: 200px">
+                        <select  th:field="*{targetWarehouseId}" th:with="type=${houseList}" name="targetWarehouseId" id="targetWarehouseId" lay-filter="targetWarehouseId" lay-search lay-verType="tips"
+                                lay-verify="required">
+                            <option   value="">选择目标仓库</option>
+                            <option  th:each="dict:${type}"  th:value="${dict.storeId}" th:text="${{dict.storeName}}"></option>
+                        </select>
+                    </div>
+                </div>
+                <div class="div-row">
+                    <label class="layui-form-label layui-form-required">调拨单号:</label>
+                    <div class="layui-input-block">
+                        <input disabled="true" th:field="*{adjustNo}" name="adjustNo" maxlength="45" type="text" class="layui-input" lay-verType="tips" placeholder="调拨单号" lay-verify="required"/>
+                    </div>
+                </div>
+                <div  class="div-row">
+                    <label class="layui-form-label layui-form-required">调拨日期:</label>
+                    <div class="layui-input-block" style="width: 400px">
+                        <input th:field="*{adjustTimeText}" id="adjustTime" type="text" placeholder="请选择调拨日期" class="layui-input date-icon"
+                               autocomplete="off" readonly="readonly"/>
+                        <input type="hidden" name="adjustTime" th:value="*{adjustTimeText}"  >
+                    </div>
+                </div>
+
+                <div class="layui-form-item layui-row" style="padding-top: 20px">
+                    <div class="layui-inline layui-col-md10">
+                        <label class="layui-form-label">备注说明:</label>
+                        <div class="layui-input-block"  style="width:calc(100% - 100px)">
+                            <textarea name="comment" width="100%" placeholder="备注说明" class="layui-textarea" maxlength="1000"
+                                      rows="3" th:field="*{comment}"></textarea>
+
+                        </div>
+                    </div>
+                </div>
+
+                <table class="layui-table" id="dataTable" lay-filter="dataTable"></table>
+
+            </div>
+        </div>
+        <div class="form-group-bottom text-center">
+            <button id="submitBtn" class="layui-btn" lay-filter="submitBtn" lay-submit>保存</button>
+            <button id="closeBtn" class="layui-btn layui-btn-primary" ew-event="closeDialog">关闭</button>
+        </div>
+    </div>
+
+</form>
+<style>
+    .form-group-bottom {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        padding: 10px 20px;
+        background-color: #fff;
+        box-shadow: 0 -1px 2px 0 rgba(0, 0, 0, .05);
+    }
+    td .layui-form-select {
+        margin-top: -10px;
+        margin-left: -15px;
+        margin-right: -15px;
+        height: 29px;
+    }
+
+    .layui-table-cell {
+        overflow: visible !important;
+        display: table-cell;
+        vertical-align: middle;
+    }
+
+    .layui-table-view .layui-table th {
+        overflow: hidden;
+
+    }
+
+    #selectDiv .layui-edge {
+        visibility: hidden
+    }
+
+    .icon-div:hover {
+        transform: scale(1.5);
+    }
+
+
+</style>
+<script type="text/html" id="toolbarRow">
+    <i class="layui-icon layui-icon-addition" lay-event="add"></i>
+    <i class="layui-icon layui-icon-subtraction" lay-event="subtraction"></i>
+    {{# if (d.spuNo==null){ }}
+    <div style="position: absolute;top:5px;right:14px;width: 200px;" id="selectDiv">
+        <select class="goodsSelect" name="row-select-{{d.row}}" lay-filter="row-select-{{d.row}}"
+                id="row-select-{{d.row}}" lay-search>
+            <option value="">输入编码/商品名称</option>
+            {{# if (dataList&&dataList.length>0){ }}
+            {{# layui.each(dataList, function(index, item){ }}
+            {{# if (item.disabled){ }}
+            <option disabled value="{{item.spuNo}}">{{item.code+'/'+item.name}}</option>
+            {{# } else { }}
+            <option value="{{item.spuNo}}">{{item.code+'/'+item.name}}</option>
+            {{# } }}
+            {{# }); }}
+            {{# } }}
+        </select>
+    </div>
+<!--    <div class="icon-div" style="position: absolute;top:0px;right:10px;height:38px;" lay-event="search"-->
+<!--         id="row-icon-{{d.row}}">-->
+<!--        <i class="layui-icon layui-icon-more"></i>-->
+<!--    </div>-->
+    {{#  } }}
+</script>
+
+<script type="text/html" id="checkbd">
+    {{#  if (d.disabled ==null|| !d.disabled){ }}
+    <input type="checkbox" name="siam_one" title="" lay-skin="primary" data-id="{{ d.spuNo }}">
+    {{#  } }}
+</script>
+
+
+<script  id="selectQuantityUnit" type="text/html">
+    <select name="quantityUnit" lay-filter="selectQuantity">
+        <option value="">选择数量单位</option>
+        {{#  layui.each(d.spuUnitList, function(index, item){ }}
+        {{#  if(d.quantityUnit&&d.quantityUnit == item.unitId){ }}
+        <option value="{{item.unitId}}"  selected>{{item.name}}</option>
+        {{#  } else { }}
+        <option value="{{item.unitId}}"  >{{item.name}}</option>
+        {{#  } }}
+        {{#  }); }}
+
+    </select>
+</script>
+</form>
+
+
+<style>
+    .laytable-cell-checkbox .layui-disabled.layui-form-checked i {
+        background: #fff !important;
+    }
+
+</style>
+<th:block th:include="include :: footer"/>
+<script th:inline="javascript">
+    var ctx = [[@{
+        /}]];
+        var prefix = ctx + "shop/adjust";
+        var dataList = [];
+        var houseList = [[${houseList}]];
+        var storeGoodsWarehouseAdjust = [[${storeGoodsWarehouseAdjust}]];
+
+</script>
+<script th:inline="none">
+    var closeBtn= parent.document.getElementsByClassName('layui-layer-btn0')[0];
+    layui.use(['index', 'form', 'formX', 'table', 'laydate', 'upload', 'ext', 'tableSelect'], function () {
+        var $ = layui.$;
+        var form = layui.form;
+        var formX = layui.formX;
+        var layer = layui.layer;
+        var laydate = layui.laydate;
+        var table = layui.table;
+        var admin = layui.admin;
+        var tableSelect = layui.tableSelect;
+        var iconPrefix = '#row-icon-', selectPrefix = 'row-select-'
+        form.on('select(sourceWarehouseId)',function (data) {
+            getGoodsList();
+            onSelect(selectPrefix + '1')
+            loadTable()
+            form.render('select');
+        })
+        //日期范围
+        laydate.render({
+            elem: '#adjustTime'
+            , done: function (value, date, endDate) {
+                $("input[name='adjustTime']").val(value);
+            }
+        });
+        getGoodsList();
+        //查询spu商品---------------------------------------------------------------------------------------------------
+        function getGoodsList() {
+            admin.req(ctx + "shop/spu/list", {isQueryAll: true}, function (result) {
+                dataList = result.rows;
+            }, 'post', {async: false})
+        }
+        //初始化商品----------------------------------------------------------------------------------------------------
+        var tableData = []
+        layui.each(storeGoodsWarehouseAdjust.itemList, function (index, item) {
+            var goodsInfo = findGoodsById(item.spuNo)
+            var obj={}
+            obj.row =index;
+            obj.spuUnitList = goodsInfo.spuUnitList;
+            obj.itemId = item.itemId;
+            obj.adjustId = item.adjustId;
+            obj.spuNo = item.spuNo;
+            obj.adjustNumber = item.adjustNumber;
+            obj.unitNumber = item.unitNumber;
+            obj.amount = item.amount;
+            obj.quantityUnitName = goodsInfo.mainUnitName;
+            obj.weightUnitName = goodsInfo.subUnitName;
+            obj.name = goodsInfo.name;
+            obj.comment = item.comment;
+            obj.totalPrice = parseFloat(item.amount * item.unitNumber).toFixed(2)
+            // 设置表格中主单位和副单位的id
+            if(goodsInfo.spuUnitList && goodsInfo.spuUnitList.length > 0){
+                for(var i = 0; i < goodsInfo.spuUnitList.length; i++){
+                    if(goodsInfo.spuUnitList[i].name == obj.quantityUnitName){
+                        obj.quantityUnit = goodsInfo.spuUnitList[i].unitId;
+                    }
+                    if(goodsInfo.spuUnitList[i].name == obj.weightUnitName){
+                        obj.weightUnit = goodsInfo.spuUnitList[i].unitId;
+                    }
+                }
+            }
+            tableData.push(obj)
+
+            //禁用已选过的商品
+            layui.each(dataList, function (index1, item1) {
+                if (item1.spuNo == goodsInfo.spuNo) {
+                    item1.disabled = true
+                }
+            })
+        })
+        loadTable()
+        function loadTable() {
+            var scrollTop = $(document).scrollTop();
+
+            layui.each(tableData, function (index, item) {
+                item.row = index + 1 //删除表格某一行需要重新对序号排序
+            })
+            table.render({
+                elem: '#dataTable'
+                , data: tableData
+                , method: 'POST'
+                //, height: 'full-100'
+                , totalRow: true
+                , cellMinWidth: 80
+                , page: false
+                , limit: 500
+                , cols: [[
+                    , {field: 'itemId', title: '明细id', hide: true}
+                    , {field: 'spuNo', name:'spuNo', title: '商品id', hide: true}
+                    , {field: 'row', title: 'row', hide: true}
+                    , {toolbar: '#toolbarRow', width: 300, totalRowText: '合计'}
+                    , {field: 'name', width: 200, title: '商品名'}
+                    , {field: 'unitNumber', title: '主单位数量',totalRow: true,edit:true,style: 'outline: 1px solid #e6e6e6;outline-offset: -5px;'}
+                    , {field: 'quantityUnitName', title: '主单位'}
+                    , {field: 'adjustNumber', title: '副单位数量',totalRow: true,edit:true,style: 'outline: 1px solid #e6e6e6;outline-offset: -5px;'}
+                    , {field: 'weightUnitName', title: '副单位'}
+                    , {field: 'amount', title: '单位成本',edit:true,style: 'outline: 1px solid #e6e6e6;outline-offset: -5px;'}
+                    , {field: 'totalPrice', title: '总成本',totalRow: true}
+                    , {field: 'comment', title: '备注',edit:true,style: 'outline: 1px solid #e6e6e6;outline-offset: -5px;', }
+                ]]
+                ,id: 'tclassReload'
+                ,done: function () {
+                    layui.each(tableData, function (index, item) {
+                        addTableSelect(iconPrefix + item.row)
+                    })
+
+                    form.on('select(selectQuantity)',function (data) {
+
+                        var elem = $(data.elem);
+                        var trElem = elem.parents('tr');
+                        var tableData1 = table.cache.tclassReload;
+                        // 更新到表格的缓存数据中，才能在获得选中行等等其他的方法中得到更新之后的值
+                        tableData1[trElem.data('index')][elem.attr('name')] = data.value;
+
+                    })
+
+                    $(".layui-table-total td").removeAttr('style');
+                    $(".layui-table-body, .layui-table-box, .layui-table-cell").css('overflow', 'visible');
+
+                    $(document).scrollTop(scrollTop);
+                }
+            });
+
+        }
+
+        //监听数量编辑--------------------------------------------------------------------------------------------------
+        table.on('edit(dataTable)', function (obj) {
+            var field = obj.field;
+            if(field == 'comment') {
+                return;
+            }
+            var oldVal = $(this).prev().text();
+            var reg = /^[0-9]*$|^[0-9]+(.[0-9]{2})?$|^[0-9]+(.[0-9]{1})?$/
+            if (!reg.test(obj.value)||obj.value<=0) {
+                admin.info('请输入大于0的数字,最多2位小数');
+                layui.each(tableData, function (index, item) {
+                    if (item.spuNo == obj.data.spuNo) {
+                        item[field] = oldVal
+                    }
+                })
+            } else {
+                if(obj.data.amount && obj.data.unitNumber){
+                    layui.each(tableData, function (index, item) {
+                        if (item.spuNo == obj.data.spuNo) {
+                            item.totalPrice = parseFloat(obj.data.amount * obj.data.unitNumber).toFixed(2)
+                        }
+                    })
+                }
+            }
+            loadTable()
+        })
+
+        //初始化点击...弹框搜索-----------------------------------------------------------------------------------------
+        function addTableSelect(id) {
+            if ($('#sourceWarehouseId').val() == null || $('#sourceWarehouseId').val() == '') {
+                return ;
+            }
+            tableSelect.render({
+                elem: id,	//定义输入框input对象
+                checkedKey: 'spuNo', //表格的唯一建值，非常重要，影响到选中状态 必填
+                searchKey: 'searchKey',	//搜索输入框的name值 默认keyword
+                searchPlaceholder: '商品名称|商品货号',	//搜索输入框的提示文字 默认关键词搜索
+                table: {	//定义表格参数，与LAYUI的TABLE模块一致，只是无需再定义表格elem
+                    url: ctx + "shop/spu/list"
+                    , method: 'POST'
+                    , height: 'full-100'
+                    , cellMinWidth: 80
+                    , page: true
+                    , request: {
+                        pageName: 'pageNum' //页码的参数名称，默认：page
+                        , limitName: 'pageSize' //每页数据量的参数名，默认：limit
+                    }
+                    , cols: [[
+                        {
+                            templet: "#checkbd",
+                            title: "<input type='checkbox' name='siam_all' title='' lay-skin='primary' lay-filter='siam_all'> ",
+                            width: 60,
+                        }
+                        , {field: 'spuNo', title: '商品id', hide: true}
+                        , {field: 'code', title: '商品货号', width: 200}
+                        , {field: 'name', title: '商品spu', width: 250}
+                        , {field: 'classifyName', title: '分类', width: 250}
+                    ]]
+                    , parseData: function (res) { //将原始数据解析成 table 组件所规定的数据
+                        layui.each(res.rows, function (index, item) {
+                            layui.each(dataList, function (index1, item1) {
+                                if (item.spuNo == item1.spuNo) {
+                                    item.disabled = item1.disabled
+                                }
+                            })
+                        })
+                        return {
+                            "code": res.code, //解析接口状态
+                            "msg": res.msg, //解析提示文本
+                            "count": res.total, //解析数据长度
+                            "data": res.rows //解析数据列表
+                        };
+                    }
+                },
+                done: function (elem, data) {
+                    //设置选择得值
+                    $.each($("input[name=siam_one]:checked"), function (i, value) {
+                        var goodsId = $(this).attr("data-id")
+                        var free = false;
+                        var isSet = false
+                        debugger
+                        layui.each(tableData, function (index, item) {
+                            if (item.spuNo == null && !isSet) {
+                                //优先使用没填充值得数组
+                                setGoodsInfo(selectPrefix + item.row, goodsId)
+                                free = true
+                                isSet = true
+                            }
+                        })
+                        //无可用数组则新增
+                        if (!free) {
+                            var id = tableData.length + 1
+                            tableData.push({row: id})
+                            setGoodsInfo(selectPrefix + id, goodsId)
+                        }
+                    });
+                    // layui.each(data.data, function (index1, item1) {
+                    //     var goodsId = item1.spuNo
+                    //     var free = false;
+                    //     layui.each(tableData, function (index, item) {
+                    //         if (item.spuNo == null) {
+                    //             //优先使用没填充值得数组
+                    //             setGoodsInfo(selectPrefix + item.row, goodsId)
+                    //             free = true
+                    //         }
+                    //     })
+                    //     //无可用数组则新增
+                    //     if (!free) {
+                    //         var id = tableData.length + 1
+                    //         tableData.push({row: id})
+                    //         setGoodsInfo(selectPrefix + id, goodsId)
+                    //     }
+                    // });
+                }
+            })
+            form.render("select");
+        }
+
+
+        //行工具栏事件--------------------------------------------------------------------------------------------------
+        table.on('tool(dataTable)', function (obj) {
+            if ($('#sourceWarehouseId').val() == null || $('#sourceWarehouseId').val() == '') {
+                return admin.info('请先选择源仓库！');
+            }
+            var data = obj.data;
+            if (obj.event === 'add') {
+                active.add(data);
+            } else if (obj.event === 'subtraction') {
+                active.subtraction(data);
+            } else if (obj.event === 'search') {
+                active.search(data);
+            }
+        });
+        //事件----------------------------------------------------------------------------------------------------------
+        var active = {
+            add: function (d) {
+                var id = tableData.length + 1
+                tableData.push({row: id})
+                onSelect(selectPrefix + id)
+                loadTable()
+            }, subtraction: function (d) {
+                if (tableData.length > 0) {
+                    for (var i = 0; i < tableData.length; i++) {
+                        if (d.spuNo == tableData[i].spuNo) {
+                            tableData.splice(i, 1);
+                        }
+                    }
+                    layui.each(dataList, function (index, item) {
+                        if (item.spuNo == d.spuNo) {
+                            item.disabled = false
+                        }
+                    })
+                    if(tableData.length == 0) {
+                        tableData.push({row: '1'})
+                        onSelect(selectPrefix + '1')
+                    }
+                    loadTable()
+                }
+            }, search: function (d) {
+
+            }
+        }
+
+        //商品下拉选择监听----------------------------------------------------------------------------------------------
+        function onSelect(filterName) {
+            //监听下拉框编辑
+            form.on('select(' + filterName + ')', function (data) {
+                if ($('#sourceWarehouseId').val() == null || $('#sourceWarehouseId').val() == '') {
+                    return admin.info('请先选择源仓库！');
+                }
+                //选择的select对象值；
+                var selectValue = data.value;
+                setGoodsInfo(filterName, selectValue)
+            })
+        }
+
+        //设置商品信息--------------------------------------------------------------------------------------------------
+        function setGoodsInfo(filterName, selectValue) {
+            var goodsInfo = findGoodsById(selectValue)
+            //往table设置值
+            layui.each(tableData, function (index, item) {
+                if ((selectPrefix + item.row) == filterName) {
+                    item.spuNo = goodsInfo.spuNo;
+                    item.name = goodsInfo.name;
+                    item.quantityUnitName = goodsInfo.mainUnitName;
+                    item.weightUnitName = goodsInfo.subUnitName;
+                    item.adjustNumber = 1
+                    item.unitNumber = 1;
+                    item.amount = 1;
+                    item.totalPrice = 1;
+                    // 设置表格中主单位和副单位的id
+                    if(goodsInfo.spuUnitList && goodsInfo.spuUnitList.length > 0){
+                        for(var i = 0; i < goodsInfo.spuUnitList.length; i++){
+                            if(goodsInfo.spuUnitList[i].name == item.quantityUnitName){
+                                item.quantityUnit = goodsInfo.spuUnitList[i].unitId;
+                            }
+                            if(goodsInfo.spuUnitList[i].name == item.weightUnitName){
+                                item.weightUnit = goodsInfo.spuUnitList[i].unitId;
+                            }
+                        }
+                    }
+                }
+            })
+
+            //禁用已选过的商品
+            layui.each(dataList, function (index, item) {
+                if (item.spuNo == goodsInfo.spuNo) {
+                    item.disabled = true
+                }
+            })
+
+            loadTable()
+        }
+
+        //通过商品id获取商品信息----------------------------------------------------------------------------------------------
+        function findGoodsById(goodsId) {
+            var goodsInfo = {};
+            layui.each(dataList, function (index, item) {
+                if (item.spuNo == goodsId) {
+                    goodsInfo = item;
+                    return;
+                }
+            })
+            return goodsInfo;
+        }
+
+        //新增订单------------------------------------------------------------------------------------------------------
+        layui.form.on('submit(submitBtn)', function (data) {
+            var hasGoods = true, hasAmount = true,hasAdjustNumber = true,hasUnitNumber=true;
+            layui.each(tableData, function (index, item) {
+                if (isEmpty(item.spuNo)) {
+                    hasGoods = false
+                    return;
+                }else if(isEmpty(item.adjustNumber)){
+                    hasAdjustNumber=false
+                    return;
+                }else if(isEmpty(item.unitNumber)){
+                    hasUnitNumber=false
+                    return;
+                }else if(isEmpty(item.amount)){
+                    hasAmount=false
+                    return;
+                }
+
+            })
+            if (!hasGoods) {
+                return admin.info('还有未设置的商品！');
+            }
+            if (!hasAmount) {
+                return admin.info('还有未设置单位成本的商品！');
+            }
+            if (!hasAdjustNumber) {
+                return admin.info('还有未设置调拨数量的商品！');
+            }
+            if (!hasUnitNumber) {
+                return admin.info('还有未设置单位数量的商品！');
+            }
+            var field = data.field; //获取提交的字段
+            if(field.sourceWarehouseId==field.targetWarehouseId){
+                return admin.info('源仓库和目标仓库不能一样！');
+            }
+            if(isEmpty(field.adjustTime)){
+                return admin.info('请选择调拨日期！');
+            }
+            field.itemListJson = JSON.stringify(tableData)
+            layui.each(houseList, function (index, item) {
+                if (item.storeId == field.sourceWarehouseId) {
+                    field.deptId=item.deptId
+                    field.stockType=item.storeType
+                    return;
+                }
+            })
+            admin.req(prefix + '/edit',field, function (data) {
+                if (data.code == 0) {
+                    admin.success('保存成功!');
+                    setTimeout(function(){
+                        //先得到当前iframe层的索引
+                        var index = parent.layer.getFrameIndex(window.name);
+                        //再执行关闭
+                        parent.layer.close(index);
+                    },300);
+                } else {
+                    admin.error(data.msg);
+                }
+            }, 'post');
+        });
+
+        function isEmpty(text) {
+            return text==null||text=='';
+        }
+    })
+
+
+</script>
+</body>
+</html>

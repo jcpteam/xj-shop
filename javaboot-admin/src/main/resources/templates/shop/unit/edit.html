@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('修改销售单位')" />
+</head>
+<body class="bg-white">
+
+<!-- 正文开始 -->
+<form class="layui-form bg-white" id="inputForm" th:onsubmit="return false" th:action="@{/shop/unit/edit}" th:object="${storeGoodsSalesUnit}">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <div class="layui-row">
+                <input name="unitId" th:field="*{unitId}" type="hidden">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">销售单位:</label>
+                    <div class="layui-input-block">
+                        <input name="name" th:field="*{name}" type="text" class="layui-input"  maxlength="50" lay-verType="tips" placeholder="输入销售单位" lay-verify="required"/>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">结算单位:</label>
+                    <div class="layui-input-block">
+                        <input  th:field="*{settlementUnit}" name="settlementUnit" type="text" class="layui-input" maxlength="50" lay-verType="tips" placeholder="输入销售单位" lay-verify="required"/>
+
+                    </div>
+                </div>
+                <div class="layui-form-item" style="display: none">
+                    <label class="layui-form-label">换算关系:</label>
+                    <div class="layui-input-block">
+                        <input th:field="*{conversionRelationship}" class="layui-input layui-input-number" min="0" max="999" value="1" step="1" data-prec="2" lay-verType="tips"  lay-verify="number"  name="conversionRelationship"  >
+
+                    </div>
+                </div>
+                <label class="layui-form-label layui-form-required">排序:</label>
+                <div class="layui-input-block">
+                    <input name="orderNum" th:field="*{orderNum}" type="number" placeholder="请输入显示排序" class="layui-input" lay-verType="tips" lay-verify="number"/>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">状态：</label>
+                    <div class="layui-input-block">
+                        <input type="radio" name="status" value="1" title="启用"  th:field="*{status}">
+                        <input type="radio" name="status" value="2" title="禁用" th:field="*{status}">
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-hide">
+        <button id="submitBtn" class="layui-btn" lay-filter="submitBtn" lay-submit>保存</button>
+        <button id="closeBtn" class="layui-btn layui-btn-primary" ew-event="closeDialog">关闭</button>
+    </div>
+</form>
+
+<th:block th:include="include :: footer" />
+<script th:inline="javascript">
+    var ctx = [[@{/}]];
+    var prefix = ctx + "shop/unit";
+</script>
+<script th:inline="none">
+    layui.use(['index', 'form', 'formX', 'table', 'laydate',  'cascader','numinput'], function(){
+        var $ = layui.$;
+        var form = layui.form;
+        var formX = layui.formX;
+        var layer = layui.layer;
+        var numinp = layui.numinput;
+        numinp.init({
+            // 123：123键置顶, 789：789键置顶
+            topBtns: 123,
+            // 右侧功能按钮
+            rightBtns: true,
+            // 监听键盘事件
+            listening: true,
+            // 批量配置默认小数精确度
+            defaultPrec: ''
+        });
+    })
+</script>
+</body>
+</html>

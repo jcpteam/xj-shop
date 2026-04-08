@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaboot.shop.mapper.StorePriceSettingDetailMapper">
+    
+    <resultMap type="StorePriceSettingDetail" id="StorePriceSettingDetailResult">
+        <result property="settingId"    column="setting_id"    />
+        <result property="priceId"    column="price_id"    />
+        <result property="quotationId"    column="quotation_id"    />
+        <result property="spuNo"    column="spu_no"    />
+        <result property="goodsId"    column="goods_id"    />
+        <result property="deptName"    column="dept_name"    />
+        <result property="propertyName"    column="property_name"    />
+        <result property="quotationName"    column="quotation_name"    />
+        <result property="unitName"    column="unit_name"    />
+        <result property="spuName"    column="spu_name"    />
+        <result property="unitSellName"    column="settlement_unit"    />
+        <result property="deptId"    column="dept_id"    />
+        <result property="unitId"    column="unit_id"    />
+        <result property="price"    column="price"    />
+        <result property="subCaseMain"    column="sub_case_main"    />
+        <result property="sellPrice"    column="sell_price"    />
+        <result property="settingDate"    column="setting_date"    />
+        <result property="status"    column="status"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="lastModifyTime"    column="last_modify_time"    />
+    </resultMap>
+
+    <!--<sql id="selectStorePriceSettingDetailVo">
+        select setting_id, price_id, spu_id, dept_id, unit_id, price, setting_date, status, create_time, last_modify_time from store_price_setting_detail
+    </sql>-->
+
+    <sql id="selectStorePriceSettingDetailVo">
+        select t5.setting_id,t5.price_id,t1.dept_id,t1.dept_name,t1.goods_id,t1.property_name,t1.quotation_id,t1.quotation_name,t1.spu_no,IFNULL(t5.price,t1.price) as price,t1.unit_id,t1.name as unit_name,t5.setting_date from
+            (select t2.dept_id,t7.dept_name ,t2.quotation_name,t3.goods_id,t3.quotation_id,t3.property_name,t3.spu_no,t4.unit_id,t6.name, t4.price from store_goods_quotation t2
+            left join store_goods_quotation_goods t3 on t2.quotation_id=t3.quotation_id and t2.status=1
+            left join store_goods_quotation_unit_price t4 on t3.goods_id=t4.goods_id
+            left join store_goods_sales_unit t6 on t4.unit_id=t6.unit_id
+            left join sys_dept t7 on t7.dept_id=t2.dept_id) t1
+                left  join store_price_setting_detail t5 on t1.goods_id=t5.goods_id
+    </sql>
+
+
+    <sql id="selectStorePriceSettingDetailVoByDeptid">
+        select t1.dept_id,t1.dept_name,t1.goods_id,t1.property_name,t1.quotation_id,t1.quotation_name,t1.spu_no,IFNULL(t5.price,t1.price) as price,t1.unit_id,t1.name as unit_name,t5.setting_date from
+            (select t2.dept_id,t7.dept_name ,t2.quotation_name,t3.goods_id,t3.quotation_id,t3.property_name,t3.spu_no,t4.unit_id,t6.name, t4.price from store_goods_quotation t2
+            left join store_goods_quotation_goods t3 on t2.quotation_id=t3.quotation_id and t2.status=1
+            left join store_goods_quotation_unit_price t4 on t3.goods_id=t4.goods_id
+            left join store_goods_sales_unit t6 on t4.unit_id=t6.unit_id
+            left join sys_dept t7 on t7.dept_id=t2.dept_id) t1
+            left  join store_price_setting_detail t5 on t1.goods_id=t5.goods_id and   t5.status !=-1
+    </sql>
+
+    <select id="selectStorePriceSettingDetailList" parameterType="StorePriceSettingDetail" resultMap="StorePriceSettingDetailResult">
+        select * from  store_price_setting_detail
+        <where>  
+            <if test="priceId != null "> and price_id = #{priceId}</if>
+            <if test="spuId != null  and spuId != ''"> and spu_id = #{spuId}</if>
+            <if test="deptId != null  and deptId != ''"> and dept_id = #{deptId}</if>
+            <if test="unitId != null  and unitId != ''"> and unit_id = #{unitId}</if>
+            <if test="price != null "> and price = #{price}</if>
+            <if test="settingDate != null "> and setting_date = #{settingDate}</if>
+            <if test="status != null  and status != ''"> and status = #{status}</if>
+            <if test="lastModifyTime != null "> and last_modify_time = #{lastModifyTime}</if>
+            <if test="goodsIdList != null and goodsIdList.size()>0">
+             and goods_id in
+             <foreach collection="goodsIdList" item="id" open="(" separator="," close=")">
+                 #{id}
+             </foreach>
+
+             </if>
+        </where>
+    </select>
+
+    <select id="selectSettingDetailList" parameterType="StorePriceSettingDetail" resultMap="StorePriceSettingDetailResult">
+        select t2.* from
+        store_price_setting t1,
+        store_price_setting_detail t2
+        <where>
+            t1.setting_id = t2.price_id
+            <if test="priceId != null "> and t2.price_id = #{priceId}</if>
+            <if test="spuId != null  and spuId != ''"> and t2.spu_id = #{spuId}</if>
+            <if test="deptId != null  and deptId != ''"> and t2.dept_id = #{deptId}</if>
+            <if test="unitId != null  and unitId != ''"> and t2.unit_id = #{unitId}</if>
+            <if test="price != null "> and t2.price = #{price}</if>
+            <if test="settingDate != null "> and t2.setting_date = #{settingDate}</if>
+            <if test="status != null  and status != ''"> and t1.status = #{status}</if>
+            <if test="lastModifyTime != null "> and last_modify_time = #{lastModifyTime}</if>
+            <if test="goodsIdList != null and goodsIdList.size()>0">
+                and t2.goods_id in
+                <foreach collection="goodsIdList" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+
+            </if>
+        </where>
+    </select>
+
+    <select id="selectStorePriceSettingDetailById" parameterType="Integer" resultMap="StorePriceSettingDetailResult">
+        <include refid="selectStorePriceSettingDetailVo"/>
+        where setting_id = #{settingId}
+    </select>
+
+
+    <select id="selectStorePriceSettingDetailsByPriceId" parameterType="StorePriceSettingDetail" resultMap="StorePriceSettingDetailResult">
+          select
+            spsd.setting_id,
+            spsd.price_id,
+            spsd.dept_id,
+            sd.dept_name,
+            spsd.goods_id,
+            sgqg.property_name,
+            sgq.quotation_id,
+            sgq.quotation_name,
+            sgqg.spu_no,
+            spsd.price,
+            spsd.unit_id,
+            sgs.name as spu_name,
+            sgsu.name as unit_name,
+            sgqg.settlement_unit,
+            if( spsd.unit_id=sgqg.unit_id or  sgsuc.sub_case_main is null,1,sgsuc.sub_case_main) as sub_case_main,
+            if( spsd.unit_id=sgqg.unit_id or  sgsuc.sub_case_main is null,1,sgsuc.sub_case_main)*spsd.price as sell_price,
+            spsd.setting_date
+        from store_price_setting_detail spsd
+                 left join sys_dept sd on spsd.dept_id=sd.dept_id
+                 left join  ( select t1.*,t2.settlement_unit ,t2.unit_id from store_goods_quotation_goods  t1 left join  store_goods_sales_unit t2 on t2.unit_id =t1.unit_ids ) as sgqg  on sgqg.goods_id =spsd.goods_id
+                 left join  store_goods_quotation sgq on sgq.quotation_id =sgqg.quotation_id
+                 left join  store_goods_sales_unit sgsu on sgsu.unit_id =spsd.unit_id
+                 left join store_goods_spu_unit_conversion sgsuc on sgsuc.spu_no =spsd.spu_id and sgsuc.dept_id=spsd.dept_id
+                 left join store_goods_spu sgs on sgs.spu_no =spsd .spu_id
+        where sgqg.status!=0 and sgq.status=1 and spsd.price_id = #{priceId} and sgs.name like CONCAT('%',#{spuName},'%') and sgq.quotation_name like CONCAT('%',#{quotationName},'%')
+
+        <if test="quotationIdList != null  and quotationIdList != ''">
+            AND sgq.quotation_id in
+            <foreach item="quotationId" collection="quotationIdList" open="(" separator="," close=")">
+                #{quotationId}
+            </foreach>
+        </if>
+
+        <if test="spuNoList != null  and spuNoList != ''">
+            AND sgqg.spu_no in
+            <foreach item="spuNo" collection="spuNoList" open="(" separator="," close=")">
+                #{spuNo}
+            </foreach>
+        </if>
+
+        order by  sgqg.spu_no desc
+    </select>
+
+    <select id="selectStorePriceSettingDetailsByPriceIdForParams" parameterType="StorePriceSettingDetail" resultMap="StorePriceSettingDetailResult">
+          select
+            spsd.setting_id,
+            spsd.price_id,
+            spsd.dept_id,
+            sd.dept_name,
+            spsd.goods_id,
+            sgqg.property_name,
+            sgq.quotation_id,
+            sgq.quotation_name,
+            sgqg.spu_no,
+            spsd.price,
+            spsd.unit_id,
+            sgs.name as spu_name,
+            sgsu.name as unit_name,
+            sgqg.settlement_unit,
+            if( spsd.unit_id=sgqg.unit_id or  sgsuc.sub_case_main is null,1,sgsuc.sub_case_main) as sub_case_main,
+            if( spsd.unit_id=sgqg.unit_id or  sgsuc.sub_case_main is null,1,sgsuc.sub_case_main)*spsd.price as sell_price,
+            spsd.setting_date
+        from store_price_setting_detail spsd
+                 left join sys_dept sd on spsd.dept_id=sd.dept_id
+                 left join  ( select t1.*,t2.settlement_unit ,t2.unit_id from store_goods_quotation_goods  t1 left join  store_goods_sales_unit t2 on t2.unit_id =t1.unit_ids ) as sgqg  on sgqg.goods_id =spsd.goods_id
+                 left join  store_goods_quotation sgq on sgq.quotation_id =sgqg.quotation_id
+                 left join  store_goods_sales_unit sgsu on sgsu.unit_id =spsd.unit_id
+                 left join store_goods_spu_unit_conversion sgsuc on sgsuc.spu_no =spsd.spu_id and sgsuc.dept_id=spsd.dept_id
+                 left join store_goods_spu sgs on sgs.spu_no =spsd .spu_id
+        where sgqg.status!=0 and sgq.status=1 and spsd.price_id = #{priceId} and sgs.name like CONCAT('%',#{spuName},'%') and sgq.quotation_name like CONCAT('%',#{quotationName},'%')
+        <if test="paramsType != null  and paramsType != '' and paramsType == 'quotation'">
+            group by sgq.quotation_id
+        </if>
+        <if test="paramsType != null  and paramsType != '' and paramsType == 'spu'">
+            group by sgqg.spu_no
+        </if>
+        order by  sgqg.spu_no desc
+    </select>
+
+    <!--<select id="selectStorePriceSettingDetailListByDeptId" parameterType="String" resultMap="StorePriceSettingDetailResult">
+        <include refid="selectStorePriceSettingDetailVo"/>
+        where dept_id = #{deptId}
+    </select>-->
+
+    <select id="selectStorePriceSettingDetailListByDeptId" parameterType="String" resultMap="StorePriceSettingDetailResult">
+        <include refid="selectStorePriceSettingDetailVoByDeptid"/>
+        where t1.dept_id = #{deptId}
+    </select>
+        
+    <insert id="insertStorePriceSettingDetail" parameterType="StorePriceSettingDetail" useGeneratedKeys="true" keyProperty="settingId">
+        insert into store_price_setting_detail
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="priceId != null ">price_id,</if>
+            <if test="spuId != null  and spuId != ''">spu_id,</if>
+            <if test="deptId != null  and deptId != ''">dept_id,</if>
+            <if test="unitId != null  and unitId != ''">unit_id,</if>
+            <if test="price != null ">price,</if>
+            <if test="settingDate != null ">setting_date,</if>
+            <if test="status != null  and status != ''">status,</if>
+            <if test="createTime != null ">create_time,</if>
+            <if test="lastModifyTime != null ">last_modify_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="priceId != null ">#{priceId},</if>
+            <if test="spuId != null  and spuId != ''">#{spuId},</if>
+            <if test="deptId != null  and deptId != ''">#{deptId},</if>
+            <if test="unitId != null  and unitId != ''">#{unitId},</if>
+            <if test="price != null ">#{price},</if>
+            <if test="settingDate != null ">#{settingDate},</if>
+            <if test="status != null  and status != ''">#{status},</if>
+            <if test="createTime != null ">#{createTime},</if>
+            <if test="lastModifyTime != null ">#{lastModifyTime},</if>
+         </trim>
+    </insert>
+
+
+
+    <insert id="insertStorePriceSettingDetailBatch" parameterType="java.util.List" useGeneratedKeys="true" >
+        insert into store_price_setting_detail(price_id,spu_id,dept_id,unit_id,goods_id,price,setting_date,status)
+        values
+        <foreach collection="list" item="item" index="index" separator=",">
+        (#{item.priceId},#{item.spuNo},#{item.deptId},#{item.unitId},#{item.goodsId},#{item.price},#{item.settingDate},#{item.status})
+        </foreach>
+    </insert>
+
+    <update id="updateStorePriceSettingDetail" parameterType="StorePriceSettingDetail">
+        update store_price_setting_detail
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="priceId != null ">price_id = #{priceId},</if>
+            <if test="spuId != null  and spuId != ''">spu_id = #{spuId},</if>
+            <if test="deptId != null  and deptId != ''">dept_id = #{deptId},</if>
+            <if test="unitId != null  and unitId != ''">unit_id = #{unitId},</if>
+            <if test="price != null ">price = #{price},</if>
+            <if test="settingDate != null ">setting_date = #{settingDate},</if>
+            <if test="status != null  and status != ''">status = #{status},</if>
+            <if test="createTime != null ">create_time = #{createTime},</if>
+            <if test="lastModifyTime != null ">last_modify_time = #{lastModifyTime},</if>
+        </trim>
+        where setting_id = #{settingId}
+    </update>
+
+    <update id="updateStorePriceSettingDetailBatch"  parameterType="java.util.List">
+            update store_price_setting_detail
+        <trim prefix="set" suffixOverrides=",">
+            <trim prefix="price=case" suffix="end,">
+                <foreach collection="list" item="item" index="index">
+                    <if test="item.price!=null">
+                        when goods_id=#{item.goodsId} and  setting_date=#{item.settingDate} then #{item.price}
+                    </if>
+                </foreach>
+            </trim>
+        </trim>
+        where
+        <foreach collection="list" separator="or" item="item" index="index">
+            goods_id=#{item.goodsId} and  setting_date=#{item.settingDate}
+        </foreach>
+    </update>
+
+
+
+    <insert id="insertStorePriceSettingDetailByDeptId"  parameterType="String">
+       insert into store_price_setting_detail (price_id,spu_id,dept_id,unit_id ,price,setting_date,goods_id)
+                       select a.setting_id as price_id ,c.spu_no as spu_id,a.dept_id ,sgsu.main_unit_id as unit_id ,
+                       ifnull( t5.price,c.price) as price ,a.opt_date as setting_date ,c.goods_id from store_price_setting a
+                          left join store_goods_quotation b on a.dept_id =b.dept_id
+                          left join store_goods_quotation_goods c on b.quotation_id=c.quotation_id
+                          left join store_goods_spu_unit sgsu on c.spu_no =sgsu.spu_no
+                          left join (select p2.price_id,p2.price,p2.goods_id from store_price_setting p1
+                          left join store_price_setting_detail p2 on p1.setting_id =p2.price_id where  p1.status='2') t5
+                            on t5.price_id =a.setting_id and t5.goods_id=c.goods_id
+                          where a.opt_date =#{optDate} and c.spu_no is not null and c.status!=0  and b.status='1' and  a.dept_id=#{deptId}
+                          and c.goods_id  not in (select goods_id from store_price_setting_detail
+                          where setting_date =#{optDate} and dept_id =#{deptId})
+    </insert>
+
+
+    <update id="updateStorePriceSettingDetailByDeptId" parameterType="String">
+        update store_price_setting_detail set status = #{status}
+        where dept_id = #{deptId}
+    </update>
+
+    <delete id="deleteStorePriceSettingDetailById" parameterType="Integer">
+        delete from store_price_setting_detail where setting_id = #{settingId}
+    </delete>
+
+    <delete id="deleteStorePriceSettingDetailByIds" parameterType="String">
+        delete from store_price_setting_detail where setting_id in 
+        <foreach item="settingId" collection="array" open="(" separator="," close=")">
+            #{settingId}
+        </foreach>
+    </delete>
+    
+</mapper>

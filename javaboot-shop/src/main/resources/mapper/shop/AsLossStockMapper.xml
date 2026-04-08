@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaboot.shop.mapper.AsLossStockMapper">
+    
+    <resultMap type="AsLossStock" id="AsLossStockResult">
+        <result property="spuNo"    column="spu_no"    />
+        <result property="deptId"    column="dept_id"    />
+        <result property="statDate"    column="stat_date"    />
+        <result property="totalLossQuanity"    column="total_loss_quanity"    />
+        <result property="orderLossQuanity"    column="order_loss_quanity"    />
+        <result property="stockLossQuanity"    column="stock_loss_quanity"    />
+        <result property="intransitLossQuanity"    column="intransit_loss_quanity"    />
+    </resultMap>
+
+    <sql id="selectAsLossStockVo">
+        select spu_no, dept_id, stat_date, total_loss_quanity, order_loss_quanity, stock_loss_quanity, intransit_loss_quanity from as_loss_stock
+    </sql>
+
+    <select id="selectAsLossStockList" parameterType="AsLossStock" resultMap="AsLossStockResult">
+        <include refid="selectAsLossStockVo"/>
+        <where>  
+            <if test="totalLossQuanity != null "> and total_loss_quanity = #{totalLossQuanity}</if>
+            <if test="orderLossQuanity != null "> and order_loss_quanity = #{orderLossQuanity}</if>
+            <if test="stockLossQuanity != null "> and stock_loss_quanity = #{stockLossQuanity}</if>
+            <if test="intransitLossQuanity != null "> and intransit_loss_quanity = #{intransitLossQuanity}</if>
+            <if test="statDate != null "> and stat_date = #{statDate}</if>
+            <if test="deptId != null and deptId != '' "> and dept_id = #{deptId}</if>
+            <if test="spuNo != null and spuNo != '' "> and spu_no = #{spuNo}</if>
+        </where>
+    </select>
+    
+    <select id="selectAsLossStockById" parameterType="String" resultMap="AsLossStockResult">
+        <include refid="selectAsLossStockVo"/>
+        where spu_no = #{spuNo}
+    </select>
+        
+    <insert id="insertAsLossStock" parameterType="AsLossStock">
+        insert into as_loss_stock
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="spuNo != null  and spuNo != ''">spu_no,</if>
+            <if test="deptId != null  and deptId != ''">dept_id,</if>
+            <if test="statDate != null ">stat_date,</if>
+            <if test="totalLossQuanity != null ">total_loss_quanity,</if>
+            <if test="orderLossQuanity != null ">order_loss_quanity,</if>
+            <if test="stockLossQuanity != null ">stock_loss_quanity,</if>
+            <if test="intransitLossQuanity != null ">intransit_loss_quanity,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="spuNo != null  and spuNo != ''">#{spuNo},</if>
+            <if test="deptId != null  and deptId != ''">#{deptId},</if>
+            <if test="statDate != null ">#{statDate},</if>
+            <if test="totalLossQuanity != null ">#{totalLossQuanity},</if>
+            <if test="orderLossQuanity != null ">#{orderLossQuanity},</if>
+            <if test="stockLossQuanity != null ">#{stockLossQuanity},</if>
+            <if test="intransitLossQuanity != null ">#{intransitLossQuanity},</if>
+         </trim>
+    </insert>
+
+    <update id="updateAsLossStock" parameterType="AsLossStock">
+        update as_loss_stock
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="deptId != null  and deptId != ''">dept_id = #{deptId},</if>
+            <if test="statDate != null ">stat_date = #{statDate},</if>
+            <if test="totalLossQuanity != null ">total_loss_quanity = #{totalLossQuanity},</if>
+            <if test="orderLossQuanity != null ">order_loss_quanity = #{orderLossQuanity},</if>
+            <if test="stockLossQuanity != null ">stock_loss_quanity = #{stockLossQuanity},</if>
+            <if test="intransitLossQuanity != null ">intransit_loss_quanity = #{intransitLossQuanity},</if>
+        </trim>
+        where spu_no = #{spuNo}
+    </update>
+
+    <delete id="deleteAsLossStockById" parameterType="String">
+        delete from as_loss_stock where spu_no = #{spuNo}
+    </delete>
+
+    <delete id="deleteAsLossStockByIds" parameterType="String">
+        delete from as_loss_stock where spu_no in 
+        <foreach item="spuNo" collection="array" open="(" separator="," close=")">
+            #{spuNo}
+        </foreach>
+    </delete>
+    
+</mapper>

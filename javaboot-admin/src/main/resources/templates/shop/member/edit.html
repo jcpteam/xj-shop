@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <meta charset="utf-8">
+    <title>修改商城会员信息</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <link rel="stylesheet" href="../../../static/assets/libs/layui/css/layui.css" th:href="@{/assets/libs/layui/css/layui.css}"/>
+    <link rel="stylesheet" href="../../../static/assets/module/admin.css" th:href="@{/assets/module/admin.css}"/>
+
+    <style>
+        #formAdvForm .layui-form-item {
+            margin-top: 20px;
+            margin-bottom: 0;
+        }
+
+        #formAdvForm .layui-form-item .layui-inline {
+            margin-bottom: 25px;
+            margin-right: 0;
+        }
+
+        .form-group-bottom {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            padding: 10px 20px;
+            background-color: #fff;
+            box-shadow: 0 -1px 2px 0 rgba(0, 0, 0, .05);
+        }
+    </style>
+</head>
+<body class="bg-white">
+
+<!-- 正文开始 -->
+<form class="layui-form bg-white" id="inputForm" th:onsubmit="return false" th:action="@{/shop/member/edit}" th:object="${storeMember}">
+    <div class="layui-card">
+        <div class="layui-card-header">公司信息</div>
+        <div class="layui-card-body">
+            <div class="layui-form-item layui-row">
+                <input name="id" th:field="*{id}" type="hidden">
+                <div class="layui-inline layui-col-md3">
+                    <label class="layui-form-label layui-form-required">客户名称:</label>
+                    <div class="layui-input-block">
+                        <input name="phone" th:field="*{nickname}" type="text" class="layui-input " lay-verify="required" />
+                    </div>
+                </div>
+                <div class="layui-inline layui-col-md3">
+                    <label class="layui-form-label layui-form-required">客户编号:</label>
+                    <div class="layui-input-block">
+                        <input name="phone" th:field="*{customerNo}" type="text" lay-verify="required" class="layui-input layui-disabled" readonly="true" disabled="true" />
+                    </div>
+                </div>
+                <div class="layui-inline layui-col-md4">
+                    <label class="layui-form-label">总公司:</label>
+                    <!--<div class="layui-input-block">-->
+                        <!--<input name="superCustomerName" th:field="*{superCustomerName}" type="text"  class="layui-input" />-->
+                    <!--</div>-->
+
+                    <div class="layui-input-inline" style="margin-left: 10px;">
+                        <select name="superCustomerNo" id="superCustomerNo" lay-filter="superCustomerNo" th:field="*{superCustomer}" lay-search>
+                            <option value="" th:checked="true">全部</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="layui-form-item layui-row">
+                <div class="layui-inline layui-col-md4">
+                    <label class="layui-form-label ">业务员:</label>
+                    <div class="layui-input-block">
+                        <select th:with="type=${opmanagerList}"  name="opmanagerId"  id="opmanagerId" th:field="*{opmanagerId}" lay-filter="opmanagerId" >
+                            <option value="">请选择业务员</option>
+                            <option th:each="dict:${type}"  th:value="${dict.userId}" th:text="${{dict.userName}}"></option>
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-inline layui-col-md3" >
+                    <label class="layui-form-label ">客户分类:</label>
+                    <div class="layui-input-block">
+                        <select class="layui-select" name="customerType" th:with="type=${@dict.getType('store_member_type')}" th:field="*{customerType}" >
+                            <option value="">请选择客户分类</option>
+                            <option th:each="dict : ${type}" th:text="${dict.dictLabel}" th:value="${dict.dictValue}"></option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="layui-inline layui-col-md3" >
+                    <label class="layui-form-label ">结算类型:</label>
+                    <div class="layui-input-block">
+                        <select class="layui-select" name="settlementType" th:with="type=${@dict.getType('settlement_type')}" th:field="*{settlementType}">
+                            <option th:each="dict : ${type}" th:text="${dict.dictLabel}" th:value="${dict.dictValue}"></option>
+                        </select>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="layui-form-item layui-row">
+
+                <div class="layui-inline layui-col-md4">
+                    <label class="layui-form-label layui-form-required" style="margin-left: -10px;width: 90px">所属报价单:</label>
+                    <div class="layui-input-block"  style="width:calc(100% - 110px)">
+                        <select name="quotationId" id="quotationId" lay-filter="houseId" lay-search lay-verType="tips" lay-verify="required">
+                        </select>
+                    </div>
+                </div>
+
+                <div class="layui-inline layui-col-md3"  >
+                    <label class="layui-form-label layui-form-required">
+                        所属区域:
+                    </label>
+                    <div class="layui-input-block" >
+                        <select th:with="type=${deptList}"  name="customerArea"  lay-verify="required" xm-select="roleid"  id="customerArea" th:field="*{customerArea}" lay-filter="customerArea" >
+                            <option value="">请选择区域</option>
+                            <option th:each="dict:${type}"  th:value="${dict.value}" th:text="${{dict.name}}"></option>
+                        </select>
+
+                    </div>
+                </div>
+
+                <div class="layui-inline layui-col-md3">
+                    <label class="layui-form-label layui-form-required">所属仓库:</label>
+                    <div class="layui-input-block"  >
+                        <select name="houseId" id="houseId" lay-filter="houseId" lay-search lay-verType="tips" lay-verify="required">
+                        </select>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="layui-form-item layui-row">
+                <div class="layui-inline layui-col-md10" >
+                    <label class="layui-form-label ">客户标签:</label>
+                    <div class="layui-input-block" style="width:calc(100% - 93px)" id="signature">
+<!--                        <select class="layui-select" name="signature" th:with="type=${@dict.getType('store_member_label')}" th:field="*{signature}" multiple="">-->
+<!--                            <option value="">请选择客户标签</option>-->
+<!--                            <option th:each="dict : ${type}" th:text="${dict.dictLabel}" th:value="${dict.dictValue}"></option>-->
+<!--                        </select>-->
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="layui-form-item layui-row">
+                <div class="layui-inline layui-col-md5" >
+                    <label class="layui-form-label ">打印模板:</label>
+                    <!--<div class="layui-input-block">-->
+                        <!--<select class="layui-select" name="printMoulde" >-->
+                            <!--<option value="1">默认模板</option>-->
+                        <!--</select>-->
+                    <!--</div>-->
+                    <div class="layui-input-block">
+                        <select class="layui-select" name="printType" th:with="type=${@dict.getType('store_member_print_type')}" th:field="*{printType}" >
+                            <option value="">请选择模板类型</option>
+                            <option th:each="dict : ${type}" th:text="${dict.dictLabel}" th:value="${dict.dictValue}"></option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="layui-inline layui-col-md5"  style="margin-left: 10px">
+                    <label class="layui-form-label ">配送方式:</label>
+                    <div class="layui-input-block">
+                        <select class="layui-select"  name="deliveryType" th:with="type=${@dict.getType('delivery_type')}" th:field="*{deliveryType}">
+                            <option th:each="dict : ${type}" th:text="${dict.dictLabel}" th:value="${dict.dictValue}"></option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <div class="layui-form-item layui-row">
+                <div class="layui-inline layui-col-md10">
+                    <label class="layui-form-label ">详细地址:</label>
+                    <div class="layui-input-block" style="width:calc(100% - 93px)">
+                        <input name="nickname" th:field="*{address}" type="text" class="layui-input" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="layui-form-item layui-row">
+
+                <div class="layui-inline layui-col-md10">
+                    <label class="layui-form-label ">备用信息:</label>
+                    <div class="layui-input-block" style="width:calc(100% - 93px)">
+                        <textarea name="nickname" th:field="*{remark}" type="text" class="layui-textarea" />
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="layui-card">
+        <div class="layui-card-header">联系人信息</div>
+        <div class="layui-card-body">
+
+            <div class="layui-form-item layui-row">
+                <div class="layui-inline layui-col-md4">
+                    <label class="layui-form-label ">姓名:</label>
+                    <div class="layui-input-block">
+                        <input name="phone" th:field="*{contactName}" type="text" class="layui-input " />
+                    </div>
+                </div>
+                <div class="layui-inline layui-col-md3">
+                    <label class="layui-form-label ">手机:</label>
+                    <div class="layui-input-block">
+                        <input name="nickname" th:field="*{phone}" type="text" class="layui-input" />
+                    </div>
+                </div>
+                <div class="layui-inline layui-col-md3">
+                    <label class="layui-form-label ">电话:</label>
+                    <div class="layui-input-block">
+                        <input name="phone" th:field="*{telephone}" type="text" class="layui-input " />
+                    </div>
+                </div>
+            </div>
+
+            <div class="layui-form-item layui-row">
+
+                <div class="layui-inline layui-col-md4">
+                    <label class="layui-form-label ">职位:</label>
+                    <div class="layui-input-block">
+                        <input name="nickname" th:field="*{position}" type="text" class="layui-input" />
+                    </div>
+                </div>
+                <div class="layui-inline layui-col-md3">
+                    <label class="layui-form-label ">Email:</label>
+                    <div class="layui-input-block">
+                        <input name="phone" th:field="*{email}" type="text" class="layui-input " />
+                    </div>
+                </div>
+                <div class="layui-inline layui-col-md3">
+                    <label class="layui-form-label ">QQ:</label>
+                    <div class="layui-input-block">
+                        <input name="nickname" type="text" th:field="*{openidQq}" class="layui-input" />
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+
+    <div class="layui-card">
+        <div class="layui-card-header">财务信息</div>
+        <div class="layui-card-body" >
+            <div class="layui-form-item layui-row">
+                <div class="layui-inline layui-col-md4">
+                    <label class="layui-form-label ">财务账号:</label>
+                    <div class="layui-input-block">
+                        <input name="phone" th:field="${account.accountNumber}" type="text" class="layui-input layui-disabled" readonly="true" disabled="true" />
+                    </div>
+                </div>
+                <div class="layui-inline layui-col-md3">
+                    <label class="layui-form-label ">现金账户:</label>
+                    <div class="layui-input-block">
+                        <input name="nickname" th:field="${account.cash}" type="text" class="layui-input layui-disabled" readonly="true" disabled="true"  />
+                    </div>
+                </div>
+                <div class="layui-inline layui-col-md3">
+                    <label class="layui-form-label ">状态:</label>
+                    <div class="layui-input-block" th:switch="${account.status}">
+                        <input name="phone" th:case="'1'" value="启用" type="text" class="layui-input layui-disabled" readonly="true" disabled="true"  />
+                        <input name="phone" th:case="'2'" value="禁用" type="text" class="layui-input layui-disabled" readonly="true" disabled="true"  />
+                        <input name="phone" th:case="*" type="text" class="layui-input layui-disabled" readonly="true" disabled="true"  />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-card" style="margin-bottom: 60px">
+        <div class="layui-card-header">子账号</div>
+        <div class="layui-card-body">
+            <table id="formAdvTable" lay-filter="formAdvTable"></table>
+        </div>
+    </div>
+
+    <div class="form-group-bottom text-center">
+        <button id="submitBtn" class="layui-btn" lay-filter="submitBtn" lay-submit>保存</button>
+        <button id="closeBtn" class="layui-btn layui-btn-primary" ew-event="closeDialog">关闭</button>
+    </div>
+
+</form>
+
+<script type="text/javascript" src="../../../static/assets/libs/layui/layui.js" th:src="@{/assets/libs/layui/layui.js}"></script>
+<script type="text/javascript" src="../../../static/assets/js/common.js" th:src="@{/assets/js/common.js}"></script>
+<script th:inline="javascript">
+    var ctx = [[@{/}]];
+    var memberInfo = [[${storeMember}]];
+    var labelDate = [[${@dict.getType('store_member_label')}]];
+</script>
+<script th:inline="none">
+    layui.use(['index', 'form', 'formX', 'table', 'xmSelect', 'ext'], function(){
+        var $ = layui.$;
+        var form = layui.form;
+        var formX = layui.formX;
+        var layer = layui.layer;
+        var table = layui.table;
+        var admin = layui.admin;
+        var xmSelect = layui.xmSelect;
+        var prefix = ctx + "shop/member";
+        var subListUrl = ctx + 'system/user/list';
+
+        // 渲染多选下拉
+        var xmSelectData = []
+        layui.each(labelDate, function (index, item) {
+            xmSelectData.push({name:item.dictLabel,value:item.dictValue})
+        })
+        var selectData = xmSelect.render({
+            el: '#signature',
+            data: xmSelectData
+        });
+        if(memberInfo.signature){
+            selectData.setValue(memberInfo.signature.split(','))
+        }
+        initHouse();
+        initQuotation();
+        initOpmanager();
+        form.on('select(customerArea)',function (data) {
+            initHouse();
+            initQuotation();
+            initOpmanager();
+        })
+
+        //区域对应的仓库列表------------------------------------------------------------------------------------------------------
+        function initHouse() {
+            var deptId = $('#customerArea').val();
+            if(!deptId){
+                deptId=''
+            }
+            admin.req(ctx + "shop/house/list", {deptId: deptId}, function (result) {
+                $("#houseId").html($('<option value="">请选择仓库</option>'));
+                for (var i=0;i<result.rows.length;i++) {
+                    var data= result.rows[i];
+                    var option = $('<option></option>');
+                    option.attr("value", data.storeId);
+                    if(memberInfo.houseId==data.storeId){
+                        option.attr("selected",true);
+                    }
+                    option.text(data.storeName);
+                    $("#houseId").append(option)
+                }
+                form.render('select');
+            },'post')
+        }
+
+        //区域报价单列表------------------------------------------------------------------------------------------------------
+        function initQuotation() {
+            var deptId = $('#customerArea').val();
+            if(!deptId){
+                deptId=''
+            }
+            admin.req(ctx + "shop/quotation/list", {deptId: deptId, queryAll:true}, function (result) {
+                $("#quotationId").html($('<option value="">请选择报价单</option>'));
+                for (var i=0;i<result.rows.length;i++) {
+                    var data= result.rows[i];
+                    var option = $('<option></option>');
+                    option.attr("value", data.quotationId);
+                    if(memberInfo.quotationId==data.quotationId){
+                        option.attr("selected",true);
+                    }
+                    option.text(data.quotationName);
+                    $("#quotationId").append(option)
+                }
+                form.render('select');
+            },'post')
+        }
+
+        //业务员列表------------------------------------------------------------------------------------------------------
+        function initOpmanager() {
+            var deptId = $('#customerArea').val();
+            if(!deptId){
+                deptId=''
+            }
+            admin.req(ctx + "system/user/getOpmanagerList", {deptId: deptId}, function (result) {
+                $("#opmanagerId").html($('<option value="">请选择业务员</option>'));
+                for (var i=0;i<result.length;i++) {
+                    var data= result[i];
+                    var option = $('<option></option>');
+                    option.attr("value", data.userId);
+                    if(memberInfo.opmanagerId==data.userId){
+                        option.attr("selected",true);
+                    }
+                    option.text(data.userName);
+                    $("#opmanagerId").append(option)
+                }
+                form.render('select');
+            },'post')
+        }
+
+
+        /* 初始化子账号 */
+        loadTable()
+        function loadTable() {
+            table.render({
+                elem: '#formAdvTable'
+                ,url:subListUrl
+                , method: 'POST'
+
+                , cellMinWidth: 80
+                , page: false
+                , limit: 10
+                ,where: {
+                    memberId: memberInfo.id,
+                }
+                , cols: [[
+                    , {field: 'userId', title: '子账号ID', hide: true}
+                    , {field: 'row', title: 'row', hide: true}
+                    , {field: 'userId', minWidth: 100, title: '子账号ID'}
+                    , {field: 'loginName', title: '子账号'}
+                    , {field: 'name', minWidth: 200, title: '所属客户'}
+                    , {field: 'phonenumber', title: '手机号'}
+                    , {field: 'userName', minWidth: 200, title: '联系人'}
+                    ,{field: 'status', title: '用户状态', width: 100, templet:function(res){
+                            if(res.status == 0){
+                                return '启用';
+                            }else{
+                                return '禁用';
+                            }
+                        }}
+                    ,{field: 'createTime', title: '创建时间', width: 200}
+                ]]
+                ,parseData: function(res){ //将原始数据解析成 table 组件所规定的数据
+                    return {
+                        "code": res.code, //解析接口状态
+                        "msg": res.msg, //解析提示文本
+                        "count": res.total, //解析数据长度
+                        "data": res.rows //解析数据列表
+                    };
+                }
+                ,id: 'tclassReload'
+                ,done: function () {
+
+                }
+            });
+        }
+
+
+        //商户修改------------------------------------------------------------------------------------------------------
+        layui.form.on('submit(submitBtn)', function (data) {
+            var field = data.field; //获取提交的字段
+            if(selectData.getValue('valueStr')){
+                data.field.signature = selectData.getValue('valueStr');
+            } else{
+                data.field.signature = '';
+            }
+
+            admin.req(prefix + '/edit',field, function (data) {
+                if (data.code == 0) {
+                    admin.success('保存成功!');
+                    setTimeout(function(){
+                        //先得到当前iframe层的索引
+                        var index = parent.layer.getFrameIndex(window.name);
+                        //再执行关闭
+                        parent.layer.close(index);
+                    },1000);
+
+                } else {
+                    admin.error(data.msg);
+                }
+            }, 'post');
+        });
+
+        //客户列表用于手动设置结算客户--------------------------------
+        admin.req(ctx + "shop/member/list", {pageNo:1,pageSize:10000}, function (result) {
+            if (result && result.rows) {
+                //设置商户列表可搜索值
+                var select = document.getElementById('superCustomerNo');
+                for (var i = 0; i < result.rows.length; i++) {
+                    var data = result.rows[i];
+                    var option = document.createElement("option");
+                    option.setAttribute("value", data.customerNo);
+                    option.innerText = data.nickname;
+                    if(memberInfo.superCustomer && memberInfo.superCustomer==data.customerNo){
+                        option.setAttribute("selected",true);
+                    }
+                    select.appendChild(option)
+                }
+                form.render('select');
+            }
+        }, 'post');
+
+    })
+</script>
+</body>
+</html>

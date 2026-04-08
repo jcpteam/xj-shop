@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaboot.shop.mapper.StoreRouteShopMapper">
+    
+    <resultMap type="StoreRouteShop" id="StoreRouteShopResult">
+        <result property="id"    column="id"    />
+        <result property="routeId"    column="route_id"    />
+        <result property="customerId"    column="customer_id"    />
+        <result property="sequenceNo"    column="sequence_no"    />
+    </resultMap>
+
+    <sql id="selectStoreRouteShopVo">
+ --         select route_id, customer_id, sequence_no from store_route_shop
+        select srs.id,srs.route_id, srs.customer_id, srs.sequence_no,sdr.route_name,sm.nickname as customer_name,sm.phone,sm.address as address
+        from store_route_shop srs
+        left join store_deliver_route sdr on srs.route_id = sdr.route_id
+        left join store_member sm on srs.customer_id = sm.id
+    </sql>
+
+    <select id="selectStoreRouteShopList" parameterType="StoreRouteShop" resultMap="StoreRouteShopResult">
+        <include refid="selectStoreRouteShopVo"/>
+        <where>
+            <if test="routeId != null and routeId != ''"> and srs.route_id = #{routeId}</if>
+            <if test="customerId != null and customerId != ''"> and srs.customer_id = #{customerId}</if>
+            <if test="searchKey != null and searchKey!=''">
+                and (sm.nickname like concat('%', #{searchKey}, '%'))
+            </if>
+        </where>
+        order by srs.sequence_no asc
+    </select>
+    
+    <select id="selectStoreRouteShopById" parameterType="Long" resultMap="StoreRouteShopResult">
+        <include refid="selectStoreRouteShopVo"/>
+        where srs.id = #{id}
+    </select>
+        
+    <insert id="insertStoreRouteShop" parameterType="StoreRouteShop" useGeneratedKeys="true" keyProperty="id">
+        insert into store_route_shop
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="routeId != null ">route_id,</if>
+            <if test="customerId != null ">customer_id,</if>
+            <if test="sequenceNo != null ">sequence_no,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="routeId != null ">#{routeId},</if>
+            <if test="customerId != null ">#{customerId},</if>
+            <if test="sequenceNo != null ">#{sequenceNo},</if>
+         </trim>
+    </insert>
+
+    <update id="updateStoreRouteShop" parameterType="StoreRouteShop">
+        update store_route_shop
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="routeId != null ">route_id = #{routeId},</if>
+            <if test="customerId != null ">customer_id = #{customerId},</if>
+            <if test="sequenceNo != null ">sequence_no = #{sequenceNo},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteStoreRouteShopById" parameterType="Long">
+        delete from store_route_shop where id = #{id}
+    </delete>
+
+    <delete id="deleteStoreRouteShopByIds" parameterType="String">
+        delete from store_route_shop where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+    <resultMap type="com.javaboot.shop.dto.StoreCustomerDTO" id="StoreCustomerResult">
+        <result property="customerId"    column="customer_id"    />
+        <result property="customerName"    column="customer_name"    />
+        <result property="phone"    column="phone"    />
+        <result property="adress"    column="adress"    />
+    </resultMap>
+
+    <select id="getCustomerList" resultMap="StoreCustomerResult">
+        select sm.id as customer_id, sm.nickname as customer_name,sm.phone,sm.address as adress
+        from store_member sm
+    </select>    
+</mapper>

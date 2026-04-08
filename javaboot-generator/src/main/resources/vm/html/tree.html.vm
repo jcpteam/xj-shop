@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" >
+<head>
+    <th:block th:include="include :: header('${functionName}树选择')" />
+</head>
+<style>
+    .wrapper {
+        padding: 0 20px;
+    }
+    .box-main {
+        margin: 0;
+        border: 0;
+        padding-top: 2px;
+        border-radius: 0;
+        box-shadow: none;
+    }
+    .box {
+        position: relative;
+        border-radius: 3px;
+        background: #ffffff;
+        margin-bottom: 20px;
+        width: 100%;
+        box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+    }
+    body {
+        height: auto;
+    }
+    .treeSearchInput {padding:13px 0 0 20px;}
+    .treeSearchInput label {padding:5px 0 3px 0;font-size:13px;font-weight:normal;vertical-align:middle;}
+    .treeSearchInput input {width:145px;vertical-align:middle;line-height:24px;height:26px;border:1px solid #bbb;padding:0 4px;}
+    .treeSearchInput button {vertical-align:middle;height:26px;height:26px;font-size:13px;padding:0 8px;}
+    .treeShowHideButton {position:absolute;right:8px;top:2px;font-size:12px;color:#333;z-index:3;}
+    .treeShowHideButton label {cursor:pointer;}
+    .treeExpandCollapse {float:right;margin:6px 5px;padding:5px;font-size:12px;color:#333;position:relative;z-index:2;background:#fff;}
+    .treeExpandCollapse a {text-decoration:none;color:#333}
+    .treeselect.ztree {padding:10px 20px;}
+</style>
+
+<!-- 加载动画 -->
+<div class="page-loading">
+    <div class="ball-loader">
+        <span></span><span></span><span></span><span></span>
+    </div>
+</div>
+
+<!-- 正文开始 -->
+<body class="hold-transition box box-main">
+#set($treeId = "${className}?." + $treeCode)
+#set($treeName = "${className}?." + $treeName)
+<input id="treeId"   name="treeId"    type="hidden" th:value="${${treeId}}"/>
+<input id="treeName" name="treeName"  type="hidden" th:value="${${treeName}}"/>
+
+<div class="wrapper">
+    <div class="treeShowHideButton" id="toggleSearch">
+        <label id="btnShow" title="显示搜索" style="display:none;">︾</label>
+        <label id="btnHide" title="隐藏搜索">︽</label>
+    </div>
+    <div class="treeSearchInput" id="search">
+        <label>关键字：</label><input type="text" class="empty" id="keyword" maxlength="50">
+        <button class="layui-btn layui-btn-sm btn" id="btn"> 搜索</button>
+    </div>
+    <div class="treeExpandCollapse">
+        <a href="#" id="expand">展开</a> /
+        <a href="#" id="collapse">折叠</a>
+    </div>
+    <div id="tree" class="ztree treeselect"></div>
+</div>
+
+<script th:inline="javascript">
+    var ctx = [[@{/}]];
+</script>
+<th:block th:include="include :: footer" />
+<script th:inline="javascript">
+    layui.use(['index', 'layer', 'form', 'zTree', 'ext'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        var zTree = layui.zTree;
+        var ext = layui.ext;
+        var admin = layui.admin;
+        var index = layui.index;
+
+        $(function() {
+            var url = ctx + "${moduleName}/${businessName}/treeData";
+            var options = {
+                url: url,
+                expandLevel: 2,
+                onClick : zOnClick
+            };
+            $.tree.init(options);
+        });
+
+        function zOnClick(event, treeId, treeNode) {
+            var treeId = treeNode.id;
+            var treeName = treeNode.name;
+            $("#treeId").val(treeId);
+            $("#treeName").val(treeName);
+        }
+
+        $('#toggleSearch').click(function () {
+            $.tree.toggleSearch();
+        })
+        $('#expand').click(function () {
+            $.tree.expand();
+        })
+        $('#collapse').click(function () {
+            $.tree.collapse();
+        })
+        $('#btn').click(function () {
+            $.tree.searchNode();
+        })
+
+    });
+
+</script>
+</body>
+</html>

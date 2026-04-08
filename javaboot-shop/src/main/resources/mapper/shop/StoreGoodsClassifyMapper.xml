@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaboot.shop.mapper.StoreGoodsClassifyMapper">
+
+    <resultMap type="com.javaboot.shop.domain.StoreGoodsClassify" id="StoreGoodClassifyResult">
+        <result property="classifyId" column="classify_id"/>
+        <result property="parentId" column="parent_id"/>
+        <result property="name" column="name"/>
+        <result property="anotherName" column="another_name"/>
+        <result property="level" column="level"/>
+        <result property="unit" column="unit"/>
+        <result property="status" column="status"/>
+        <result property="sort" column="sort"/>
+        <result property="createTime" column="create_time"/>
+        <result property="lastModifyTime" column="last_modify_time"/>
+    </resultMap>
+
+    <sql id="selectStoreGoodClassifyVo">
+        select classify_id,sort,parent_id, name, another_name, level, unit, status, create_time, last_modify_time from store_goods_classify
+    </sql>
+
+    <select id="selectStoreGoodClassifyList" parameterType="com.javaboot.shop.domain.StoreGoodsClassify"
+            resultMap="StoreGoodClassifyResult">
+        <include refid="selectStoreGoodClassifyVo"/>
+        <where>
+            <if test="name != null  and name != ''">and name like concat('%', #{name}, '%')</if>
+            <if test="anotherName != null  and anotherName != ''">and another_name like concat('%', #{anotherName},
+                '%')
+            </if>
+            <if test="level != null  and level != ''">and level = #{level}</if>
+            <if test="sort != null ">and level = #{sort}</if>
+            <if test="unit != null  and unit != ''">and unit = #{unit}</if>
+            <if test="status != null  and status != ''">and status = #{status}</if>
+            <if test="parentId != null  and parentId != ''">and parent_id = #{parentId}</if>
+            <if test="lastModifyTime != null ">and last_modify_time = #{lastModifyTime}</if>
+            <if test="classifyIds !=null"> and classify_id in
+                <foreach item="id" collection="classifyIds" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="selectStoreGoodClassifyById" parameterType="String" resultMap="StoreGoodClassifyResult">
+        <include refid="selectStoreGoodClassifyVo"/>
+        where classify_id = #{classifyId}
+    </select>
+
+    <insert id="insertStoreGoodClassify" parameterType="com.javaboot.shop.domain.StoreGoodsClassify">
+        insert into store_goods_classify
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="classifyId != null ">classify_id,</if>
+            <if test="parentId != null ">parent_id,</if>
+            <if test="name != null  and name != ''">name,</if>
+            <if test="anotherName != null  and anotherName != ''">another_name,</if>
+            <if test="level != null  and level != ''">level,</if>
+            <if test="unit != null  and unit != ''">unit,</if>
+            <if test="status != null  and status != ''">status,</if>
+            <if test="sort != null  ">sort,</if>
+            create_time, last_modify_time
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="classifyId != null ">#{classifyId},</if>
+            <if test="name != null  and name != ''">#{name},</if>
+            <if test="anotherName != null  and anotherName != ''">#{anotherName},</if>
+            <if test="level != null  and level != ''">#{level},</if>
+            <if test="unit != null  and unit != ''">#{unit},</if>
+            <if test="status != null  and status != ''">#{status},</if>
+            <if test="sort != null  ">#{sort},</if>
+            now(),now()
+        </trim>
+    </insert>
+
+    <update id="updateStoreGoodClassify" parameterType="com.javaboot.shop.domain.StoreGoodsClassify">
+        update store_goods_classify
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="name != null  and name != ''">name = #{name},</if>
+            <if test="parentId != null and  parentId != ''">parent_id = #{parentId},</if>
+            <if test="anotherName != null  and anotherName != ''">another_name = #{anotherName},</if>
+            <if test="level != null  and level != ''">level = #{level},</if>
+            <if test="unit != null  and unit != ''">unit = #{unit},</if>
+            <if test="sort != null ">sort = #{sort},</if>
+            <if test="status != null  and status != ''">status = #{status},</if>
+            <if test="createTime != null ">create_time = #{createTime},</if>
+            last_modify_time =now()
+        </trim>
+        where classify_id = #{classifyId}
+    </update>
+
+    <delete id="deleteStoreGoodClassifyById" parameterType="String">
+        delete from store_goods_classify where classify_id = #{classifyId}
+    </delete>
+
+    <delete id="deleteStoreGoodClassifyByIds" parameterType="String">
+        delete from store_goods_classify where classify_id in
+        <foreach item="classifyId" collection="array" open="(" separator="," close=")">
+            #{classifyId}
+        </foreach>
+    </delete>
+
+
+
+</mapper>

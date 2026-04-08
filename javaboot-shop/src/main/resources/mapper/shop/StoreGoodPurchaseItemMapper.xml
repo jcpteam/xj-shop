@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaboot.shop.mapper.StoreGoodPurchaseItemMapper">
+
+    <resultMap type="StoreGoodPurchaseItem" id="StoreGoodPurchaseItemResult">
+        <result property="itemId"    column="item_id"    />
+        <result property="purchaseId"    column="purchase_id"    />
+        <result property="spuNo"    column="spu_no"    />
+        <result property="stocksNumber"    column="stocks_number"    />
+        <result property="weightUnit"    column="weight_unit"    />
+        <result property="quantity"    column="quantity"    />
+        <result property="price"    column="price"    />
+        <result property="taxRate"    column="tax_rate"    />
+        <result property="tax"    column="tax"    />
+        <result property="noTaxPrice"    column="no_tax_price"    />
+        <result property="totalPrice"    column="total_price"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="comment"    column="comment"    />
+        <result property="adjustAmount"    column="adjust_amount"    />
+        <result property="lastModifyTime"    column="last_modify_time"    />
+    </resultMap>
+
+    <sql id="selectStoreGoodPurchaseItemVo">
+        select * from store_good_purchase_item
+    </sql>
+
+    <select id="selectStoreGoodPurchaseItemList" parameterType="StoreGoodPurchaseItem" resultMap="StoreGoodPurchaseItemResult">
+        <include refid="selectStoreGoodPurchaseItemVo"/>
+        <where>
+
+            <if test="status != null "> AND status = #{status}</if>
+            <if test="purchaseId != null "> and purchase_id = #{purchaseId}</if>
+            <if test="spuNo != null  and spuNo != ''"> and spu_no = #{spuNo}</if>
+            <if test="stocksNumber != null "> and stocks_number = #{stocksNumber}</if>
+            <if test="quantity != null "> and quantity = #{quantity}</if>
+            <if test="weightUnit != null  and weightUnit != ''"> and weight_unit = #{weightUnit}</if>
+            <if test="lastModifyTime != null "> and last_modify_time = #{lastModifyTime}</if>
+        </where>
+    </select>
+
+    <select id="selectStoreGoodPurchaseItemById" parameterType="Long" resultMap="StoreGoodPurchaseItemResult">
+        <include refid="selectStoreGoodPurchaseItemVo"/>
+        where item_id = #{itemId}
+    </select>
+
+    <insert id="insertStoreGoodPurchaseItem" parameterType="StoreGoodPurchaseItem" useGeneratedKeys="true" keyProperty="itemId">
+        insert into store_good_purchase_item
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="purchaseId != null ">purchase_id,</if>
+            <if test="spuNo != null  and spuNo != ''">spu_no,</if>
+            <if test="stocksNumber != null ">stocks_number,</if>
+            <if test="weightUnit != null  and weightUnit != ''">weight_unit,</if>
+            <if test="price != null ">price,</if>
+            <if test="taxRate != null ">tax_rate,</if>
+            <if test="tax != null ">tax,</if>
+            <if test="noTaxPrice != null ">no_tax_price,</if>
+            <if test="totalPrice != null ">total_price,</if>
+            <if test="adjustAmount != null ">adjust_amount,</if>
+            <if test="createTime != null ">create_time,</if>
+            <if test="lastModifyTime != null ">last_modify_time,</if>
+            <if test="comment != null  and comment != '' ">comment,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="purchaseId != null ">#{purchaseId},</if>
+            <if test="spuNo != null  and spuNo != ''">#{spuNo},</if>
+            <if test="stocksNumber != null ">#{stocksNumber},</if>
+            <if test="weightUnit != null  and weightUnit != ''">#{weightUnit},</if>
+            <if test="price != null ">#{price},</if>
+            <if test="taxRate != null ">#{taxRate},</if>
+            <if test="tax != null ">#{tax},</if>
+            <if test="noTaxPrice != null ">#{noTaxPrice},</if>
+            <if test="totalPrice != null ">#{totalPrice},</if>
+            <if test="adjustAmount != null ">#{adjustAmount},</if>
+            <if test="createTime != null ">#{createTime},</if>
+            <if test="lastModifyTime != null ">#{lastModifyTime},</if>
+            <if test="comment != null  and comment != '' ">#{comment},</if>
+        </trim>
+    </insert>
+
+    <update id="updateStoreGoodPurchaseItem" parameterType="StoreGoodPurchaseItem">
+        update store_good_purchase_item
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="purchaseId != null ">purchase_id = #{purchaseId},</if>
+            <if test="spuNo != null  and spuNo != ''">spu_no = #{spuNo},</if>
+            <if test="stocksNumber != null ">stocks_number = #{stocksNumber},</if>
+            <if test="weightUnit != null  and weightUnit != ''">weight_unit = #{weightUnit},</if>
+            <if test="price != null ">price = #{price},</if>
+            <if test="adjustAmount != null ">adjust_amount = #{adjustAmount},</if>
+            <if test="taxRate != null ">tax_rate = #{taxRate},</if>
+            <if test="tax != null ">tax = #{tax},</if>
+            <if test="noTaxPrice != null ">no_tax_price = #{noTaxPrice},</if>
+            <if test="totalPrice != null ">total_price = #{totalPrice},</if>
+            <if test="createTime != null ">create_time = #{createTime},</if>
+            <if test="lastModifyTime != null ">last_modify_time = #{lastModifyTime},</if>
+            <if test="comment != null  and comment != ''">comment = #{comment},</if>
+        </trim>
+        where item_id = #{itemId}
+    </update>
+    <delete id="deleteStoreGoodPurchaseItemById" parameterType="Long">
+        delete from store_good_purchase_item where item_id = #{itemId}
+    </delete>
+
+    <delete id="deleteStoreGoodPurchaseItemByIds" parameterType="String">
+        delete from store_good_purchase_item where item_id in
+        <foreach item="itemId" collection="array" open="(" separator="," close=")">
+            #{itemId}
+        </foreach>
+    </delete>
+
+
+    <select id="selectPurchaseItemNum" parameterType="StoreGoodPurchaseItem" resultMap="StoreGoodPurchaseItemResult">
+       SELECT
+          spu_no, sum(quantity) quantity,sum(stocks_number) stocks_number
+       FROM
+          store_good_purchase t1,  store_good_purchase_item t2
+       WHERE t1.dept_id = #{deptId} AND t1.purchase_id = t2.purchase_id
+             AND t2.create_time >= #{startTime} AND t2.create_time &lt;= #{endTime}
+             AND t2.status = '1' AND t1.status = '1'
+       GROUP BY spu_no
+    </select>
+
+    <select id="selectExportGoodsPurchaseItemList" parameterType="com.javaboot.shop.dto.StoreGoodPurchaseQueryDTO"
+            resultType="com.javaboot.shop.dto.StoreGoodsPurchaseExportDTO">
+        SELECT
+            t1.purchase_no code,
+            t1.dept_id,
+            t5.dept_name deptName,
+            t1.create_time createTime,
+            t2.spu_no spuNo,
+            t4.NAME spuName,
+            t2.price,
+            t2.no_tax_price notaxprice,
+            t2.tax_rate taxrate,
+            t2.tax,
+            round((t2.tax + t2.no_tax_price), 2) totalprice,
+            t2.quantity weight,
+            t2.stocks_number quantity,
+            CASE  t1.stock_status WHEN '0' THEN '未生成' WHEN '1' THEN '已生成'
+            END AS stockstatus,
+            t2.comment,
+            t2.adjust_amount adjustamount
+        FROM
+            store_good_purchase t1
+            JOIN store_good_purchase_item t2 ON t1.purchase_id = t2.purchase_id
+            AND t1.STATUS != '0' AND t2.STATUS != '0'
+            JOIN store_goods_spu t4 ON t2.spu_no = t4.spu_no
+            JOIN sys_dept t5 ON t5.dept_id = t1.dept_id
+        <where>
+            <if test="purchaseNo != null  and purchaseNo != ''"> and t1.purchase_no = #{purchaseNo}</if>
+            <if test="stockStatus != null  and stockStatus != ''"> and t1.stock_status = #{stockStatus}</if>
+            <if test="deptId != null and deptId != ''"> and t1.dept_id = #{deptId}</if>
+            <if test="loginUserDeptId != null  and loginUserDeptId !=''and (deptId==null or deptId=='')">
+                AND  t1.dept_id IN (
+                SELECT
+                dept_id
+                FROM
+                sys_dept
+                WHERE
+                find_in_set( #{loginUserDeptId}, ancestors )  or dept_id=#{loginUserDeptId}
+                )
+            </if>
+            <if test="purchaseBeginDate != null and purchaseBeginDate!='' and purchaseEndDate != null and purchaseEndDate!='' ">
+                and t1.purchase_date  BETWEEN
+                DATE_FORMAT(#{purchaseBeginDate},'%Y-%m-%d')
+                AND DATE_FORMAT(#{purchaseEndDate},'%Y-%m-%d')
+            </if>
+            <if test="beginDate != null and beginDate!='' and endDate != null and endDate!='' ">
+                and t1.create_time  BETWEEN
+                DATE_FORMAT(#{beginDate},'%Y-%m-%d %H:%i:%s')
+                AND DATE_FORMAT(#{endDate},'%Y-%m-%d %H:%i:%s')
+            </if>
+        </where>
+        LIMIT 2000
+    </select>
+</mapper>

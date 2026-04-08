@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('新增支付账户')" />
+</head>
+<body class="bg-white">
+
+<!-- 正文开始 -->
+<form class="layui-form bg-white" id="inputForm" th:onsubmit="return false" th:action="@{/shop/account/add}"  >
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <div class="layui-row">
+                <input name="deptId"  id="deptId" type="hidden" >
+                <input name="storeId"  id="storeId" type="hidden" >
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label layui-form-required">账号ID:</label>
+                    <div class="layui-input-block">
+                        <input name="accountId" type="text" placeholder="请输入账号ID" class="layui-input" lay-verType="tips"
+                               lay-verify="required" autocomplete="off" required/>
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label layui-form-required">所属商户:</label>
+                    <div class="layui-input-block">
+                            <select name="memberId" th:with="type=${memberList}" lay-filter="merchantId"  lay-verify="required" lay-search lay-verType="tips">
+                                <option value="">请选择用户</option>
+                                <option th:each="dict : ${type}" th:text="${dict.nickname}" th:value="${dict.id}"></option>
+                            </select>
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label layui-form-required">账单周期:</label>
+                    <div class="layui-input-block">
+                        <select name="billDays" id="billDays" lay-filter="billDays"  lay-verify="required" lay-search lay-verType="tips" th:with="type=${@dict.getType('bill_days_type')}">
+                            <option th:each="dict : ${type}" th:text="${dict.dictLabel}" th:value="${dict.dictValue}"></option>
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">状态:</label>
+                    <div class="layui-input-block">
+                        <select name="status" th:with="type=${statusList}">
+                            <option th:each="dict : ${type}" th:text="${dict.dictLabel}" th:value="${dict.dictValue}"></option>
+                        </select>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-hide">
+        <button id="submitBtn" class="layui-btn" lay-filter="submitBtn" lay-submit>保存</button>
+        <button id="closeBtn" class="layui-btn layui-btn-primary" ew-event="closeDialog">关闭</button>
+    </div>
+</form>
+
+<th:block th:include="include :: footer" />
+<script th:inline="javascript">
+    var ctx = [[@{/}]];
+    var prefix = ctx + "shop/account";
+    var memberList = [[${memberList}]];
+</script>
+<script th:inline="none">
+
+    /*商品价格仅能输入数字和小数点*/
+    function moneyInput(value) {
+        //修复第一个字符是小数点 的情况.
+        var fa = '';
+        if (value !== '' && value.substr(0, 1) === '.') {
+            value = "";
+        }
+        value = value.replace(/^0*(0\.|[1-9])/, '$1');//解决 粘贴不生效
+        value = value.replace(/[^\d.]/g, "");  //清除“数字”和“.”以外的字符
+        value = value.replace(/\.{2,}/g, "."); //只保留第一个. 清除多余的
+        value = value.replace(".", "$#$").replace(/\./g, "").replace("$#$", ".");
+        value = value.replace(/^(\-)*(\d+)\.(\d\d).*$/, '$1$2.$3'); //只能输入两个小数
+        if (value.indexOf(".") < 0 && value !== "") { //以上已经过滤，此处控制的是如果没有小数点，首位不能为类似于 01、02的金额
+            if (value.substr(0, 1) === '0' && value.length === 2) {
+                value = value.substr(1, value.length);
+            }
+        }
+        value = fa + value;
+        var maxValue=99999999;
+        if(value>maxValue){
+            return maxValue;
+        }
+        return value;
+    }
+    layui.use(['index', 'form', 'formX', 'table', 'laydate',  'cascader'], function () {
+        var $ = layui.$;
+        var form = layui.form;
+        var table = layui.table;
+        var admin = layui.admin;
+        var prefix = ctx + "shop/quotationGoods";
+        var listUrl = prefix + "/list";
+        var cascader = layui.cascader;
+        var removeUrl = prefix + "/remove";
+
+        //设置客户对应的门店
+        form.on("select(merchantId)", function (data) {
+            memberList.forEach(function (item) {
+                if(data.value==item.id){
+                    // $("#storeId").val(item.customerArea)
+                     $("#deptId").val(item.customerArea)
+                    return
+                }
+            })
+
+        });
+    })
+</script>
+</body>
+</html>

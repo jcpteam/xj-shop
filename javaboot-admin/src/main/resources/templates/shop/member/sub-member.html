@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('新增子账号')"/>
+</head>
+<body class="bg-white">
+
+<!-- 正文开始 -->
+<form class="layui-form bg-white" id="inputForm" th:onsubmit="return false" th:object="${storeMember}">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <div class="layui-row">
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <label class="layui-form-label layui-form-required">所属客户:</label>
+                        <div class="layui-input-block">
+                            <input name="nickname" th:field="*{nickname}" type="text" class="layui-input " readonly="true"/>
+                        </div>
+                    </div>
+
+                    <div class="layui-inline">
+                        <label class="layui-form-label layui-form-required">子账号:</label>
+                        <div class="layui-input-block">
+                            <input name="loginName" maxlength="45" type="text" class="layui-input" lay-verType="tips" placeholder="子账号" lay-verify="required"/>
+                        </div>
+                    </div>
+
+                    <div class="layui-inline">
+                        <label class="layui-form-label layui-form-required">手机号:</label>
+                        <div class="layui-input-block">
+                            <input name="phonenumber" maxlength="45" type="text" class="layui-input" lay-verType="tips" placeholder="手机号:" lay-verify="required"/>
+                        </div>
+                    </div>
+
+                    <div class="layui-inline">
+                        <label class="layui-form-label layui-form-required">联系人:</label>
+                        <div class="layui-input-block">
+                            <input name="userName" maxlength="45" type="text" class="layui-input" lay-verType="tips" placeholder="联系人" lay-verify="required"/>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+        <div class="layui-form-item btn1 ">
+            <button id="submitBtn" class="layui-btn" lay-filter="submitBtn" lay-submit>保存</button>
+        </div>
+
+        <table class="layui-table" id="dataTable" lay-filter="dataTable"></table>
+    </div>
+
+</form>
+
+<!-- 行工具栏 -->
+<script type="text/html" id="toolbarRow">
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="resetPwd" shiro:hasPermission="shop:member:remove">重置密码</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del" shiro:hasPermission="shop:member:remove">删除</a>
+</script>
+
+<style>
+    .btn1 {
+        text-align: center;
+    }
+</style>
+
+</form>
+
+
+<style>
+    .laytable-cell-checkbox .layui-disabled.layui-form-checked i {
+        background: #fff !important;
+    }
+
+</style>
+<th:block th:include="include :: footer"/>
+<script th:inline="javascript">
+        var ctx = [[@{/}]];
+        var prefix = ctx + "shop/stock";
+        var dataList = [];
+        var memberInfo = [[${storeMember}]];
+
+</script>
+<script th:inline="none">
+    var closeBtn= parent.document.getElementsByClassName('layui-layer-btn0')[0];
+    layui.use(['index', 'form', 'formX', 'table', 'laydate', 'upload', 'ext'], function () {
+        var $ = layui.$;
+        var form = layui.form;
+        var formX = layui.formX;
+        var layer = layui.layer;
+        var table = layui.table;
+        var admin = layui.admin;
+        var addUrl = ctx + 'system/user/add';
+        var removeUrl = ctx + 'system/user/remove';
+        var listUrl = ctx + 'system/user/list';
+
+        //初始化商品----------------------------------------------------------------------------------------------------
+        loadTable()
+        function loadTable() {
+            table.render({
+                elem: '#dataTable'
+                , url: listUrl
+                , method: 'POST'
+                , height: 'full-100'
+                //, cellMinWidth: 80
+                , page: false
+                , limit: 10
+                , where: {
+                    memberId: memberInfo.id,
+                }
+                , cols: [[
+                    , {field: 'userId', title: '子账号ID', hide: true}
+                    , {field: 'row', title: 'row', hide: true}
+                    , {field: 'userId', minWidth: 100, title: '子账号ID'}
+                    , {field: 'loginName', title: '子账号'}
+                    , {
+                        field: 'name', minWidth: 150, title: '所属客户', templet: function (d) {
+                            return $("input[name=nickname]").val();
+                        }
+                    }
+                    , {field: 'phonenumber', title: '手机号'}
+                    , {field: 'userName', minWidth: 120, title: '联系人'}
+                    // ,{field: 'status', title: '用户状态', width: 100, templet:function(res){
+                    //         if(res.status == 0){
+                    //             return '启用';
+                    //         }else{
+                    //             return '禁用';
+                    //         }
+                    //  }}
+                    , {field: 'createTime', title: '创建时间', width: 180}
+                    , {field: 'operate', title: '操作', width: 150, toolbar: '#toolbarRow', fixed: 'right'}
+                ]]
+                , parseData: function (res) { //将原始数据解析成 table 组件所规定的数据
+                    return {
+                        "code": res.code, //解析接口状态
+                        "msg": res.msg, //解析提示文本
+                        "count": res.total, //解析数据长度
+                        "data": res.rows //解析数据列表
+                    };
+                }
+                , id: 'tclassReload'
+                , done: function () {
+
+                }
+            });
+
+        }
+
+
+        layui.form.on('submit(submitBtn)', function (data) {
+            var field = data.field; //获取提交的字段
+            field.memberId = memberInfo.id;
+            field.deptId = memberInfo.customerArea;
+            if(!field.deptId) {
+                return admin.info('请先设置商户对应的区域！');;
+            }
+            admin.req(addUrl, field, function (data) {
+                if (data.code == 0) {
+                    admin.success('保存成功!');
+                    loadTable()
+                } else {
+                    admin.error(data.msg);
+                }
+            }, 'post');
+        });
+
+        //头工具栏事件
+        table.on('tool(dataTable)', function(obj){
+            var data = obj.data;
+            switch(obj.event){
+                case 'del':
+                    active.del(data.userId);
+                    break;
+                case 'resetPwd':
+                    active.resetPwd(data.userId);
+                    break;
+            }
+        });
+
+        //事件
+        var active = {
+            del: function (id) {
+                admin.confirm('确定删除吗?',function(){
+                    admin.req(removeUrl, {ids: id}, function (data) {
+                        if (data.code == 0) {
+                            loadTable()
+                            admin.success('删除成功!');
+                        } else {
+                            admin.error(data.msg);
+                        }
+                    },'post')
+                });
+            },
+            resetPwd:function (id) {
+                var url = ctx + "system/user/resetPwd/" + id;
+                admin.openDialog('重置密码', url, '400px', '310px');
+            }
+        }
+    })
+
+
+</script>
+</body>
+</html>

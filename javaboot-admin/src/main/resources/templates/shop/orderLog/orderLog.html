@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('记录调整时候的退货或者补货列表')" />
+</head>
+<body>
+
+
+<!-- 正文开始 -->
+<div class="layui-fluid">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-card">
+            <!-- 搜索区 -->
+            <form class="layui-form toolbar" th:onsubmit="return false" lay-filter="inputForm" id="inputForm">
+                <div class="layui-form-item">
+
+                    <div class="layui-inline">
+                        <label class="layui-form-label label-auto">订单id：</label>
+                        <div class="layui-input-inline">
+                            <input class="layui-input" name="code" type="text" placeholder="请输入订单编号"/>
+                        </div>
+                    </div>
+
+                    <div class="layui-inline">
+                        <label class="layui-form-label label-auto">操作类型：</label>
+                        <div class="layui-input-inline">
+                            <select name="type" th:with="type=${typeList}">
+                                <option value="">所有</option>
+                                <option th:each="dict : ${type}" th:text="${dict.dictLabel}" th:value="${dict.dictValue}"></option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="layui-inline">
+                        <label class="layui-form-label label-auto">操作时间：</label>
+                        <div class="layui-input-inline">
+                            <input id="createTime" type="text" placeholder="请选择开始和结束日期" class="layui-input date-icon" autocomplete="off"/>
+                            <input id="beginDate" type="hidden" name="params[beginDate]">
+                            <input id="endDate" type="hidden" name="params[endDate]">
+                        </div>
+                    </div>
+                    <div class="layui-inline" style="padding-left: 13px;">
+                        <button class="layui-btn layui-btn-sm icon-btn" lay-submit lay-filter="searchBtn" id="searchBtn">
+                            <i class="layui-icon layui-icon-search"></i>搜索
+                        </button>
+                        <button class="layui-btn layui-btn-sm icon-btn" type="reset">
+                            <i class="layui-icon layui-icon-refresh"></i>重置
+                        </button>
+                        <a class="layui-btn layui-btn-primary form-search-expand layui-hide" data-expand="true">
+                            展开 <i class="layui-icon layui-icon-down"></i>
+                        </a>
+                    </div>
+                </div>
+            </form>
+
+            <table class="layui-table" id="dataTable" lay-filter="dataTable"></table>
+        </div>
+
+    </div>
+</div>
+
+
+
+
+<!-- js部分 -->
+<th:block th:include="include :: footer" />
+<script type="text/javascript" th:inline="javascript">
+    var ctx = [[@{/}]];
+</script>
+<script type="text/javascript" th:inline="none">
+    layui.use(['index', 'layer', 'form', 'table', 'util', 'ext','laydate'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        var table = layui.table;
+        var util = layui.util;
+        var laydate = layui.laydate;
+        var ext = layui.ext;
+        var admin = layui.admin;
+        var index = layui.index;
+
+        var prefix = ctx + "shop/orderLog";
+        var listUrl = prefix + "/list";
+        var createUrl = prefix + "/add";
+        var updateUrl = prefix + "/edit/{id}";
+        var removeUrl = prefix + "/remove";
+        var exportUrl = prefix + "/export";
+        queryList()
+        function queryList(field) {
+            var params = {}
+            if (field != null) {
+                params = field;
+            }
+            params.orderByColumn = 'last_modify_time';
+            params.isAsc = 'desc'
+            table.render({
+                elem: '#dataTable'
+                , url: listUrl
+                , method: 'POST'
+                , height: 'full-100'
+                , cellMinWidth: 80
+                , page: true
+                , request: {
+                    pageName: 'pageNum' //页码的参数名称，默认：page
+                    , limitName: 'pageSize' //每页数据量的参数名，默认：limit
+                }
+                , where: params
+                , limit: 10
+                , cols: [[
+                    {type: 'checkbox'}
+                    , {field: 'logId', title: '日志id', hide: true}
+                    , {field: 'code', title: '订单编号'}
+                    , {field: 'operateUserName', title: '操作人'}
+                    , {field: 'createTime', title: '操作时间'}
+                    , {field: 'typeName', title: '操作类型'}
+                    , {field: 'operationLog',width:300, title: '操作日志'}
+                ]]
+                , parseData: function (res) { //将原始数据解析成 table 组件所规定的数据
+                    return {
+                        "code": res.code, //解析接口状态
+                        "msg": res.msg, //解析提示文本
+                        "count": res.total, //解析数据长度
+                        "data": res.rows //解析数据列表
+                    };
+                }
+            });
+        }
+        //日期范围
+        laydate.render({
+            elem: '#createTime'
+            ,type: 'datetime'
+            , range: '~'
+            , done: function (value, date, endDate) {
+                if (value != null && value != '') {
+                    var b = $.trim(value.split('~')[0]);
+                    var e = $.trim(value.split('~')[1]);
+                    $("#beginDate").val(b);
+                    $("#endDate").val(e);
+                }
+            }
+        });
+
+        //监听搜索
+        form.on('submit(searchBtn)', function (data) {
+            var field = data.field;
+            //执行重载
+            table.reload('dataTable', {
+                where: field
+            });
+        });
+
+
+    });
+</script>
+
+</body>
+</html>

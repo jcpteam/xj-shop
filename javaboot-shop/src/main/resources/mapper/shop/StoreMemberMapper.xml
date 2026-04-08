@@ -1,0 +1,313 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaboot.shop.mapper.StoreMemberMapper">
+
+    <resultMap type="StoreMember" id="StoreMemberResult">
+        <result property="id"    column="id"    />
+        <result property="customerNo"    column="customer_no"    />
+        <result property="openidQq"    column="openid_qq"    />
+        <result property="openidWx"    column="openid_wx"    />
+        <result property="phone"    column="phone"    />
+        <result property="password"    column="password"    />
+        <result property="nickname"    column="nickname"    />
+        <result property="headimg"    column="headimg"    />
+        <result property="sex"    column="sex"    />
+        <result property="level"    column="level"    />
+        <result property="email"    column="email"    />
+        <result property="address"    column="address"    />
+        <result property="signature"    column="signature"    />
+        <result property="totalAmount"    column="total_amount"    />
+        <result property="userMoney"    column="user_money"    />
+        <result property="distributMoney"    column="distribut_money"    />
+        <result property="frozenMoney"    column="frozen_money"    />
+        <result property="underlingNumber"    column="underling_number"    />
+        <result property="payPoints"    column="pay_points"    />
+        <result property="addressId"    column="address_id"    />
+        <result property="status"    column="status"    />
+        <result property="remark"    column="remark"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="createAt"    column="create_at"    />
+        <result property="statusTime"    column="status_time"    />
+        <result property="customerArea"    column="customer_area"    />
+        <result property="creditcode"    column="creditcode"    />
+        <result property="customerClass"    column="customer_class"    />
+        <result property="customerType"    column="customer_type"    />
+        <result property="superCustomer"    column="super_customer"    />
+        <result property="billingCusotmer"    column="billing_cusotmer"    />
+        <result property="cardNumber"    column="card_number"    />
+        <result property="receiveAddress"    column="receive_address"    />
+        <result property="customerKinds"    column="customer_kinds"    />
+        <result property="quotationId"    column="quotation_id"    />
+        <result property="contactName"    column="contact_name"    />
+        <result property="telephone"    column="telephone"    />
+        <result property="position"    column="position"    />
+        <result property="houseId"    column="house_id"    />
+        <result property="opmanagerId"    column="opmanager_id"    />
+        <result property="settlementType"    column="settlement_type"    />
+        <result property="deliveryType"    column="delivery_type"    />
+        <result property="printType"    column="print_type"    />
+
+    </resultMap>
+
+    <sql id="selectStoreMemberVo">
+        select tb1.id, tb1.customer_no, tb1.openid_qq, tb1.openid_wx, tb1.phone, tb1.password, tb1.nickname, tb1.headimg, tb1.sex, tb1.level,
+        tb1.email, tb1.address, tb1.signature, tb1.total_amount, tb1.user_money, tb1.distribut_money, tb1.frozen_money, tb1.underling_number,
+        tb1.pay_points, tb1.address_id, tb1.status, tb1.remark, tb1.create_time, tb1.create_at, tb1.status_time, tb1.customer_area, tb1.creditcode,
+        tb1.customer_class, tb1.customer_type, tb1.super_customer, tb1.billing_cusotmer, tb1.card_number, tb1.receive_address, tb1.customer_kinds, tb1.quotation_id,
+        tb1.contact_name,tb1.telephone,tb1.position,tb1.house_id,tb1.opmanager_id,tb1.settlement_type,tb1.delivery_type,tb1.print_type,
+        ( CASE WHEN tb1.settlement_type = '1' THEN tb1.id ELSE tb2.id END ) settlementId,
+        ( CASE WHEN tb1.settlement_type = '1' THEN tb1.nickname ELSE tb2.nickname END ) settlementName
+        from store_member tb1
+        LEFT JOIN store_member tb2 ON tb1.super_customer = tb2.customer_no
+    </sql>
+
+    <select id="selectStoreMemberList" parameterType="StoreMember" resultMap="StoreMemberResult">
+        <include refid="selectStoreMemberVo"/>
+        <where>
+            tb1.del_flag = '0'
+            <if test="id != null "> and tb1.id = #{id}</if>
+            <if test="customerNo != null  and customerNo != ''"> and tb1.customer_no = #{customerNo}</if>
+            <if test="openidQq != null  and openidQq != ''"> and tb1.openid_qq = #{openidQq}</if>
+            <if test="openidWx != null  and openidWx != ''"> and tb1.openid_wx = #{openidWx}</if>
+            <if test="phone != null  and phone != ''"> and tb1.phone = #{phone}</if>
+            <if test="password != null  and password != ''"> and tb1.password = #{password}</if>
+            <if test="nickname != null  and nickname != ''"> and tb1.nickname like concat('%', #{nickname}, '%')</if>
+            <if test="headimg != null  and headimg != ''"> and tb1.headimg = #{headimg}</if>
+            <if test="sex != null  and sex != ''"> and tb1.sex = #{sex}</if>
+            <if test="level != null  and level != ''"> and tb1.level = #{level}</if>
+            <if test="email != null  and email != ''"> and tb1.email = #{email}</if>
+            <if test="address != null  and address != ''"> and tb1.address = #{address}</if>
+            <if test="signature != null  and signature != ''"> and tb1.signature = #{signature}</if>
+            <if test="totalAmount != null "> and tb1.total_amount = #{totalAmount}</if>
+            <if test="userMoney != null "> and tb1.user_money = #{userMoney}</if>
+            <if test="distributMoney != null "> and tb1.distribut_money = #{distributMoney}</if>
+            <if test="frozenMoney != null "> and tb1.frozen_money = #{frozenMoney}</if>
+            <if test="underlingNumber != null "> and tb1.underling_number = #{underlingNumber}</if>
+            <if test="payPoints != null "> and tb1.pay_points = #{payPoints}</if>
+            <if test="addressId != null "> and tb1.address_id = #{addressId}</if>
+            <if test="status != null "> and tb1.status = #{status}</if>
+            <if test="createAt != null "> and tb1.create_at = #{createAt}</if>
+            <if test="statusTime != null "> and tb1.status_time = #{statusTime}</if>
+            <if test="customerArea != null  and customerArea != ''  and customerArea != '-99'"> and tb1.customer_area = #{customerArea}</if>
+            <if test="customerArea == '-99'"> and tb1.customer_area IS NULL</if>
+            <if test="creditcode != null  and creditcode != ''"> and tb1.creditcode = #{creditcode}</if>
+            <if test="customerClass != null  and customerClass != ''"> and tb1.customer_class = #{customerClass}</if>
+            <if test="customerType != null  and customerType != ''"> and tb1.customer_type = #{customerType}</if>
+            <if test="superCustomer != null  and superCustomer != ''"> and tb1.super_customer = #{superCustomer}</if>
+            <if test="billingCusotmer != null  and billingCusotmer != ''"> and tb1.billing_cusotmer = #{billingCusotmer}</if>
+            <if test="cardNumber != null  and cardNumber != ''"> and tb1.card_number = #{cardNumber}</if>
+            <if test="receiveAddress != null  and receiveAddress != ''"> and tb1.receive_address = #{receiveAddress}</if>
+            <if test="customerKinds != null  and customerKinds != ''"> and tb1.customer_kinds = #{customerKinds}</if>
+            <if test="quotationId != null  and quotationId != '' and quotationId != '-99'">and tb1.quotation_id = #{quotationId}</if>
+            <if test="quotationId == '-99'">and tb1.quotation_id IS NULL</if>
+            <if test="opmanagerId != null  and opmanagerId != ''">and tb1.opmanager_id = #{opmanagerId}</if>
+            <if test="deliveryType != null  and deliveryType != ''">and tb1.delivery_type = #{deliveryType}</if>
+            <if test="printType != null  and printType != ''">and tb1.print_type = #{printType}</if>
+            <if test="ids != null  and ids.size()>0">
+                AND tb1.id in
+                <foreach collection="ids" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+             </if>
+            <if test="customerNOs != null  and customerNOs.size()>0">
+                AND tb1.customer_no in
+                <foreach collection="customerNOs" item="customerNo" open="(" separator="," close=")">
+                    #{customerNo}
+                </foreach>
+            </if>
+            <if test="quotationIds != null  and quotationIds.size()>0">
+                AND tb1.quotation_id in
+                <foreach collection="quotationIds" item="quotationId" open="(" separator="," close=")">
+                    #{quotationId}
+                </foreach>
+            </if>
+            <if test="settlementName != null  and settlementName != ''">
+              AND  (CASE WHEN tb1.settlement_type = '1' THEN tb1.nickname like concat('%', #{settlementName}, '%') ELSE tb2.nickname like concat('%', #{settlementName}, '%') END )
+            </if>
+        </where>
+    </select>
+
+    <select id="selectStoreMemberById" parameterType="Long" resultMap="StoreMemberResult">
+        <include refid="selectStoreMemberVo"/>
+        where tb1.id = #{id}
+    </select>
+
+    <insert id="insertStoreMember" parameterType="StoreMember" useGeneratedKeys="true" keyProperty="id">
+        insert into store_member
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="customerNo != null  and customerNo != ''">customer_no,</if>
+            <if test="openidQq != null  and openidQq != ''">openid_qq,</if>
+            <if test="openidWx != null  and openidWx != ''">openid_wx,</if>
+            <if test="phone != null  and phone != ''">phone,</if>
+            <if test="password != null  and password != ''">password,</if>
+            <if test="nickname != null  and nickname != ''">nickname,</if>
+            <if test="headimg != null  and headimg != ''">headimg,</if>
+            <if test="sex != null  and sex != ''">sex,</if>
+            <if test="level != null  and level != ''">level,</if>
+            <if test="email != null  and email != ''">email,</if>
+            <if test="address != null  and address != ''">address,</if>
+            <if test="signature != null  and signature != ''">signature,</if>
+            <if test="totalAmount != null ">total_amount,</if>
+            <if test="userMoney != null ">user_money,</if>
+            <if test="distributMoney != null ">distribut_money,</if>
+            <if test="frozenMoney != null ">frozen_money,</if>
+            <if test="underlingNumber != null ">underling_number,</if>
+            <if test="payPoints != null ">pay_points,</if>
+            <if test="addressId != null ">address_id,</if>
+            <if test="status != null ">status,</if>
+            <if test="remark != null  and remark != ''">remark,</if>
+            <if test="createTime != null ">create_time,</if>
+            <if test="createAt != null ">create_at,</if>
+            <if test="statusTime != null ">status_time,</if>
+            <if test="customerArea != null  and customerArea != ''">customer_area,</if>
+            <if test="creditcode != null  and creditcode != ''">creditcode,</if>
+            <if test="customerClass != null  and customerClass != ''">customer_class,</if>
+            <if test="customerType != null  and customerType != ''">customer_type,</if>
+            <if test="superCustomer != null  and superCustomer != ''">super_customer,</if>
+            <if test="billingCusotmer != null  and billingCusotmer != ''">billing_cusotmer,</if>
+            <if test="cardNumber != null  and cardNumber != ''">card_number,</if>
+            <if test="receiveAddress != null  and receiveAddress != ''">receive_address,</if>
+            <if test="customerKinds != null  and customerKinds != ''">customer_kinds,</if>
+            <if test="opmanagerId != null  and opmanagerId != ''">opmanager_id,</if>
+            <if test="settlementType != null  and settlementType != ''">settlement_type,</if>
+            <if test="deliveryType != null  and deliveryType != ''">delivery_type,</if>
+            <if test="printType != null  and printType != ''">print_type,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="customerNo != null  and customerNo != ''">#{customerNo},</if>
+            <if test="openidQq != null  and openidQq != ''">#{openidQq},</if>
+            <if test="openidWx != null  and openidWx != ''">#{openidWx},</if>
+            <if test="phone != null  and phone != ''">#{phone},</if>
+            <if test="password != null  and password != ''">#{password},</if>
+            <if test="nickname != null  and nickname != ''">#{nickname},</if>
+            <if test="headimg != null  and headimg != ''">#{headimg},</if>
+            <if test="sex != null  and sex != ''">#{sex},</if>
+            <if test="level != null  and level != ''">#{level},</if>
+            <if test="email != null  and email != ''">#{email},</if>
+            <if test="address != null  and address != ''">#{address},</if>
+            <if test="signature != null  and signature != ''">#{signature},</if>
+            <if test="totalAmount != null ">#{totalAmount},</if>
+            <if test="userMoney != null ">#{userMoney},</if>
+            <if test="distributMoney != null ">#{distributMoney},</if>
+            <if test="frozenMoney != null ">#{frozenMoney},</if>
+            <if test="underlingNumber != null ">#{underlingNumber},</if>
+            <if test="payPoints != null ">#{payPoints},</if>
+            <if test="addressId != null ">#{addressId},</if>
+            <if test="status != null ">#{status},</if>
+            <if test="remark != null  and remark != ''">#{remark},</if>
+            <if test="createTime != null ">#{createTime},</if>
+            <if test="createAt != null ">#{createAt},</if>
+            <if test="statusTime != null ">#{statusTime},</if>
+            <if test="customerArea != null  and customerArea != ''">#{customerArea},</if>
+            <if test="creditcode != null  and creditcode != ''">#{creditcode},</if>
+            <if test="customerClass != null  and customerClass != ''">#{customerClass},</if>
+            <if test="customerType != null  and customerType != ''">#{customerType},</if>
+            <if test="superCustomer != null  and superCustomer != ''">#{superCustomer},</if>
+            <if test="billingCusotmer != null  and billingCusotmer != ''">#{billingCusotmer},</if>
+            <if test="cardNumber != null  and cardNumber != ''">#{cardNumber},</if>
+            <if test="receiveAddress != null  and receiveAddress != ''">#{receiveAddress},</if>
+            <if test="customerKinds != null  and customerKinds != ''">#{customerKinds},</if>
+            <if test="opmanagerId != null  and opmanagerId != ''">#{opmanagerId},</if>
+            <if test="settlementType != null  and settlementType != ''">#{settlementType},</if>
+            <if test="deliveryType != null  and deliveryType != ''">#{deliveryType},</if>
+            <if test="printType != null  and printType != ''">#{printType},</if>
+        </trim>
+    </insert>
+
+    <update id="updateStoreMember" parameterType="StoreMember">
+        update store_member
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="customerNo != null  and customerNo != ''">customer_no = #{customerNo},</if>
+            <if test="openidQq != null  and openidQq != ''">openid_qq = #{openidQq},</if>
+            <if test="openidWx != null  and openidWx != ''">openid_wx = #{openidWx},</if>
+            <if test="phone != null  and phone != ''">phone = #{phone},</if>
+            <if test="password != null  and password != ''">password = #{password},</if>
+            <if test="nickname != null  and nickname != ''">nickname = #{nickname},</if>
+            <if test="headimg != null  and headimg != ''">headimg = #{headimg},</if>
+            <if test="sex != null  and sex != ''">sex = #{sex},</if>
+            <if test="level != null  and level != ''">level = #{level},</if>
+            <if test="email != null  and email != ''">email = #{email},</if>
+            <if test="address != null  and address != ''">address = #{address},</if>
+            <if test="signature != null ">signature = #{signature},</if>
+            <if test="totalAmount != null ">total_amount = #{totalAmount},</if>
+            <if test="userMoney != null ">user_money = #{userMoney},</if>
+            <if test="distributMoney != null ">distribut_money = #{distributMoney},</if>
+            <if test="frozenMoney != null ">frozen_money = #{frozenMoney},</if>
+            <if test="underlingNumber != null ">underling_number = #{underlingNumber},</if>
+            <if test="payPoints != null ">pay_points = #{payPoints},</if>
+            <if test="addressId != null ">address_id = #{addressId},</if>
+            <if test="status != null ">status = #{status},</if>
+            <if test="remark != null  and remark != ''">remark = #{remark},</if>
+            <if test="createTime != null ">create_time = #{createTime},</if>
+            <if test="createAt != null ">create_at = #{createAt},</if>
+            <if test="statusTime != null ">status_time = #{statusTime},</if>
+            <if test="customerArea != null  and customerArea != ''">customer_area = #{customerArea},</if>
+            <if test="creditcode != null  and creditcode != ''">creditcode = #{creditcode},</if>
+            <if test="customerClass != null  and customerClass != ''">customer_class = #{customerClass},</if>
+            <if test="customerType != null  and customerType != ''">customer_type = #{customerType},</if>
+            <if test="superCustomer != null  and superCustomer != ''">super_customer = #{superCustomer},</if>
+            <if test="billingCusotmer != null  and billingCusotmer != ''">billing_cusotmer = #{billingCusotmer},</if>
+            <if test="cardNumber != null  and cardNumber != ''">card_number = #{cardNumber},</if>
+            <if test="receiveAddress != null  and receiveAddress != ''">receive_address = #{receiveAddress},</if>
+            <if test="customerKinds != null  and customerKinds != ''">customer_kinds = #{customerKinds},</if>
+            <if test="quotationId != null  and quotationId != ''">quotation_id = #{quotationId},</if>
+            <if test="contactName != null  and contactName != ''">contact_name = #{contactName},</if>
+            <if test="telephone != null  and telephone != ''">telephone = #{telephone},</if>
+            <if test="position != null  and position != ''">position = #{position},</if>
+            <if test="houseId != null  and houseId != ''">house_id = #{houseId},</if>
+            <if test="opmanagerId != null  and opmanagerId != ''">opmanager_id = #{opmanagerId},</if>
+            <if test="settlementType != null  and settlementType != ''">settlement_type = #{settlementType},</if>
+            <if test="deliveryType != null  and deliveryType != ''">delivery_type = #{deliveryType},</if>
+            <if test="printType != null  and printType != ''">print_type = #{printType},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteStoreMemberById" parameterType="Long">
+        update store_member set del_flag = '2' where id = #{id}
+    </delete>
+
+    <delete id="deleteStoreMemberByIds" parameterType="String">
+        update store_member set del_flag = '2' where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <delete id="updateStoreMemberQuotationId" parameterType="StoreMember">
+        update store_member set quotation_id = #{quotationId} where id in
+        <foreach item="id" collection="ids" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <select id="selectSettlementList" parameterType="StoreMember" resultMap="StoreMemberResult">
+        SELECT
+            tb1.id, tb1.nickname,
+            ( CASE WHEN tb1.settlement_type = '1' THEN tb1.id ELSE tb2.id END ) settlementId,
+            ( CASE WHEN tb1.settlement_type = '1' THEN tb1.nickname ELSE tb2.nickname END ) settlementName
+        FROM
+            store_member tb1
+            LEFT JOIN store_member tb2 ON tb1.super_customer = tb2.customer_no
+        <where>
+            <if test="ids != null  and ids.size()>0">
+                AND tb1.id in
+                <foreach collection="ids" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+
+    </select>
+
+    <select id="queryOpmanagerList" resultMap="StoreMemberResult">
+        SELECT t1.opmanager_id,t1.id,t2.user_name as opmanagerName
+        FROM
+            store_member t1
+            LEFT JOIN sys_user t2 ON t1.opmanager_id = t2.user_id
+        where t1.del_flag = '0' and t1.opmanager_id is not null
+    </select>
+
+</mapper>

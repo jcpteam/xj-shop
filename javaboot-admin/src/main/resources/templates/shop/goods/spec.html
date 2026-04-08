@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <meta charset="utf-8">
+    <title>商品规格</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <link rel="stylesheet" href="../../../static/assets/libs/layui/css/layui.css" th:href="@{/assets/libs/layui/css/layui.css}"/>
+    <link rel="stylesheet" href="../../../static/assets/module/admin.css" th:href="@{/assets/module/admin.css}"/>
+</head>
+<body class="bg-white">
+
+<!-- 正文开始 -->
+<form class="layui-form bg-white" id="inputForm" th:onsubmit="return false" th:action="@{/shop/goods/saveSpecAttr}" th:object="${storeGoods}">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <div class="layui-row">
+                <input name="goodsId" th:field="*{goodsId}" type="hidden">
+                <input name="goodsType" th:field="*{goodsType}" type="hidden">
+                <div class="layui-form-item">
+                    <label class="layui-form-label ">商品模型:</label>
+                    <div class="layui-input-block">
+                        <select class="layui-form-select" name="type_id" id="optionId" lay-filter="optionId">
+                            <option th:each="goodstype : ${goodsTypes}" th:text="${goodstype.name}" th:value="${goodstype.id}" th:selected="(${goodstype.id}) == (*{goodsType})"></option>
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label layui-form-required">商品规格:</label>
+                    <div class="layui-input-block">
+                        <table class="layui-table" id="spec_item">
+                            <tr>
+
+                            </tr>
+                        </table>
+                        <table class="layui-table" id="goods_spec_table2">
+                            <thead>
+                                <tr id="spec_price_col">
+<!--                                    <th>本店价</th><th>市场价</th><th>库存</th>-->
+                                </tr>
+                            </thead>
+
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-hide">
+        <button id="submitBtn" class="layui-btn" lay-filter="submitBtn" lay-submit>保存</button>
+        <button id="closeBtn" class="layui-btn layui-btn-primary" ew-event="closeDialog">关闭</button>
+    </div>
+</form>
+
+<script type="text/javascript" src="../../../static/assets/libs/layui/layui.js" th:src="@{/assets/libs/layui/layui.js}"></script>
+<script type="text/javascript" src="../../../static/assets/js/common.js" th:src="@{/assets/js/common.js}"></script>
+<script type="text/javascript" src="../../../static/assets/libs/tinymce/tinymce.min.js" th:src="@{/assets/libs/tinymce/tinymce.min.js}"></script>
+<script th:inline="javascript">
+    var ctx = [[@{/}]];
+    var prefix = ctx + "shop/goods";
+</script>
+<script th:inline="none">
+    layui.use(['index', 'form', 'table', 'ext'], function(){
+        var $ = layui.$;
+        var form = layui.form;
+        var layer = layui.layer;
+        var table = layui.table;
+        var admin = layui.admin;
+
+        /**
+         * 获取规格
+         * @param type_id
+         * @param goods_id
+         */
+        function getPostSpec(type_id,goods_id){
+            $.post(prefix + "/ajaxSpec", {type_id:type_id,goods_id:goods_id},function(result){
+                var html = '';
+                $('#spec_item').html('');
+                if(result.code == 0){
+                    var new_data = result.data.data;
+                    if(new_data.length == 0) $('#spec_item').html('');
+                    for(var i = 0;i < new_data.length;i++){
+                        html = '<tr>';
+                        html += '<td width="10%">'+new_data[i].name+'</td>';
+                        html += '<td>';
+                        var items = new_data[i].storeSpecItems;
+                        for(var j = 0;j < items.length;j++){
+                            if(items[j].selected){
+                                html += '<button type="button" data-spec_id="'+items[j].specId+'" data-item_id="'+items[j].id+'"' +
+                                    ' class="layui-btn layui-btn-selected">'+items[j].item+'</button>&nbsp;';
+                            }else{
+                                html += '<button type="button" data-spec_id="'+items[j].specId+'" data-item_id="'+items[j].id+'"' +
+                                    ' class="layui-btn layui-btn-primary">'+items[j].item+'</button>&nbsp;';
+                            }
+
+                        }
+                        html += '</td>';
+                        html += '</tr>';
+                        $('#spec_item').append(html);
+                    }
+
+                    ajaxGetSpecInput();
+
+                }
+            },'json');
+        }
+
+        /**
+         *  点击商品规格触发下面输入框显示
+         */
+        function ajaxGetSpecInput() {
+            var spec_arr = [];// 用户选择的规格数组
+
+            var jsonObj = {};
+
+            $("#spec_item button").each(function(){
+                var j = {};
+                if($(this).hasClass('layui-btn-selected'))
+                {
+                    var spec_id = $(this).data('spec_id');
+                    var item_id = $(this).data('item_id');
+                    j.specId = spec_id;
+                    j.itemId = item_id;
+
+                    spec_arr.push(j);
+
+                }
+            });
+            var goods_id = $("input[name='goodsId']").val();
+            jsonObj.list = spec_arr;
+            jsonObj.goodsId = goods_id;
+            console.log(spec_arr);
+            console.log(JSON.stringify(spec_arr));
+            ajaxGetSpecInput2(JSON.stringify(jsonObj)); // 显示下面的输入框
+
+        }
+
+        function ajaxGetSpecInput2(spec_arr) {
+            var goods_id = $("input[name='goodsId']").val();
+            $.ajax({
+                type:'POST',
+                data:spec_arr,
+                url:prefix + "/ajaxGetSpecInput",
+                contentType:"application/json;charset=utf-8",
+                success:function(data){
+                    $("#goods_spec_table2").html('').append(data.data);
+                    hbdyg();  // 合并单元格
+                }
+            });
+        }
+
+        function ajaxGetAttrInput(spec_type,goods_id) {
+
+        }
+
+        // 合并单元格
+        function hbdyg() {
+            var tab = document.getElementById("spec_input_tab"); //要合并的tableID
+            var maxCol = 2, val, count, start;  //maxCol：合并单元格作用到多少列
+            if (tab != null) {
+                for (var col = maxCol - 1; col >= 0; col--) {
+                    count = 1;
+                    val = "";
+                    for (var i = 0; i < tab.rows.length; i++) {
+                        if (val == tab.rows[i].cells[col].innerHTML) {
+                            count++;
+                        } else {
+                            if (count > 1) { //合并
+                                start = i - count;
+                                tab.rows[start].cells[col].rowSpan = count;
+                                for (var j = start + 1; j < i; j++) {
+                                    tab.rows[j].cells[col].style.display = "none";
+                                }
+                                count = 1;
+                            }
+                            val = tab.rows[i].cells[col].innerHTML;
+                        }
+                    }
+                    if (count > 1) { //合并，最后几行相同的情况下
+                        start = i - count;
+                        tab.rows[start].cells[col].rowSpan = count;
+                        for (var j = start + 1; j < i; j++) {
+                            tab.rows[j].cells[col].style.display = "none";
+                        }
+                    }
+                }
+            }
+        }
+
+        //选择模型
+        form.on('select(optionId)', function(data){
+            console.log(data.elem); //得到select原始DOM对象
+            console.log(data.value); //得到被选中的值
+            console.log(data.othis); //得到美化后的DOM对象
+            var id = data.value;
+            $('#goods_spec_table2').html(' <thead>\n' +
+                '                            <tr id="spec_price_col">\n' +
+                // '                                <th>本店价</th><th>市场价</th><th>库存</th>\n' +
+                '                            </tr>\n' +
+                '                            </thead>');
+            ajaxGetAttrInput(id,0);
+            getPostSpec(id,0);
+
+        });
+
+        $(document).on("click","#spec_item button",function(){
+            var _this = $(this);
+            if(_this.hasClass('layui-btn-selected')){
+                _this.removeClass('layui-btn-selected').addClass('layui-btn-primary');
+            }else{
+                _this.removeClass('layui-btn-primary').addClass('layui-btn-selected');
+
+            }
+            var spec_id = _this.data('spec_id');
+            var item_id = _this.data('item_id');
+            ajaxGetSpecInput();
+            return false;
+        })
+
+        $(function () {
+            var type_id = $("input[name='goodsType']").val();
+            var goods_id = $("input[name='goodsId']").val();
+
+            if($.common.isEmpty(type_id)){
+                type_id = 0;
+            }
+
+            if($.common.isEmpty(goods_id)){
+                goods_id = 0;
+            }
+
+            getPostSpec(type_id,goods_id);
+
+            ajaxGetAttrInput(type_id,goods_id);
+
+        });
+
+    })
+</script>
+</body>
+</html>

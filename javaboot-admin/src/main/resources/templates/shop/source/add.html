@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <meta charset="utf-8">
+    <title>添加源码</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <link rel="stylesheet" href="../../../static/assets/libs/layui/css/layui.css" th:href="@{/assets/libs/layui/css/layui.css}"/>
+    <link rel="stylesheet" href="../../../static/assets/module/admin.css" th:href="@{/assets/module/admin.css}"/>
+</head>
+<body class="bg-white">
+
+<!-- 正文开始 -->
+<form class="layui-form bg-white" id="inputForm" th:onsubmit="return false" th:action="@{/shop/source/add}">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <div class="layui-row">
+                <div class="layui-form-item">
+                    <label class="layui-form-label layui-form-required">源码版本:</label>
+                    <div class="layui-input-block">
+                        <input name="version" type="text" class="layui-input" lay-verType="tips" lay-verify="required"/>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label layui-form-required">下载地址:</label>
+                    <div class="layui-input-block">
+                        <input name="downUrl" type="text" class="layui-input" lay-verType="tips" lay-verify="required"/>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label layui-form-required">商品:</label>
+                    <div class="layui-input-block">
+                        <select class="layui-select" name="goodsId">
+                            <option th:each="goods:${goodsList}" th:value="${goods.goodsId}" th:text="${goods.goodsName}"></option>
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label layui-form-required">规格:</label>
+                    <div class="layui-input-block">
+                        <select class="layui-select" name="specId" lay-filter="spec">
+                            <option th:each="spec:${specList}" th:value="${spec.id}" th:text="${spec.name}"></option>
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label layui-form-required">规格项:</label>
+                    <div class="layui-input-block">
+                        <select class="layui-select" name="specItemId" id="specItemId">
+                            <option th:each="specItem:${specItemList}" th:if="${specItem.specId == specList[0].id}" th:value="${specItem.id}" th:text="${specItem.item}"></option>
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label layui-form-required">创建时间:</label>
+                    <div class="layui-input-block">
+                        <input id="createTime" type="text" placeholder="请选择创建时间" class="layui-input date-icon" autocomplete="off" readonly="readonly"/>
+                        <input type="hidden" name="createTime">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label layui-form-required">更新时间:</label>
+                    <div class="layui-input-block">
+                        <input id="updateTime" type="text" placeholder="请选择更新时间" class="layui-input date-icon" autocomplete="off" readonly="readonly"/>
+                        <input type="hidden" name="updateTime">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-hide">
+        <button id="submitBtn" class="layui-btn" lay-filter="submitBtn" lay-submit>保存</button>
+        <button id="closeBtn" class="layui-btn layui-btn-primary" ew-event="closeDialog">关闭</button>
+    </div>
+</form>
+
+<script type="text/javascript" src="../../../static/assets/libs/layui/layui.js" th:src="@{/assets/libs/layui/layui.js}"></script>
+<script type="text/javascript" src="../../../static/assets/js/common.js" th:src="@{/assets/js/common.js}"></script>
+<script th:inline="javascript">
+    var ctx = [[@{/}]];
+    var specList = [[${specList}]];
+    var specItemList = [[${specItemList}]];
+</script>
+<script th:inline="none">
+    layui.use(['index', 'form', 'formX', 'table', 'laydate', 'upload', 'ext'], function(){
+        var $ = layui.$;
+        var form = layui.form;
+        var formX = layui.formX;
+        var layer = layui.layer;
+        var table = layui.table;
+        var admin = layui.admin;
+        var upload = layui.upload;
+        var laydate = layui.laydate;
+
+        form.on('select(spec)', function(data){
+            let specItemOptions = ''
+            for (let i = 0; i < specItemList.length; i++) {
+                console.log('item::::' + specItemList[i].item + '::' + specItemList[i].specId);
+                if(specItemList[i].specId == data.value){
+                    console.log('test:::');
+                    specItemOptions += '<option value="' + specItemList[i].id + '">' + specItemList[i].item + '</option>';
+                }
+            }
+            console.log('specItemOptions:' + specItemOptions);
+            $('#specItemId').html('').append(specItemOptions);
+            form.render('select');
+        });
+
+        //日期范围
+        laydate.render({
+            elem: '#createTime'
+            , type: 'datetime'
+            , done: function (value, date, endDate) {
+                console.log(value);
+                $("input[name='createTime']").val(value);
+            }
+        });
+
+        //日期范围
+        laydate.render({
+            elem: '#updateTime'
+            , type: 'datetime'
+            , done: function (value, date, endDate) {
+                console.log(value);
+                $("input[name='updateTime']").val(value);
+            }
+        });
+
+    })
+</script>
+</body>
+</html>

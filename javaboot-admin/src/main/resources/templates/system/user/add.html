@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <meta charset="utf-8">
+    <title>用户管理</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <link rel="stylesheet" href="../../../static/assets/libs/layui/css/layui.css" th:href="@{/assets/libs/layui/css/layui.css}"/>
+    <link rel="stylesheet" href="../../../static/assets/module/admin.css" th:href="@{/assets/module/admin.css}"/>
+    <style>
+        .layui-form-item {
+            margin-bottom: 0;
+            margin-top: 20px;
+        }
+
+        .layui-form-item .layui-inline {
+            margin-bottom: 10px;
+            margin-right: 0;
+        }
+
+        .form-group-bottom {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: #fff;
+            padding: 10px 20px;
+            box-shadow: 0 -1px 2px 0 rgba(0, 0, 0, .05);
+        }
+    </style>
+</head>
+<body>
+
+<!-- 正文开始 -->
+<form class="layui-form" id="inputForm" th:onsubmit="return false" th:action="@{/system/user/add}">
+    <div class="layui-fluid" style="padding-bottom: 30px;">
+        <div class="layui-card">
+<!--            <div class="layui-card-header">基本信息</div>-->
+            <div class="layui-card-body">
+                <input name="deptId" type="hidden" id="treeId" th:value="${param.deptId}"/>
+                <div class="layui-form-item layui-row">
+                    <div class="layui-inline layui-col-md4 layui-col-sm6">
+                        <label class="layui-form-label layui-form-required">用户编号:</label>
+                        <div class="layui-input-block">
+                            <input name="userId" type="text" placeholder="请输入用户编号" class="layui-input" lay-verType="tips" lay-verify="required" autocomplete="off" required/>
+                        </div>
+                    </div>
+                    <div class="layui-inline layui-col-md4 layui-col-sm6">
+                        <label class="layui-form-label layui-form-required">用户名称:</label>
+                        <div class="layui-input-block">
+                            <input name="userName" type="text" placeholder="请输入用户名称" class="layui-input" lay-verType="tips" lay-verify="required" autocomplete="off" required/>
+                        </div>
+                    </div>
+                    <div class="layui-inline layui-col-md4 layui-col-sm6">
+                        <label class="layui-form-label layui-form-required">归属部门:</label>
+                        <div class="layui-input-block">
+                            <input id="treeName" name="deptName" type="text" placeholder="请选择归属部门" class="layui-input icon-search" lay-verType="tips" lay-verify="required" autocomplete="off" required/>
+                        </div>
+                    </div>
+                    <div class="layui-inline layui-col-md4 layui-col-sm6">
+                        <label class="layui-form-label layui-form-required">手机号码:</label>
+                        <div class="layui-input-block">
+                            <input name="phonenumber" type="text" placeholder="请输入手机号码" class="layui-input" lay-verType="tips" lay-verify="required" autocomplete="off" required/>
+
+                        </div>
+                    </div>
+                    <div class="layui-inline layui-col-md4 layui-col-sm6">
+                        <label class="layui-form-label layui-form-required">邮箱:</label>
+                        <div class="layui-input-block">
+                            <input name="email" type="text" placeholder="请输入邮箱" class="layui-input" lay-verType="tips" lay-verify="required" autocomplete="off"/>
+                        </div>
+                    </div>
+                    <div class="layui-inline layui-col-md4 layui-col-sm6">
+                        <label class="layui-form-label layui-form-required">登录账号:</label>
+                        <div class="layui-input-block">
+                            <input name="loginName" type="text" placeholder="请输入登录账号" class="layui-input" lay-verType="tips" lay-verify="required" autocomplete="off" required/>
+                        </div>
+                    </div>
+                    <div class="layui-inline layui-col-md4 layui-col-sm6">
+                        <label class="layui-form-label layui-form-required">登录密码:</label>
+                        <div class="layui-input-block">
+                            <input name="password" type="password" placeholder="请输入登录密码" class="layui-input" lay-verType="tips" lay-verify="required" autocomplete="off" required/>
+                        </div>
+                    </div>
+                    <div class="layui-inline layui-col-md4 layui-col-sm6">
+                        <label class="layui-form-label">用户性别:</label>
+                        <div class="layui-input-block">
+                            <select name="sex" lay-verType="tips" lay-verify="required" th:with="type=${@dict.getType('sys_user_sex')}">
+                                <option th:each="dict : ${type}" th:text="${dict.dictLabel}" th:value="${dict.dictValue}"></option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-inline layui-col-md4 layui-col-sm6">
+                        <label class="layui-form-label">用户状态:</label>
+                        <div class="layui-input-block">
+                            <select name="status" lay-verType="tips">
+                                <option th:text="正常" th:value="0" selected></option>
+                                <option th:text="停用" th:value="1"></option>
+                            </select>
+                        </div>
+                    </div>
+                    <!--<div class="layui-inline layui-col-md4 layui-col-sm6">-->
+                        <!--<label class="layui-form-label">岗位:</label>-->
+                        <!--<div class="layui-input-block">-->
+                            <!--<div id="deptSelect" class="xm-select-demo"></div>-->
+                        <!--</div>-->
+                    <!--</div>-->
+                    <!--<div class="layui-inline layui-col-md4 layui-col-sm6">
+                        <label class="layui-form-label">角色:</label>
+                        <div class="layui-input-block">
+                            <div id="roleSelect" class="xm-select-demo"></div>
+                        </div>
+                    </div>-->
+                </div>
+
+            </div>
+        </div>
+
+        <div class="layui-card">
+<!--            <div class="layui-card-header">其他信息</div>-->
+            <div class="layui-card-body">
+
+                <div class="layui-form-item layui-row">
+                    <div class="layui-inline layui-col-md12 layui-col-sm12">
+                        <label class="layui-form-label">备注:</label>
+                        <div class="layui-input-block">
+                            <textarea name="remark" maxlength="500" class="layui-textarea" rows="3"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group-bottom text-right">
+        <button id="resetBtn" type="reset" class="layui-btn layui-btn-primary layui-hide">重置</button>
+        <button id="submitBtn" class="layui-btn layui-hide" lay-filter="submitBtn" lay-submit>保存</button>
+        <button id="closeBtn" class="layui-btn layui-btn-danger layui-hide">关闭</button>
+    </div>
+
+</form>
+
+<script th:inline="javascript">
+    var ctx = [[@{/}]];
+</script>
+<script type="text/javascript" src="../../../static/assets/libs/layui/layui.js" th:src="@{/assets/libs/layui/layui.js}"></script>
+<script type="text/javascript" src="../../../static/assets/js/common.js" th:src="@{/assets/js/common.js}"></script>
+<script th:inline="javascript">
+    layui.use(['index', 'form', 'xmSelect', 'zTree', 'ext'], function(){
+        var $ = layui.$;
+        var form = layui.form;
+        var admin = layui.admin;
+        var xmSelect = layui.xmSelect;
+        var layer = layui.layer;
+
+        var roles = [[${roles}]];
+        var roleArr = [];
+        layui.each(roles, function(e,i){
+            var obj = {};
+            obj.name = i.roleName;
+            obj.value = i.roleId;
+            roleArr.push(obj);
+        })
+
+        // 渲染多选下拉
+        xmSelect.render({
+            el: '#roleSelect',
+            name: 'roleIds',
+            tips: '选择用户角色',
+            toolbar:{
+                show: true,
+            },
+            autoRow: true,
+            // layVerify: 'required',
+            // layVerType: 'tips',
+            data: roleArr
+        });
+
+
+        var posts = [[${posts}]];
+        var postArr = [];
+        layui.each(posts, function(e,i){
+            var obj = {};
+            obj.name = i.postName;
+            obj.value = i.postId;
+            postArr.push(obj);
+        })
+
+        // 渲染多选下拉
+        // xmSelect.render({
+        //     el: '#deptSelect',
+        //     name: 'postIds',
+        //     tips: '选择用户角色',
+        //     toolbar:{
+        //         show: true,
+        //     },
+        //     autoRow: true,
+        //     // layVerify: 'required',
+        //     // layVerType: 'tips',
+        //     data: postArr
+        // });
+
+        var prefix = ctx + "system/user";
+        var saveUrl = prefix + "/add";
+
+        //监听提交
+        // form.on('submit(submitBtn)', function (data) {
+        //     var field = data.field;
+        //     console.log(JSON.stringify(field));
+        //     admin.req(saveUrl, field, function (data) {
+        //         if (data.code == 0) {
+        //             parent.layer.msg('保存成功!');
+        //             table.reload('dataTable');
+        //             admin.closeThisTabs();
+        //         } else {
+        //             admin.error(data.msg);
+        //         }
+        //     },'post');
+        //
+        // });
+
+        // $("#test").click(function () {
+        //     console.log(parent);
+        //     parent.layui.admin.success('test');
+        //     parent.layui.table.reload('dataTable');
+        //     admin.closeThisTabs();
+        // })
+
+        /*用户管理-新增-选择部门树*/
+        $("#treeName").click(function(){
+            var treeId = $("#treeId").val();
+            var deptId = $.common.isEmpty(treeId) ? "04" : $("#treeId").val();
+            var url = ctx + "system/dept/selectDeptTree/" + deptId;
+            var options = {
+                title: '选择部门',
+                width: "380",
+                url: url,
+                callBack: doSubmit
+            };
+            $.modal.openOptions(options);
+        })
+
+        function doSubmit(index, layero){
+            var tree = layero.find("iframe")[0].contentWindow.layui.$._tree;
+            if ($.tree.notAllowParents(tree)) {
+                var body = layer.getChildFrame('body', index);
+                $("#treeId").val(body.find('#treeId').val());
+                $("#treeName").val(body.find('#treeName').val());
+                console.log($("#treeId").val());
+                console.log($("#treeName").val());
+                layer.close(index);
+            }
+        }
+
+    })
+</script>
+</body>
+</html>

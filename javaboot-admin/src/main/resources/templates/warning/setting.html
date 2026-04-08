@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>预警设置</title>
+    <link rel="stylesheet" href="../../../static/assets/libs/layui/css/layui.css"
+          th:href="@{/assets/libs/layui/css/layui.css}"/>
+    <link rel="stylesheet" href="../../../static/assets/module/admin.css?v=316"
+          th:href="@{/assets/module/admin.css?v=316}"/>
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+<body>
+
+
+<!-- 正文开始 -->
+<div class="layui-fluid">
+    <div class="layui-row">
+        <div class="layui-card">
+            <form class="layui-form " action="">
+                <div class="layui-form-item">
+                    <div class="layui-row">
+                        <div class="layui-inline">
+                            <label class="layui-form-label label-auto">账期预警：</label>
+                            <div class="layui-input-block">
+                                <input class="payment-day-warn" type="checkbox" name="paymentDayWarn"
+                                       lay-filter="paymentDayWarn" lay-skin="switch"
+                                       lay-text="开|关">
+                            </div>
+                        </div>
+
+                        <div class="layui-inline">
+                            <label class="layui-form-label">客户未下单预警：</label>
+                            <div class="layui-input-block">
+                                <input class="customer-no-order-warn" type="checkbox" name="customerNoOrderWarn"
+                                       lay-filter="customerNoOrderWarn" lay-skin="switch"
+                                       lay-text="开|关">
+                            </div>
+                        </div>
+
+                        <div class="layui-inline">
+                            <label class="layui-form-label">超期库存预警：</label>
+                            <div class="layui-input-block">
+                                <input class="overdueStockWarn" type="checkbox" name="overdueStockWarn"
+                                       lay-filter="overdueStockWarn" lay-skin="switch"
+                                       lay-text="开|关">
+                            </div>
+                        </div>
+
+                        <div class="layui-inline">
+                            <label class="layui-form-label">库存预警：</label>
+                            <div class="layui-input-inline">
+                                <input class="stock-warn" type="checkbox" name="stockWarn" lay-filter="stockWarn"
+                                       lay-skin="switch"
+                                       lay-text="开|关">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!--<div class="layui-row">
+                        <div class="layui-inline">
+                            <label class="layui-form-label">库存预警：</label>
+                            <div class="layui-input-inline">
+                                <input class="stock-warn" type="checkbox" name="stockWarn" lay-filter="stockWarn"
+                                       lay-skin="switch"
+                                       lay-text="开|关">
+                            </div>
+                            <div class="layui-input-inline">
+                                <div class="layui-text" style="margin-left: 20px;">阈值：</div>
+                            </div>
+                            <div class="layui-input-inline" style="width: 70px;">
+                                <input id="tackWarnMax" class="layui-input" name="tackWarnMax" type="text"
+                                       placeholder="" autocomplete="off" onkeyup="clearNoNum(this)"
+                                       oninput="if(value>100)value=100;if(value<0)value=0"/>
+                            </div>
+                            <div class="layui-input-inline">
+                                <div class="layui-text">%</div>
+                            </div>
+                            <div class="layui-input-inline">
+                                <div class="layui-text" style="font-size: 12px;color: grey; margin-left: 5px">
+                                    (当库存低于阈值百分比，发送告警)
+                                </div>
+                            </div>
+                        </div>
+                    </div>-->
+                </div>
+            </form>
+
+            <div class="layui-row layui-row layui-col-space15">
+                <form class="layui-form layui-input-inline" th:onsubmit="return false">
+                    <div class="layui-form-item">
+                        <div class="layui-row">
+                            <div class="layui-inline">
+                                <div class="layui-inline">
+                                    <label class="layui-form-label label-auto">预警类型：</label>
+                                    <div class="layui-input-inline">
+                                        <select name="warnType" id="warnType" lay-filter="warnType">
+                                            <option value="" th:checked="true">全部</option>
+                                            <option value="paymentDayWarn">账期预警</option>
+                                            <option value="customerNoOrderWarn">客户未下单预警</option>
+                                            <option value="stockWarn">库存预警</option>
+                                            &lt;!&ndash;<option value="customerOrderNumWarn">客户订货数量预警</option>&ndash;&gt;
+                                            <option value="overdueStockWarn">超期库存预警</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--</div>-->
+                            <!--<div class="layui-row">-->
+                            <div class="layui-inline">
+                                <div class="layui-inline">
+                                    <label class="layui-form-label label-auto">客户名称：</label>
+                                    <div class="layui-input-inline">
+                                        <select name="customerId" id="customerId" lay-filter="customerId"
+                                                lay-search>
+                                            <option value="" th:checked="true">全部</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="layui-inline">
+                                <button class="layui-btn layui-btn-sm icon-btn" lay-submit
+                                        lay-filter="searchBtn"
+                                        id="searchBtn">
+                                    <i class="layui-icon layui-icon-search"></i>搜索
+                                </button>
+                                <button class="layui-btn layui-btn-sm icon-btn" type="reset" id="restBtn">
+                                    <i class="layui-icon layui-icon-refresh"></i>重置
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <table class="layui-table" id="dataTable" lay-filter="dataTable"></table>
+        </div>
+    </div>
+</div>
+
+<!-- js部分 -->
+<script type="text/javascript" src="../../../static/assets/libs/layui/layui.js"
+        th:src="@{/assets/libs/layui/layui.js}"></script>
+<script type="text/javascript" src="../../../static/assets/js/common.js?v=316"
+        th:src="@{/assets/js/common.js}"></script>
+
+<script type="text/javascript" th:inline="javascript">
+    var ctx = [[@{
+        /}]];
+</script>
+<script type="text/javascript" th:inline="none">
+    layui.use(['index', 'layer', 'form', 'table', 'util', 'ext', 'notice', 'dataGrid'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        var table = layui.table;
+        var util = layui.util;
+        var laydate = layui.laydate;
+        var ext = layui.ext;
+        var admin = layui.admin;
+        var index = layui.index;
+        var notice = layui.notice;
+        var dataGrid = layui.dataGrid;
+
+        //监听客户账期预警设置开关
+        form.on('switch(paymentDayWarn)', function (data) {
+            if (this.checked) {
+                //开
+                saveEarlyWarningResult('paymentDayWarn', '1');
+            } else {
+                //关
+                saveEarlyWarningResult('paymentDayWarn', '0');
+            }
+            console.log('客户账期预警--->', this.checked);
+        });
+        form.on('switch(customerNoOrderWarn)', function (data) {
+            if (this.checked) {
+                //开
+                saveEarlyWarningResult('customerNoOrderWarn', '1');
+            } else {
+                //关
+                saveEarlyWarningResult('customerNoOrderWarn', '0');
+            }
+            console.log('客户未下单预警--->', this.checked);
+        });
+        form.on('switch(stockWarn)', function (data) {
+            if (this.checked) {
+                //开
+                saveEarlyWarningResult('stockWarn', '1');
+            } else {
+                //关
+                saveEarlyWarningResult('stockWarn', '0');
+            }
+            console.log('库存预警--->', this.checked);
+        });
+        form.on('switch(customerOrderNumWarn)', function (data) {
+            if (this.checked) {
+                //开
+                saveEarlyWarningResult('customerOrderNumWarn', '1');
+            } else {
+                //关
+                saveEarlyWarningResult('customerOrderNumWarn', '0');
+            }
+            console.log('客户订货数量预警--->', this.checked);
+        });
+        form.on('switch(overdueStockWarn)', function (data) {
+            if (this.checked) {
+                //开
+                saveEarlyWarningResult('overdueStockWarn', '1');
+            } else {
+                //关
+                saveEarlyWarningResult('overdueStockWarn', '0');
+            }
+            console.log('超期库存预警--->', this.checked);
+        });
+
+        queryEarlyWarningList();
+
+        //查询所有的预警列表设置
+        function queryEarlyWarningList() {
+            var warningList = "shop/earlyWarning/list";
+            var params = {};
+            params.pageNum = 1;
+            params.pageSize = 100;  //默认最大数据
+            admin.req(ctx + warningList, params, function (result) {
+                if (result && result.rows && result.rows.length > 0) {
+                    for (var i = 0; i < result.rows.length; i++) {
+                        var item = result.rows[i];
+                        if (item.warningKey) {
+                            if ('paymentDayWarn' == item.warningKey) {
+                                if (item.status == '1') {
+                                    $('.payment-day-warn').attr('checked', 'checked');
+                                } else {
+                                    $('.payment-day-warn').removeAttr('checked');
+                                }
+                            } else if ('customerNoOrderWarn' == item.warningKey) {
+                                if (item.status == '1') {
+                                    $('.customer-no-order-warn').attr('checked', 'checked');
+                                } else {
+                                    $('.customer-no-order-warn').removeAttr('checked');
+                                }
+                            } else if ('stockWarn' == item.warningKey) {
+                                if (item.status == '1') {
+                                    $('.stock-warn').attr('checked', 'checked');
+                                } else {
+                                    $('.stock-warn').removeAttr('checked');
+                                }
+                                $("#tackWarnMax").val(item.comment);
+                            }
+                            // else if ('customerOrderNumWarn' == item.warningKey) {
+                            //     if (item.status == '1') {
+                            //         $('.customerOrderNumWarn').attr('checked', 'checked');
+                            //     } else {
+                            //         $('.customerOrderNumWarn').removeAttr('checked');
+                            //     }
+                            // }
+                            else if ('overdueStockWarn' == item.warningKey) {
+                                if (item.status == '1') {
+                                    $('.overdueStockWarn').attr('checked', 'checked');
+                                } else {
+                                    $('.overdueStockWarn').removeAttr('checked');
+                                }
+                            }
+                        }
+                    }
+                    //重新渲染
+                    form.render();
+                }
+            }, 'post')
+        }
+
+        //查询所有的预警列表设置
+        function saveEarlyWarningResult(warningKey, status) {
+            var warningUpdate = "shop/earlyWarning/edit";
+            var params = {};
+            params.warningKey = warningKey;
+            params.status = status;
+            admin.req(ctx + warningUpdate, params, function (result) {
+                if (result && result.code == 0) {
+                    notice.msg('设置成功', {icon: 1});
+                } else {
+                    notice.msg('设置失败', {icon: 5});
+
+                    if ('paymentDayWarn' == warningKey) {
+                        //还原显示
+                        if (item.status == '1') {
+                            $('.payment-day-warn').removeAttr('checked');
+                        } else {
+                            $('.payment-day-warn').attr('checked', 'checked');
+                        }
+                    } else if ('customerNoOrderWarn' == warningKey) {
+                        //还原显示
+                        if (item.status == '1') {
+                            $('.customer-no-order-warn').removeAttr('checked');
+                        } else {
+                            $('.customer-no-order-warn').attr('checked', 'checked');
+                        }
+                    } else if ('stockWarn' == warningKey) {
+                        //还原显示
+                        if (item.status == '1') {
+                            $('.stock-warn').removeAttr('checked');
+                        } else {
+                            $('.stock-warn').attr('checked', 'checked');
+                        }
+                    }
+                    // else if ('customerOrderNumWarn' == warningKey) {
+                    //     //还原显示
+                    //     if (item.status == '1') {
+                    //         $('.customerOrderNumWarn').removeAttr('checked');
+                    //     } else {
+                    //         $('.customerOrderNumWarn').attr('checked', 'checked');
+                    //     }
+                    // }
+                    else if ('overdueStockWarn' == warningKey) {
+                        //还原显示
+                        if (item.status == '1') {
+                            $('.overdueStockWarn').removeAttr('checked');
+                        } else {
+                            $('.overdueStockWarn').attr('checked', 'checked');
+                        }
+                    }
+                    //重新渲染
+                    form.render();
+                }
+            }, 'post')
+        }
+
+        queryMessageList();
+
+        //查询消息列表数据
+        function queryMessageList() {
+            //获取选中的时间类型
+            var warnTypeOptions = $("#warnType option:selected");
+            var warnType = warnTypeOptions.val();
+
+            //获取选中的客户id
+            var customerOptions = $("#customerId option:selected"); //获取选中的项
+            var customerId = customerOptions.val();
+
+            var params = {messageKey: warnType, merchantId: customerId};
+
+            var listUrl = "shop/storeMessage/list";
+
+            table.render({
+                elem: '#dataTable'
+                ,url: ctx + listUrl
+                ,method: 'POST'
+                ,toolbar: '#toolbarHead'
+                ,defaultToolbar:[]
+                ,height: 'full-100'
+                ,cellMinWidth: 80
+                ,page: {
+                    curr:1
+                }
+                ,request: {
+                    pageName: 'pageNum' //页码的参数名称，默认：page
+                    ,limitName: 'pageSize' //每页数据量的参数名，默认：limit
+                }
+                ,where: params
+                ,limit: 10
+                ,cols: [[
+                    {type: 'checkbox'}
+                    ,{field: 'id', title: '自增id', hide: true}
+                    ,{field: 'title', title: '预警类型'}
+                    ,{field: 'content', title: '预警内容'}
+                    ,{field: 'createTime', title: '预警时间'}
+                    // ,{field: 'operate', title: '操作', minWidth: 200, toolbar: '#toolbarRow', fixed: 'right'}
+                ]]
+                ,parseData: function(res){ //将原始数据解析成 table 组件所规定的数据
+                    return {
+                        "code": res.code, //解析接口状态
+                        "msg": res.msg, //解析提示文本
+                        "count": res.total, //解析数据长度
+                        "data": res.rows //解析数据列表
+                    };
+                }
+            });
+
+            // dataGrid.render({
+            //     url: ctx + listUrl,
+            //     method: 'POST',
+            //     elem: '#messageList',
+            //     templet: '#messageItem',
+            //     request: {
+            //         pageName: 'pageNum'
+            //         , limitName: 'pageSize'
+            //     },
+            //     where: params,
+            //     loadMore: {limit: 15, text: '下面还有消息'}
+            //     , parseData: function (res) { //将原始数据解析成 table 组件所规定的数据
+            //         return {
+            //             "code": res.code, //解析接口状态
+            //             "msg": res.msg, //解析提示文本
+            //             "count": res.total, //解析数据长度
+            //             "data": res.rows //解析数据列表
+            //         };
+            //     },
+            //     done: function (dataList, curPage, count) {
+            //     }
+            // });
+        }
+
+        //搜索按钮点击执行搜索
+        $('#searchBtn').click(function () {
+            queryMessageList();
+        });
+
+        //获取查询条件数据并刷新页面
+        admin.req(ctx + "shop/member/list", {pageNum: 1, pageSize: 5000}, function (result) {
+            if (result && result.rows) {
+                var select = document.getElementById('customerId');
+                for (var i = 0; i < result.rows.length; i++) {
+                    var data = result.rows[i];
+                    var option = document.createElement("option");
+                    option.setAttribute("value", data.id);
+                    option.innerText = data.nickname;
+                    select.appendChild(option)
+                }
+                form.render('select');
+            }
+        }, 'post');
+
+        $("#tackWarnMax").blur(function () {
+            var warningUpdate = "shop/earlyWarning/edit";
+            var params = {};
+            params.warningKey = 'stockWarn';
+            var maxValue = $("#tackWarnMax").val();
+            params.comment = maxValue;
+            admin.req(ctx + warningUpdate, params, function (result) {
+                if (result && result.code == 0) {
+                    notice.msg('设置成功', {icon: 1});
+                } else {
+                    notice.msg('设置失败', {icon: 5});
+                }
+            }, 'post')
+        })
+    });
+
+    function clearNoNum(obj) {
+        obj.value = obj.value.replace(/[^\d.]/g, "");  //清除“数字”和“.”以外的字符
+        obj.value = obj.value.replace(/^\./g, "");  //验证第一个字符是数字而不是.
+        obj.value = obj.value.replace(/\.{2,}/g, "."); //只保留第一个. 清除多余的.
+        obj.value = obj.value.replace(".", "$#$").replace(/\./g, "").replace("$#$", ".");
+    }
+</script>
+</body>
+
+</html>
+
+<style>
+    .message-list1 {
+        /*height: 310px;*/
+        height: auto !important;
+        white-space: normal;
+        overflow-y: auto;
+        padding-top: 5px;
+        max-height: 1100px;
+        padding-bottom: 5px;
+    }
+
+    .message-list-item {
+        display: block;
+        padding: 10px 20px;
+        line-height: 24px;
+        position: relative;
+        border-bottom: 1px solid #e8e8e8;
+    }
+
+    .message-list-item:hover, .message-btn-clear:hover, .message-btn-more:hover {
+        background: #F2F2F2;
+    }
+
+    .message-list-item .message-item-icon {
+        width: 40px;
+        height: 40px;
+        line-height: 40px;
+        margin-top: -20px;
+        border-radius: 50%;
+        position: absolute;
+        left: 20px;
+        top: 50%;
+    }
+
+    .message-list-item .message-item-icon.layui-icon {
+        color: #fff;
+        font-size: 22px;
+        text-align: center;
+        background-color: #FE5D58;
+    }
+
+    .message-list-item .message-item-icon + .message-item-right {
+        margin-left: 55px;
+    }
+
+    .message-list-item .message-item-title {
+        color: #666;
+        font-size: 14px;
+    }
+
+    .message-list-item .message-item-text {
+        color: #999;
+        font-size: 12px;
+    }
+
+    .message-list-item > .layui-badge {
+        position: absolute;
+        right: 20px;
+        top: 12px;
+    }
+
+    .message-list-item > .layui-badge + .message-item-right {
+        margin-right: 50px;
+    }
+</style>

@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+	<meta charset="utf-8"/>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<title>定时任务列表</title>
+	<link rel="stylesheet" href="../../../static/assets/libs/layui/css/layui.css" th:href="@{/assets/libs/layui/css/layui.css}"/>
+	<link rel="stylesheet" href="../../../static/assets/module/admin.css?v=316" th:href="@{/assets/module/admin.css?v=316}"/>
+	<!--[if lt IE 9]>
+	<script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+	<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+	<![endif]-->
+</head>
+<body>
+
+
+
+<!-- 正文开始 -->
+<div class="layui-fluid">
+	<div class="layui-row layui-col-space15">
+		<div class="layui-card">
+			<!-- 搜索区 -->
+			<form class="layui-form toolbar" th:onsubmit="return false" lay-filter="inputForm" id="inputForm">
+				<div class="layui-form-item">
+					<div class="layui-inline">
+						<label class="layui-form-label label-auto">任务名称：</label>
+						<div class="layui-input-inline">
+							<input class="layui-input" name="jobName" type="text" placeholder="输入任务名称"/>
+						</div>
+					</div>
+					<div class="layui-inline">
+						<label class="layui-form-label label-auto">任务分组：</label>
+						<div class="layui-input-inline">
+							<select name="jobGroup" th:with="type=${@dict.getType('sys_job_group')}">
+								<option value="">所有</option>
+								<option th:each="dict : ${type}" th:text="${dict.dictLabel}" th:value="${dict.dictValue}"></option>
+							</select>
+						</div>
+					</div>
+					<div class="layui-inline">
+						<label class="layui-form-label label-auto">任务状态：</label>
+						<div class="layui-input-inline">
+							<select name="status" th:with="type=${@dict.getType('sys_job_status')}">
+								<option value="">所有</option>
+								<option th:each="dict : ${type}" th:text="${dict.dictLabel}" th:value="${dict.dictValue}"></option>
+							</select>
+						</div>
+					</div>
+					<div class="layui-inline" style="padding-left: 13px;">
+						<button class="layui-btn layui-btn-sm icon-btn" lay-submit lay-filter="searchBtn" id="searchBtn">
+							<i class="layui-icon layui-icon-search"></i>搜索
+						</button>
+						<button class="layui-btn layui-btn-sm icon-btn" type="reset">
+							<i class="layui-icon layui-icon-refresh"></i>重置
+						</button>
+					</div>
+				</div>
+			</form>
+
+			<table class="layui-table" id="dataTable" lay-filter="dataTable"></table>
+
+		</div>
+
+	</div>
+</div>
+
+<!-- 头工具栏 -->
+<script type="text/html" id="toolbarHead">
+	<div class="layui-btn-container">
+		<button class="layui-btn layui-btn-normal layui-btn-sm" lay-event="add" shiro:hasPermission="monitor:job:add"><i class="layui-icon layui-icon-addition"></i>新增</button>
+		<button class="layui-btn layui-btn-warm layui-btn-sm" lay-event="edit" shiro:hasPermission="monitor:job:edit"><i class="layui-icon layui-icon-edit"></i>修改</button>
+		<button class="layui-btn layui-btn-danger layui-btn-sm" lay-event="batchdel" shiro:hasPermission="monitor:job:remove"><i class="layui-icon layui-icon-delete"></i>删除</button>
+		<button class="layui-btn layui-btn-normal layui-btn-sm" lay-event="export" shiro:hasPermission="monitor:job:export"><i class="layui-icon layui-icon-export"></i>导出</button>
+		<button class="layui-btn layui-btn-normal layui-btn-sm" lay-event="jobLog" shiro:hasPermission="monitor:job:list"><i class="layui-icon layui-icon-upload"></i>日志</button>
+	</div>
+</script>
+
+<!-- 行工具栏 -->
+<script type="text/html" id="toolbarRow">
+	<a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="view" shiro:hasPermission="monitor:job:detail">详细</a>
+	<a class="layui-btn layui-btn-warm layui-btn-xs" lay-event="edit" shiro:hasPermission="monitor:job:edit">编辑</a>
+	<a class="layui-btn layui-btn-xs" lay-event="changeStatus" shiro:hasPermission="monitor:job:changeStatus">执行一次</a>
+	<a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del" shiro:hasPermission="monitor:job:remove">删除</a>
+</script>
+
+<script type="text/html" id="statusTpl">
+	<input type="checkbox" lay-skin="switch" lay-text="启用|停用" lay-filter="status" value="{{d.status}}" data-json="{{ encodeURIComponent(JSON.stringify(d)) }}" {{ d.status === '0' ? 'checked' : '' }}>
+</script>
+
+<!-- js部分 -->
+<script type="text/javascript" src="../../../static/assets/libs/layui/layui.js" th:src="@{/assets/libs/layui/layui.js}"></script>
+<script type="text/javascript" src="../../../static/assets/js/common.js?v=316" th:src="@{/assets/js/common.js}"></script>
+
+<script type="text/javascript" th:inline="javascript">
+	var ctx = [[@{/}]];
+	var datas = [[${@dict.getType('sys_job_group')}]];
+	var status = [[${@dict.getType('sys_job_status')}]];
+</script>
+<script type="text/javascript" th:inline="none">
+	layui.use(['index', 'layer', 'form', 'table', 'util', 'ext'], function () {
+		var $ = layui.jquery;
+		var layer = layui.layer;
+		var form = layui.form;
+		var table = layui.table;
+		var util = layui.util;
+		var laydate = layui.laydate;
+		var ext = layui.ext;
+		var admin = layui.admin;
+		var index = layui.index;
+
+		var prefix = ctx + "monitor/job";
+		var url = prefix + "/list";
+		var detailUrl = prefix + "/detail/{id}";
+		var createUrl = prefix + "/add";
+		var updateUrl = prefix + "/edit/{id}";
+		var removeUrl = prefix + "/remove";
+		var exportUrl = prefix + "/export";
+
+		table.render({
+			elem: '#dataTable'
+			,url: url
+			,method: 'POST'
+			,toolbar: '#toolbarHead'
+			,height: 'full-100'
+			,cellMinWidth: 80
+			,page: true
+			,request: {
+				pageName: 'pageNum' //页码的参数名称，默认：page
+				,limitName: 'pageSize' //每页数据量的参数名，默认：limit
+			}
+			,limit: 10
+			,cols: [[
+				{type: 'checkbox'}
+				,{field: 'jobName', title: '任务名称', width: 200}
+				,{field: 'jobGroup', title: '任务分组', width: 100, templet:function (res) {
+					return $.table.selectDictLabel(datas, res.jobGroup);
+				}}
+				,{field: 'invokeTarget', title: '调用目标字符串'}
+				,{field: 'cronExpression', title: '执行表达式', width: 150}
+				,{field: 'status', title: '任务状态', width: 110, templet: '#statusTpl', unresize: true}
+				,{field: 'createTime', title: '创建时间', width: 200}
+				,{field: 'operate', title: '操作', width: 250, toolbar: '#toolbarRow', fixed: 'right'}
+			]]
+			,parseData: function(res){ //将原始数据解析成 table 组件所规定的数据
+				return {
+					"code": res.code, //解析接口状态
+					"msg": res.msg, //解析提示文本
+					"count": res.total, //解析数据长度
+					"data": res.rows //解析数据列表
+				};
+			}
+		});
+
+		//监听搜索
+		form.on('submit(searchBtn)', function (data) {
+			var field = data.field;
+			console.log(JSON.stringify(field));
+			//执行重载
+			table.reload('dataTable', {
+				where: field
+			});
+		});
+
+		//头工具栏事件
+		table.on('toolbar(dataTable)', function(obj){
+			switch(obj.event){
+				case 'add':
+					active.add();
+					break;
+				case 'edit':
+					var checkStatus = table.checkStatus('dataTable')
+							, checkData = checkStatus.data; //得到选中的数据
+					var id = null;
+					if (id == null) {
+						if (checkData.length === 0) {
+							return admin.info('请选择一条数据');
+						} else if (checkData.length > 1) {
+							return admin.info('只能选择一条数据编辑');
+						} else {
+							id = checkData[0].jobId;
+						}
+					}
+					active.edit(id);
+					break;
+				case 'batchdel':
+					active.batchdel();
+					break;
+				case 'jobLog':
+					active.jobLog();
+					break;
+				case 'export':
+					$.modal.loading("正在导出数据，请稍后...");
+					$.post(exportUrl, $("#inputForm").serializeArray(), function(result) {
+						if (result.code == web_status.SUCCESS) {
+							window.location.href = ctx + "common/download?fileName=" + encodeURI(result.msg) + "&delete=" + true;
+						} else if (result.code == web_status.WARNING) {
+							$.modal.alertWarning(result.msg)
+						} else {
+							$.modal.alertError(result.msg);
+						}
+						$.modal.closeLoading();
+					});
+					break;
+			};
+		});
+
+		//行工具栏事件
+		table.on('tool(dataTable)', function (obj) {
+			var data = obj.data;
+			if (obj.event === 'view') {
+				active.view(data.jobId);
+			} else if (obj.event === 'edit') {
+				active.edit(data.jobId);
+			} else if(obj.event === 'changeStatus'){
+				active.run(data.jobId, data.jobGroup);
+			} else if (obj.event === 'del') {
+				active.del(data.jobId);
+			}
+		});
+
+		//监听锁定操作
+		form.on('switch(status)', function (obj) {
+			var json = JSON.parse(decodeURIComponent($(this).data('json')));
+			// layer.tips(this.value + ' ' + this.name + '：' + obj.elem.checked, obj.othis);
+			// console.log(obj.elem.checked);
+			// console.log(json.id);
+			var checked = obj.elem.checked;
+			//console.log(typeof (checked));
+			//var status = '1';
+			if(checked){
+				active.start(json.jobId, json.jobGroup);
+			} else{
+				active.stop(json.jobId, json.jobGroup);
+			}
+		});
+
+
+		//事件
+		var active = {
+			batchdel: function () {
+				var checkStatus = table.checkStatus('dataTable')
+						, checkData = checkStatus.data; //得到选中的数据
+
+				if (checkData.length === 0) {
+					return admin.info('请选择数据');
+				}
+
+				var ids = [];
+				layui.each(checkData, function (index, item) {
+					ids.push(item.jobId);
+				});
+
+				admin.confirm('确定删除吗？', function () {
+					admin.req(removeUrl, {ids: ids.join(',')}, function (result) {
+						if (result.code == 0) {
+							table.reload('dataTable');
+							admin.success('删除成功!');
+						} else {
+							admin.error(result.msg);
+						}
+					},'post')
+				});
+			}
+			,view: function (id) {
+				var viewUrl = detailUrl.replace("{id}", id);
+				admin.openDialogView('定时任务详情', viewUrl, '800px', '480px');
+			}
+			,add: function () {
+				admin.openDialog('新增定时任务', createUrl, '800px', '480px');
+			}
+			,edit: function (id) {
+				var editUrl = updateUrl.replace("{id}", id);
+				admin.openDialog('修改定时任务', editUrl, '800px', '480px');
+			}
+			,jobLog: function(){
+				var url = ctx + 'monitor/jobLog';
+				admin.openDialogView('定时任务调度日志', url, '1000px', '550px');
+			}
+			,del: function(id){
+				admin.confirm('确定删除吗?',function(){
+					admin.req(removeUrl, {ids: id}, function (data) {
+						if (data.code == 0) {
+							table.reload('dataTable');
+							admin.success('删除成功!');
+						} else {
+							admin.error(data.msg);
+						}
+					},'post')
+				});
+			}
+			,start: function (jobId, jobGroup) {
+				admin.confirm('确认要启用任务吗?', function(){
+					admin.req(prefix + "/changeStatus", { "jobId": jobId, "jobGroup": jobGroup, "status": 0 }, function (data) {
+						if (data.code == 0) {
+							table.reload('dataTable');
+							admin.success('启用成功!');
+						} else {
+							admin.error(data.msg);
+						}
+					},'post')
+				},function(){
+					table.reload('dataTable');
+				},function(){
+					table.reload('dataTable');
+				});
+			}
+			,stop: function (jobId, jobGroup) {
+				admin.confirm('确认要停用任务吗?',function(){
+					admin.req(prefix + "/changeStatus", { "jobId": jobId, "jobGroup": jobGroup, "status": 1 }, function (data) {
+						if (data.code == 0) {
+							table.reload('dataTable');
+							admin.success('停用成功!');
+						} else {
+							admin.error(data.msg);
+						}
+					},'post')
+				},function () {
+					table.reload('dataTable');
+				});
+			}
+			,run: function (jobId, jobGroup) {
+				admin.confirm('确认要立即执行一次任务吗?',function(){
+					admin.req(prefix + "/run", {"jobId": jobId, "jobGroup": jobGroup}, function (data) {
+						if (data.code == 0) {
+							admin.success('执行成功!');
+						} else {
+							admin.error(data.msg);
+						}
+					},'post')
+				});
+			}
+		}
+
+	});
+</script>
+</body>
+
+</html>

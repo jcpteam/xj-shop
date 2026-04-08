@@ -1,0 +1,352 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	
+    <groupId>com.javaboot</groupId>
+    <artifactId>javaboot</artifactId>
+    <version>4.5</version>
+
+	<name>javaboot</name>
+	<url>http://www.javaboot.cn</url>
+	<description>JavaBoot快速开发框架</description>
+
+	<modules>
+		<module>javaboot-admin</module>
+		<module>javaboot-framework</module>
+		<module>javaboot-app</module>
+		<module>javaboot-system</module>
+		<module>javaboot-quartz</module>
+		<module>javaboot-generator</module>
+		<module>javaboot-common</module>
+		<module>javaboot-oss</module>
+		<module>javaboot-websocket</module>
+        <module>javaboot-shop</module>
+        <module>javaboot-activiti</module>
+        <module>javaboot-spider</module>
+		<module>javaboot-wechat</module>
+	</modules>
+	<packaging>pom</packaging>
+
+    <properties>
+	    <javaboot.version>4.5</javaboot.version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<java.version>1.8</java.version>
+		<shiro.version>1.5.3</shiro.version>
+		<thymeleaf.extras.shiro.version>2.0.0</thymeleaf.extras.shiro.version>
+		<mybatis.boot.version>1.3.2</mybatis.boot.version>
+		<druid.version>1.1.24</druid.version>
+		<bitwalker.version>1.19</bitwalker.version>
+		<kaptcha.version>2.3.2</kaptcha.version>
+		<swagger.version>2.9.2</swagger.version>
+		<pagehelper.boot.version>1.2.5</pagehelper.boot.version>
+		<fastjson.version>1.2.70</fastjson.version>
+		<oshi.version>3.9.1</oshi.version>
+		<commons.io.version>2.5</commons.io.version>
+		<commons.fileupload.version>1.3.3</commons.fileupload.version>
+		<poi.version>3.17</poi.version>
+		<velocity.version>1.7</velocity.version>
+
+		<!--扩展的-->
+		<lombo.version>1.18.4</lombo.version>
+		<qiniu.version>[7.2.0, 7.2.99]</qiniu.version>
+		<aliyun.oss.version>2.5.0</aliyun.oss.version>
+		<qcloud.cos.version>5.5.9</qcloud.cos.version>
+		<lombo.version>1.18.4</lombo.version>
+		<guava.version>20.0</guava.version>
+		<hutool.version>5.4.0</hutool.version>
+		<mybatis-plus.version>3.4.0</mybatis-plus.version>
+		<easy-captcha.version>1.6.2</easy-captcha.version>
+		<activiti.version>6.0.0</activiti.version>
+		<activiti.starter.version>6.0.0</activiti.starter.version>
+
+		<nekohtml.version>1.9.22</nekohtml.version>
+		<aliyun-java-sdk-core.version>4.0.6</aliyun-java-sdk-core.version>
+		<aliyun-java-sdk-dysmsapi.version>1.1.0</aliyun-java-sdk-dysmsapi.version>
+		<pagehelper.version>5.1.11</pagehelper.version>
+		<swagger-bootstrap-ui.version>1.9.6</swagger-bootstrap-ui.version>
+	</properties>
+	
+    <!-- 依赖声明 -->
+    <dependencyManagement>
+        <dependencies>
+        
+            <!-- SpringBoot的依赖配置-->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>2.1.8.RELEASE</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!--阿里数据库连接池 -->
+			<dependency>
+	            <groupId>com.alibaba</groupId>
+	            <artifactId>druid-spring-boot-starter</artifactId>
+	            <version>${druid.version}</version>
+	        </dependency>
+	        
+	        <!--验证码 -->
+			<dependency>
+				<groupId>com.github.whvcse</groupId>
+				<artifactId>easy-captcha</artifactId>
+				<version>${easy-captcha.version}</version>
+			</dependency>
+			
+			<!--Shiro核心框架 -->
+			<dependency>
+				<groupId>org.apache.shiro</groupId>
+				<artifactId>shiro-core</artifactId>
+				<version>${shiro.version}</version>
+			</dependency>
+			
+			<!-- Shiro使用Srping框架 -->
+			<dependency>
+				<groupId>org.apache.shiro</groupId>
+				<artifactId>shiro-spring</artifactId>
+				<version>${shiro.version}</version>
+			</dependency>
+			
+			<!-- Shiro使用EhCache缓存框架 -->
+			<dependency>
+				<groupId>org.apache.shiro</groupId>
+				<artifactId>shiro-ehcache</artifactId>
+				<version>${shiro.version}</version>
+			</dependency>
+	
+			<!-- thymeleaf模板引擎和shiro框架的整合 -->
+			<dependency>
+				<groupId>com.github.theborakompanioni</groupId>
+				<artifactId>thymeleaf-extras-shiro</artifactId>
+				<version>${thymeleaf.extras.shiro.version}</version>
+			</dependency>
+	
+			<!-- 解析客户端操作系统、浏览器等 -->
+			<dependency>
+				<groupId>eu.bitwalker</groupId>
+				<artifactId>UserAgentUtils</artifactId>
+				<version>${bitwalker.version}</version>
+			</dependency>
+			
+			<!-- pagehelper 分页插件 -->
+			<dependency>
+				<groupId>com.github.pagehelper</groupId>
+				<artifactId>pagehelper</artifactId>
+				<version>${pagehelper.version}</version>
+			</dependency>
+
+			<!--mybatis plus extension,包含了mybatis plus core-->
+			<dependency>
+				<groupId>com.baomidou</groupId>
+				<artifactId>mybatis-plus-extension</artifactId>
+				<version>${mybatis-plus.version}</version>
+			</dependency>
+			<!--mybatis-->
+			<dependency>
+				<groupId>com.baomidou</groupId>
+				<artifactId>mybatis-plus-boot-starter</artifactId>
+				<version>${mybatis-plus.version}</version>
+			</dependency>
+			
+			<!-- 获取系统信息 -->
+			<dependency>
+				<groupId>com.github.oshi</groupId>
+				<artifactId>oshi-core</artifactId>
+				<version>${oshi.version}</version>
+			</dependency>
+			
+			<!-- swagger2-->
+			<dependency>
+				<groupId>io.springfox</groupId>
+				<artifactId>springfox-swagger2</artifactId>
+				<version>${swagger.version}</version>
+				<exclusions>
+				    <exclusion>
+				        <groupId>io.swagger</groupId>
+				        <artifactId>swagger-annotations</artifactId>
+				    </exclusion>
+				    <exclusion>
+				        <groupId>io.swagger</groupId>
+				        <artifactId>swagger-models</artifactId>
+				    </exclusion>
+				</exclusions>
+			</dependency>
+			
+			<!-- swagger2-UI-->
+			<dependency>
+				<groupId>com.github.xiaoymin</groupId>
+				<artifactId>swagger-bootstrap-ui</artifactId>
+				<version>${swagger-bootstrap-ui.version}</version>
+			</dependency>
+            
+            <!--io常用工具类 -->
+			<dependency>
+				<groupId>commons-io</groupId>
+				<artifactId>commons-io</artifactId>
+				<version>${commons.io.version}</version>
+			</dependency>
+	
+			<!--文件上传工具类 -->
+			<dependency>
+				<groupId>commons-fileupload</groupId>
+				<artifactId>commons-fileupload</artifactId>
+				<version>${commons.fileupload.version}</version>
+			</dependency>
+			
+			<!-- excel工具 -->
+			<dependency>
+				<groupId>org.apache.poi</groupId>
+				<artifactId>poi-ooxml</artifactId>
+				<version>${poi.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>cn.hutool</groupId>
+				<artifactId>hutool-all</artifactId>
+				<version>${hutool.version}</version>
+			</dependency>
+
+			<!--velocity代码生成使用模板 -->
+	        <dependency>
+	            <groupId>org.apache.velocity</groupId>
+	            <artifactId>velocity</artifactId>
+	            <version>${velocity.version}</version>
+	        </dependency>
+	        
+	        <!-- 阿里JSON解析器 -->
+			<dependency>
+				<groupId>com.alibaba</groupId>
+				<artifactId>fastjson</artifactId>
+				<version>${fastjson.version}</version>
+			</dependency>
+
+			<!-- 不严厉H5-->
+			<dependency>
+				<groupId>net.sourceforge.nekohtml</groupId>
+				<artifactId>nekohtml</artifactId>
+				<version>${nekohtml.version}</version>
+			</dependency>
+            <!-- 定时任务-->
+			<dependency>
+				<groupId>com.javaboot</groupId>
+				<artifactId>javaboot-quartz</artifactId>
+				<version>${javaboot.version}</version>
+			</dependency>
+	
+			<!-- 代码生成-->
+			<dependency>
+				<groupId>com.javaboot</groupId>
+				<artifactId>javaboot-generator</artifactId>
+				<version>${javaboot.version}</version>
+			</dependency>
+			
+			<!-- 核心模块-->
+			<dependency>
+				<groupId>com.javaboot</groupId>
+				<artifactId>javaboot-framework</artifactId>
+				<version>${javaboot.version}</version>
+			</dependency>
+			
+	        <!-- 系统模块-->
+			<dependency>
+				<groupId>com.javaboot</groupId>
+				<artifactId>javaboot-system</artifactId>
+				<version>${javaboot.version}</version>
+			</dependency>
+			
+			<!-- 通用工具-->
+	        <dependency>
+	            <groupId>com.javaboot</groupId>
+	            <artifactId>javaboot-common</artifactId>
+	            <version>${javaboot.version}</version>
+	        </dependency>
+
+			<!-- 文件模块-->
+			<dependency>
+				<groupId>com.javaboot</groupId>
+				<artifactId>javaboot-oss</artifactId>
+				<version>${javaboot.version}</version>
+			</dependency>
+
+			<!-- 消息服务-->
+			<dependency>
+				<groupId>com.javaboot</groupId>
+				<artifactId>javaboot-websocket</artifactId>
+				<version>${javaboot.version}</version>
+			</dependency>
+
+			<!-- 工作流模块 -->
+			<dependency>
+				<groupId>com.javaboot</groupId>
+				<artifactId>javaboot-activiti</artifactId>
+				<version>${javaboot.version}</version>
+			</dependency>
+
+			<!-- 商城模块 -->
+			<dependency>
+				<groupId>com.javaboot</groupId>
+				<artifactId>javaboot-shop</artifactId>
+				<version>${javaboot.version}</version>
+			</dependency>
+
+			<!-- 爬虫模块 -->
+			<dependency>
+				<groupId>com.javaboot</groupId>
+				<artifactId>javaboot-spider</artifactId>
+				<version>${javaboot.version}</version>
+			</dependency>
+
+			<!-- 微信模块 -->
+			<dependency>
+				<groupId>com.javaboot</groupId>
+				<artifactId>javaboot-wechat</artifactId>
+				<version>${javaboot.version}</version>
+			</dependency>
+
+        </dependencies>
+    </dependencyManagement>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.1</version>
+				<configuration>
+					<source>${java.version}</source>
+					<target>${java.version}</target>
+					<encoding>${project.build.sourceEncoding}</encoding>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<repositories>
+		<repository>
+			<id>public</id>
+			<name>aliyun nexus</name>
+			<url>http://maven.aliyun.com/nexus/content/groups/public/</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+		</repository>
+	</repositories>
+
+	<pluginRepositories>
+		<pluginRepository>
+			<id>public</id>
+			<name>aliyun nexus</name>
+			<url>http://maven.aliyun.com/nexus/content/groups/public/</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</pluginRepository>
+	</pluginRepositories>
+
+</project>

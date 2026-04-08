@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('新增分拣框信息')" />
+</head>
+<body class="bg-white">
+<!-- 加载动画-->
+<!--<div class="page-loading">-->
+    <!--<div class="ball-loader">-->
+        <!--<span></span><span></span><span></span><span></span>-->
+    <!--</div>-->
+<!--</div>-->
+<!-- 正文开始 -->
+<form class="layui-form bg-white" id="inputForm" th:onsubmit="return false" th:action="@{/shop/sortingBox/add}" th:object="${storeSortingBox}">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <div class="layui-row">
+                <input name="id" type="hidden">
+                <div class="layui-form-item">
+                    <label class="layui-form-label layui-form-required">框子名称:</label>
+                    <div class="layui-input-block">
+                        <input name="boxName" type="text" class="layui-input" lay-verType="tips" lay-verify="required" autocomplete="off"/>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label layui-form-required">框子重量:</label>
+                    <div class="layui-input-block">
+                        <!--<input name="boxWeight" type="text" class="layui-input" lay-verType="tips" lay-verify="required"/>-->
+                        <input class="layui-input layui-input-number" min="0" max="999999" step="1" data-prec="2" lay-verType="tips"  lay-verify="number"  name="boxWeight">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-hide">
+        <button id="submitBtn" class="layui-btn" lay-filter="submitBtn" lay-submit>保存</button>
+        <button id="closeBtn" class="layui-btn layui-btn-primary" ew-event="closeDialog">关闭</button>
+    </div>
+</form>
+
+<th:block th:include="include :: footer" />
+<script th:inline="javascript">
+    var ctx = [[@{/}]];
+    var prefix = ctx + "shop/sortingBox";
+</script>
+<script th:inline="none">
+    layui.use(['index', 'form', 'formX', 'table', 'laydate', 'upload', 'ext','numinput'], function(){
+        var $ = layui.$;
+        var form = layui.form;
+        var formX = layui.formX;
+        var layer = layui.layer;
+        var table = layui.table;
+        var admin = layui.admin;
+        var upload = layui.upload;
+        var laydate = layui.laydate;
+        var numinp = layui.numinput;
+        numinp.init({
+            // 123：123键置顶, 789：789键置顶
+            topBtns: 123,
+            // 右侧功能按钮
+            rightBtns: true,
+            // 监听键盘事件
+            listening: true,
+            // 批量配置默认小数精确度
+            defaultPrec: ''
+        });
+
+    })
+</script>
+</body>
+</html>

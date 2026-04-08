@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaboot.shop.mapper.StoreGoodsWarehouseAdjustItemMapper">
+    
+    <resultMap type="StoreGoodsWarehouseAdjustItem" id="StoreGoodsWarehouseAdjustItemResult">
+        <result property="itemId"    column="item_id"    />
+        <result property="adjustId"    column="adjust_id"    />
+        <result property="spuNo"    column="spu_no"    />
+        <result property="adjustNumber"    column="adjust_number"    />
+        <result property="unitNumber"    column="unit_number"    />
+        <result property="amount"    column="amount"    />
+        <result property="quantityUnit"    column="quantity_unit"    />
+        <result property="weightUnit"    column="weight_unit"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="status"    column="status"    />
+        <result property="comment"    column="comment"    />
+        <result property="lastModifyTime"    column="last_modify_time"    />
+    </resultMap>
+
+    <sql id="selectStoreGoodsWarehouseAdjustItemVo">
+        select item_id,status, adjust_id, spu_no, adjust_number, unit_number, amount, quantity_unit, weight_unit, comment, create_time, last_modify_time from store_goods_warehouse_adjust_item
+    </sql>
+
+    <select id="selectStoreGoodsWarehouseAdjustItemList" parameterType="StoreGoodsWarehouseAdjustItem" resultMap="StoreGoodsWarehouseAdjustItemResult">
+        <include refid="selectStoreGoodsWarehouseAdjustItemVo"/>
+        <where>
+            AND status=1
+            <if test="adjustId != null "> and adjust_id = #{adjustId}</if>
+            <if test="spuNo != null  and spuNo != ''"> and spu_no = #{spuNo}</if>
+            <if test="adjustNumber != null "> and adjust_number = #{adjustNumber}</if>
+            <if test="unitNumber != null "> and unit_number = #{unitNumber}</if>
+            <if test="amount != null "> and amount = #{amount}</if>
+            <if test="quantityUnit != null  and quantityUnit != ''"> and quantity_unit = #{quantityUnit}</if>
+            <if test="weightUnit != null  and weightUnit != ''"> and weight_unit = #{weightUnit}</if>
+            <if test="status != null  and status != ''"> and status = #{status}</if>
+            <if test="lastModifyTime != null "> and last_modify_time = #{lastModifyTime}</if>
+            <if test="adjustIds != null and adjustIds.size()>0 ">
+                and adjust_id in
+                <foreach collection="adjustIds" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    
+    <select id="selectStoreGoodsWarehouseAdjustItemById" parameterType="Long" resultMap="StoreGoodsWarehouseAdjustItemResult">
+        <include refid="selectStoreGoodsWarehouseAdjustItemVo"/>
+        where item_id = #{itemId}
+    </select>
+        
+    <insert id="insertStoreGoodsWarehouseAdjustItem" parameterType="StoreGoodsWarehouseAdjustItem" useGeneratedKeys="true" keyProperty="itemId">
+        insert into store_goods_warehouse_adjust_item
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="adjustId != null ">adjust_id,</if>
+            <if test="spuNo != null  and spuNo != ''">spu_no,</if>
+            <if test="adjustNumber != null ">adjust_number,</if>
+            <if test="unitNumber != null ">unit_number,</if>
+            <if test="amount != null ">amount,</if>
+            <if test="quantityUnit != null  and quantityUnit != ''">quantity_unit,</if>
+            <if test="weightUnit != null  and weightUnit != ''">weight_unit,</if>
+            <if test="status != null  and status != ''">status,</if>
+            <if test="createTime != null ">create_time,</if>
+            <if test="comment != null  and comment != '' ">comment,</if>
+            last_modify_time
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="adjustId != null ">#{adjustId},</if>
+            <if test="spuNo != null  and spuNo != ''">#{spuNo},</if>
+            <if test="adjustNumber != null ">#{adjustNumber},</if>
+            <if test="unitNumber != null ">#{unitNumber},</if>
+            <if test="amount != null ">#{amount},</if>
+            <if test="quantityUnit != null  and quantityUnit != ''">#{quantityUnit},</if>
+            <if test="weightUnit != null  and weightUnit != ''">#{weightUnit},</if>
+            <if test="status != null and status != ''">#{status},</if>
+            <if test="createTime != null ">#{createTime},</if>
+            <if test="comment != null  and comment != '' ">#{comment},</if>
+            now()
+         </trim>
+    </insert>
+
+    <update id="updateStoreGoodsWarehouseAdjustItem" parameterType="StoreGoodsWarehouseAdjustItem">
+        update store_goods_warehouse_adjust_item
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="adjustId != null ">adjust_id = #{adjustId},</if>
+            <if test="spuNo != null  and spuNo != ''">spu_no = #{spuNo},</if>
+            <if test="adjustNumber != null ">adjust_number = #{adjustNumber},</if>
+            <if test="unitNumber != null ">unit_number = #{unitNumber},</if>
+            <if test="amount != null ">amount = #{amount},</if>
+            <if test="quantityUnit != null  and quantityUnit != ''">quantity_unit = #{quantityUnit},</if>
+            <if test="weightUnit != null  and weightUnit != ''">weight_unit = #{weightUnit},</if>
+            <if test="createTime != null ">create_time = #{createTime},</if>
+            <if test="status != null and status != ''">status=#{status},</if>
+            <if test="lastModifyTime != null ">last_modify_time = #{lastModifyTime},</if>
+            <if test="comment != null  and comment != ''">comment = #{comment},</if>
+        </trim>
+        where item_id = #{itemId}
+    </update>
+
+    <delete id="deleteStoreGoodsWarehouseAdjustItemById" parameterType="Long">
+        delete from store_goods_warehouse_adjust_item where item_id = #{itemId}
+    </delete>
+    <update id="deleteStoreGoodsWarehouseAdjustItemByAdjustId" parameterType="Long">
+        update   store_goods_warehouse_adjust_item  set status=0,last_modify_time = now()  where adjust_id = #{adjustId}
+    </update>
+
+    <update id="deleteStoreGoodsWarehouseAdjustItemByIds" parameterType="String">
+        update store_goods_warehouse_adjust_item   set status=0,last_modify_time = now()  where item_id in
+        <foreach item="itemId" collection="array" open="(" separator="," close=")">
+            #{itemId}
+        </foreach>
+    </update>
+
+</mapper>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('修改账户流水')" />
+</head>
+<body class="bg-white">
+
+<!-- 正文开始 -->
+<form class="layui-form bg-white" id="inputForm" th:onsubmit="return false" th:action="@{/shop/flow/edit}" th:object="${storeAccountFlow}">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <div class="layui-row">
+                <input name="flowId" th:field="*{flowId}" type="hidden">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">账户号:</label>
+                    <div class="layui-input-block">
+                        <input name="accountNumber" th:field="*{accountNumber}" type="text" class="layui-input"/>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">操作类型：0-预付，1-充值:</label>
+                    <div class="layui-input-block">
+                        <select name="type" class="layui-select">
+                            <option value="">所有</option>
+                        </select>
+                        <div class="layui-form-mid layui-word-aux">代码生成请选择字典属性</div>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">原有金额:</label>
+                    <div class="layui-input-block">
+                        <input name="oldAmount" th:field="*{oldAmount}" type="text" class="layui-input"/>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">变动金额:</label>
+                    <div class="layui-input-block">
+                        <input name="changeAmount" th:field="*{changeAmount}" type="text" class="layui-input"/>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">现有金额:</label>
+                    <div class="layui-input-block">
+                        <input name="nowAmount" th:field="*{nowAmount}" type="text" class="layui-input"/>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label layui-form-required">最后更新时间:</label>
+                    <div class="layui-input-block">
+                        <input id="lastModifyTime" th:value="${#dates.format(storeAccountFlow.lastModifyTime, 'yyyy-MM-dd HH:mm:ss')}" type="text" placeholder="请选择最后更新时间" class="layui-input date-icon" autocomplete="off" readonly="true"/>
+                        <input type="hidden" name="lastModifyTime" th:value="${#dates.format(storeAccountFlow.lastModifyTime, 'yyyy-MM-dd HH:mm:ss')}">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-hide">
+        <button id="submitBtn" class="layui-btn" lay-filter="submitBtn" lay-submit>保存</button>
+        <button id="closeBtn" class="layui-btn layui-btn-primary" ew-event="closeDialog">关闭</button>
+    </div>
+</form>
+
+<th:block th:include="include :: footer" />
+<script th:inline="javascript">
+    var ctx = [[@{/}]];
+    var prefix = ctx + "shop/flow";
+</script>
+<script th:inline="none">
+    layui.use(['index', 'form', 'formX', 'table', 'laydate', 'upload', 'ext'], function(){
+        var $ = layui.$;
+        var form = layui.form;
+        var formX = layui.formX;
+        var layer = layui.layer;
+        var table = layui.table;
+        var admin = layui.admin;
+        var upload = layui.upload;
+        var laydate = layui.laydate;
+
+        //日期范围
+        laydate.render({
+            elem: '#lastModifyTime'
+            , type: 'datetime'
+            , done: function (value, date, endDate) {
+                $("input[name='lastModifyTime']").val(value);
+            }
+        });
+
+    })
+</script>
+</body>
+</html>

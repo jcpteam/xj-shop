@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaboot.shop.mapper.StoreSortingDailyUserMapper">
+    
+    <resultMap type="StoreSortingDailyUser" id="StoreSortingDailyUserResult">
+        <result property="id"    column="id"    />
+        <result property="workId"    column="work_id"    />
+        <result property="userId"    column="user_id"    />
+    </resultMap>
+
+    <sql id="selectStoreSortingDailyUserVo">
+        select sdu.id, sdu.work_id, sdu.user_id ,su.user_name,su.login_name
+        from store_sorting_daily_user sdu
+        left join sys_user su on sdu.user_id = su.user_id
+    </sql>
+
+    <select id="selectStoreSortingDailyUserList" parameterType="StoreSortingDailyUser" resultMap="StoreSortingDailyUserResult">
+        <include refid="selectStoreSortingDailyUserVo"/>
+        <where>  
+            <if test="userId != null "> and sdu.user_id = #{userId}</if>
+        </where>
+        <where>
+            <if test="workId != null "> and sdu.work_id = #{workId}</if>
+        </where>
+    </select>
+    
+    <select id="selectStoreSortingDailyUserById" parameterType="Long" resultMap="StoreSortingDailyUserResult">
+        <include refid="selectStoreSortingDailyUserVo"/>
+        where sdu.id = #{id}
+    </select>
+        
+    <insert id="insertStoreSortingDailyUser" parameterType="StoreSortingDailyUser" useGeneratedKeys="true" keyProperty="id">
+        insert into store_sorting_daily_user
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="workId != null ">work_id,</if>
+            <if test="userId != null ">user_id,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="workId != null ">#{workId},</if>
+            <if test="userId != null ">#{userId},</if>
+         </trim>
+    </insert>
+
+    <update id="updateStoreSortingDailyUser" parameterType="StoreSortingDailyUser">
+        update store_sorting_daily_user
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="workId != null ">work_id = #{workId},</if>
+            <if test="userId != null ">user_id = #{userId},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteStoreSortingDailyUserById" parameterType="Long">
+        delete from store_sorting_daily_user where id = #{id}
+    </delete>
+
+    <delete id="deleteStoreSortingDailyUserByIds" parameterType="String">
+        delete from store_sorting_daily_user where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+    
+</mapper>

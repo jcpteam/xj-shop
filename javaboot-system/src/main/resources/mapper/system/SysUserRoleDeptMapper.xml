@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaboot.system.mapper.SysUserRoleDeptMapper">
+    
+    <resultMap type="SysUserRoleDept" id="SysUserRoleDeptResult">
+        <result property="id"    column="id"    />
+        <result property="userId"    column="user_id"    />
+        <result property="roleId"    column="role_id"    />
+        <result property="deptId"    column="dept_id"    />
+        <result property="isDefault"    column="is_default"    />
+    </resultMap>
+
+    <sql id="selectSysUserRoleDeptVo">
+--         select id, user_id, role_id, dept_id, is_default from sys_user_role_dept
+        select t1.id, t1.user_id, t1.role_id, t1.dept_id, t1.is_default,t2.login_name,t2.user_name,t3.dept_name,t4.role_name
+        from sys_user_role_dept t1
+        left join sys_user t2 on t1.user_id = t2.user_id
+        left join sys_dept t3 on t1.dept_id = t3.dept_id
+        left join sys_role t4 on t1.role_id = t4.role_id
+    </sql>
+
+    <select id="selectSysUserRoleDeptList" parameterType="SysUserRoleDept" resultMap="SysUserRoleDeptResult">
+        <include refid="selectSysUserRoleDeptVo"/>
+        <where>  
+            <if test="userId != null "> and t1.user_id = #{userId}</if>
+            <if test="roleId != null "> and t1.role_id = #{roleId}</if>
+            <if test="deptId != null  and deptId != ''"> and t1.dept_id = #{deptId}</if>
+            <if test="isDefault != null "> and t1.is_default = #{isDefault}</if>
+        </where>
+        order by t1.is_default desc
+    </select>
+    
+    <select id="selectSysUserRoleDeptById" parameterType="Long" resultMap="SysUserRoleDeptResult">
+        <include refid="selectSysUserRoleDeptVo"/>
+        where id = #{id}
+    </select>
+        
+    <insert id="insertSysUserRoleDept" parameterType="SysUserRoleDept" useGeneratedKeys="true" keyProperty="id">
+        insert into sys_user_role_dept
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userId != null ">user_id,</if>
+            <if test="roleId != null ">role_id,</if>
+            <if test="deptId != null  and deptId != ''">dept_id,</if>
+            <if test="isDefault != null  and isDefault != ''">is_default,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="userId != null ">#{userId},</if>
+            <if test="roleId != null ">#{roleId},</if>
+            <if test="deptId != null  and deptId != ''">#{deptId},</if>
+            <if test="isDefault != null  and isDefault != ''">#{isDefault},</if>
+         </trim>
+    </insert>
+
+    <update id="updateSysUserRoleDept" parameterType="SysUserRoleDept">
+        update sys_user_role_dept
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="userId != null ">user_id = #{userId},</if>
+            <if test="roleId != null ">role_id = #{roleId},</if>
+            <if test="deptId != null  and deptId != ''">dept_id = #{deptId},</if>
+            <if test="isDefault != null  and isDefault != ''">is_default = #{isDefault},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteSysUserRoleDeptById" parameterType="Long">
+        delete from sys_user_role_dept where id = #{id}
+    </delete>
+
+    <delete id="deleteSysUserRoleDeptByIds" parameterType="String">
+        delete from sys_user_role_dept where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+    
+</mapper>

@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions targetNamespace="http://erp.xiangjiamuye.com:8999/ormrpc/services/WSDSPurInWarehsWSFacade" xmlns:apachesoap="http://xml.apache.org/xml-soap" xmlns:impl="http://erp.xiangjiamuye.com:8999/ormrpc/services/WSDSPurInWarehsWSFacade" xmlns:intf="http://erp.xiangjiamuye.com:8999/ormrpc/services/WSDSPurInWarehsWSFacade" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:tns1="urn:client.dspurinwarehswsfacade" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:wsdlsoap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<!--WSDL created by Apache Axis version: 1.4.1-SNAPSHOT
+Built on Jun 15, 2017 (10:55:06 UTC)-->
+ <wsdl:types>
+  <schema targetNamespace="urn:client.dspurinwarehswsfacade" xmlns="http://www.w3.org/2001/XMLSchema">
+   <import namespace="http://schemas.xmlsoap.org/soap/encoding/"/>
+   <complexType name="WSInvokeException">
+    <sequence/>
+   </complexType>
+  </schema>
+ </wsdl:types>
+
+   <wsdl:message name="WSInvokeException">
+
+      <wsdl:part name="fault" type="tns1:WSInvokeException">
+
+      </wsdl:part>
+
+   </wsdl:message>
+
+   <wsdl:message name="getPurInWarehsInfoRequest">
+
+      <wsdl:part name="num1" type="xsd:int">
+
+      </wsdl:part>
+
+      <wsdl:part name="num2" type="xsd:int">
+
+      </wsdl:part>
+
+   </wsdl:message>
+
+   <wsdl:message name="getPurInWarehsInfoResponse">
+
+      <wsdl:part name="getPurInWarehsInfoReturn" type="xsd:string">
+
+      </wsdl:part>
+
+   </wsdl:message>
+
+   <wsdl:portType name="WSDSPurInWarehsWSFacadeSrvProxy">
+
+      <wsdl:operation name="getPurInWarehsInfo" parameterOrder="num1 num2">
+
+         <wsdl:input message="impl:getPurInWarehsInfoRequest" name="getPurInWarehsInfoRequest">
+
+       </wsdl:input>
+
+         <wsdl:output message="impl:getPurInWarehsInfoResponse" name="getPurInWarehsInfoResponse">
+
+       </wsdl:output>
+
+         <wsdl:fault message="impl:WSInvokeException" name="WSInvokeException">
+
+       </wsdl:fault>
+
+      </wsdl:operation>
+
+   </wsdl:portType>
+
+   <wsdl:binding name="WSDSPurInWarehsWSFacadeSoapBinding" type="impl:WSDSPurInWarehsWSFacadeSrvProxy">
+
+      <wsdlsoap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+
+      <wsdl:operation name="getPurInWarehsInfo">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="getPurInWarehsInfoRequest">
+
+            <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://webservice.purInwarehs.dianshang.webservice.eas.kingdee.com" use="encoded"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="getPurInWarehsInfoResponse">
+
+            <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://erp.xiangjiamuye.com:8999/ormrpc/services/WSDSPurInWarehsWSFacade" use="encoded"/>
+
+         </wsdl:output>
+
+         <wsdl:fault name="WSInvokeException">
+
+            <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="WSInvokeException" namespace="http://erp.xiangjiamuye.com:8999/ormrpc/services/WSDSPurInWarehsWSFacade" use="encoded"/>
+
+         </wsdl:fault>
+
+      </wsdl:operation>
+
+   </wsdl:binding>
+
+   <wsdl:service name="WSDSPurInWarehsWSFacadeSrvProxyService">
+
+      <wsdl:port binding="impl:WSDSPurInWarehsWSFacadeSoapBinding" name="WSDSPurInWarehsWSFacade">
+
+         <wsdlsoap:address location="http://erp.xiangjiamuye.com:8999/ormrpc/services/WSDSPurInWarehsWSFacade"/>
+
+      </wsdl:port>
+
+   </wsdl:service>
+
+</wsdl:definitions>

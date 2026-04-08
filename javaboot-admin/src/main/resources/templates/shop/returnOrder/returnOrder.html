@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('退货单信息主列表')" />
+</head>
+<body>
+
+
+
+<!-- 正文开始 -->
+<div class="layui-fluid">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-card">
+            <!-- 搜索区 -->
+            <form class="layui-form toolbar" th:onsubmit="return false" lay-filter="inputForm" id="inputForm">
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <label class="layui-form-label label-auto">退货信息：</label>
+                        <div class="layui-input-inline">
+                            <input class="layui-input" name="orderKey" type="text" placeholder="退货编号/商品货号"/>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label label-auto">收货信息：</label>
+                        <div class="layui-input-inline">
+                            <input class="layui-input" name="deliveryKey" type="text" placeholder="收货人/收货电话/客户名称"/>
+                        </div>
+                    </div>
+
+                    <div class="layui-inline">
+                        <label class="layui-form-label label-auto">订单状态:</label>
+                        <div class="layui-input-inline">
+                            <select name="status" th:with="type=${statusList}">
+                                <option value="">所有</option>
+                                <option th:each="dict : ${type}" th:text="${dict.dictLabel}" th:value="${dict.dictValue}"></option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label label-auto">所属区域：</label>
+                        <div class="layui-input-inline">
+                            <select name="deptId"   id="deptId"   >
+                                <option  value="" th:checked="true">选择区域</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label label-auto">创建时间：</label>
+                        <div class="layui-input-inline">
+                            <input id="createDate" type="text" placeholder="请选择开始和结束日期" class="layui-input date-icon" autocomplete="off"/>
+                            <input id="createBeginDate" type="hidden" name="createBeginDate">
+                            <input id="createEndDate" type="hidden" name="createEndDate">
+                        </div>
+                    </div>
+                    <div class="layui-inline" style="padding-left: 13px;">
+                        <button class="layui-btn layui-btn-sm icon-btn" lay-submit lay-filter="searchBtn" id="searchBtn">
+                            <i class="layui-icon layui-icon-search"></i>搜索
+                        </button>
+                        <button class="layui-btn layui-btn-sm icon-btn" type="reset">
+                            <i class="layui-icon layui-icon-refresh"></i>重置
+                        </button>
+                        <a class="layui-btn layui-btn-primary form-search-expand layui-hide" data-expand="true">
+                            展开 <i class="layui-icon layui-icon-down"></i>
+                        </a>
+                    </div>
+                </div>
+            </form>
+
+            <table class="layui-table" id="dataTable" lay-filter="dataTable"></table>
+        </div>
+
+    </div>
+</div>
+
+<!-- 头工具栏 -->
+<script type="text/html" id="toolbarHead">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-normal layui-btn-sm" lay-event="add" shiro:hasPermission="shop:returnOrder:add"><i class="layui-icon layui-icon-addition"></i>新增</button>
+        <button class="layui-btn layui-btn-sm" lay-event="batchExamine" shiro:hasPermission="shop:returnOrder:edit"><i class="layui-icon layui-icon-auz"></i>审核订单</button>
+    </div>
+</script>
+
+<!-- 行工具栏 -->
+<script type="text/html" id="toolbarRow">
+    <a class="layui-btn layui-btn-xs" lay-event="view" shiro:hasPermission="shop:returnOrder:edit">查看</a>
+    {{#  if (d.status ==1||d.status ==3){ }}
+    <a class="layui-btn layui-btn-xs" lay-event="edit" shiro:hasPermission="shop:returnOrder:edit">修改</a>
+    {{#  } }}
+    {{#  if (d.status ==1){ }}
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del" shiro:hasPermission="shop:returnOrder:remove">删除</a>
+    <a class="layui-btn layui-btn-xs" lay-event="examine" shiro:hasPermission="shop:returnOrder:edit">审核</a>
+    {{#  } }}
+</script>
+
+<!-- js部分 -->
+<th:block th:include="include :: footer" />
+<script type="text/javascript" th:inline="javascript">
+    var ctx = [[@{/}]];
+</script>
+<script type="text/javascript" th:inline="none">
+    layui.use(['index', 'layer', 'form', 'table', 'util', 'ext','laydate'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        var table = layui.table;
+        var laydate = layui.laydate;
+        var admin = layui.admin;
+
+        var prefix = ctx + "shop/returnOrder";
+        var listUrl = prefix + "/list";
+        var createUrl = prefix + "/add";
+        var updateUrl = prefix + "/edit/{id}";
+        var removeUrl = prefix + "/remove";
+        var examineUrl = prefix + "/examine";
+        //日期范围
+        laydate.render({
+            elem: '#createDate'
+            ,type: 'datetime'
+            , range: '~'
+            , done: function (value, date, endDate) {
+                if (value != null && value != '') {
+                    var b = $.trim(value.split('~')[0]);
+                    var e = $.trim(value.split('~')[1]);
+                    $("#createBeginDate").val(b);
+                    $("#createEndDate").val(e);
+                }
+            }
+        });
+        //所属区域------------------------------------------------------------------------------------------------------
+        var deptList=[]
+        admin.req(ctx + "system/dept/getLoginUserDept", { }, function (result) {
+            var select= document.getElementById('deptId');
+            deptList= result.data;
+            for (var i=0;i<result.data.length;i++) {
+                var data= result.data[i];
+                var option = document.createElement("option");
+                option.setAttribute("value", data.value);
+                option.innerText =data.name;
+                select.appendChild(option)
+            }
+            form.render('select');
+        },'get',{async: false})
+        queryList()
+        function queryList(field) {
+            var params = {}
+            if (field != null) {
+                params = field;
+            }
+            params.orderByColumn = 'last_modify_time';
+            params.isAsc = 'desc'
+            table.render({
+                elem: '#dataTable'
+                , url: listUrl
+                , method: 'POST'
+                , toolbar: '#toolbarHead'
+                , height: 'full-100'
+                , cellMinWidth: 80
+                , page: true
+                , request: {
+                    pageName: 'pageNum' //页码的参数名称，默认：page
+                    , limitName: 'pageSize' //每页数据量的参数名，默认：limit
+                }
+                ,where:params
+                , limit: 20
+                , cols: [[
+                    {type: 'checkbox'}
+                    , {field: 'returnOrderId', title: '退货单id', hide: true}
+                    , {field: 'deptName', title: '区域',templet:function (d) {
+                            var name=''
+                            layui.each(deptList,function (index,item) {
+                                if(d.deptId==item.value){
+                                    name=item.name
+                                }
+                            })
+                            return name;
+                        }}
+                    , {field: 'warehouseName', title: '仓库'}
+                    , {field: 'code', title: '编号'}
+                    , {field: 'merchantName', title: '客户'}
+                    , {field: 'price', title: '订单金额'}
+
+                    , {field: 'typeName', title: '类型'}
+                    , {field: 'comment', title: '订单备注'}
+                    , {field: 'payStatusName', title: '付款状态'}
+                    , {field: 'statusName', title: '订单状态'}
+                    , {field: 'operate', title: '操作', minWidth: 220, toolbar: '#toolbarRow', fixed: 'right'}
+                ]]
+                , parseData: function (res) { //将原始数据解析成 table 组件所规定的数据
+                    return {
+                        "code": res.code, //解析接口状态
+                        "msg": res.msg, //解析提示文本
+                        "count": res.total, //解析数据长度
+                        "data": res.rows //解析数据列表
+                    };
+                }
+            });
+        }
+        //日期范围
+        laydate.render({
+            elem: '#createTime'
+            , range: '~'
+            , done: function (value, date, endDate) {
+                if (value != null && value != '') {
+                    var b = $.trim(value.split('~')[0]);
+                    var e = $.trim(value.split('~')[1]);
+                    $("#beginDate").val(b);
+                    $("#endDate").val(e);
+                }
+            }
+        });
+
+        //监听搜索
+        form.on('submit(searchBtn)', function (data) {
+            var field = data.field;
+            //执行重载
+            table.reload('dataTable', {
+                where: field
+            });
+        });
+
+        //头工具栏事件
+        table.on('toolbar(dataTable)', function(obj){
+            switch(obj.event){
+                case 'add':
+                    active.add();
+                    break;
+                case 'edit':
+                    var checkStatus = table.checkStatus('dataTable')
+                            , checkData = checkStatus.data; //得到选中的数据
+                    var id = null;
+                    if (id == null) {
+                        if (checkData.length === 0) {
+                            return admin.info('请选择一条数据');
+                        } else if (checkData.length > 1) {
+                            return admin.info('只能选择一条数据编辑');
+                        } else {
+                            id = checkData[0].retunOrderId;
+                        }
+                    }
+                    active.edit(id);
+                    break;
+                case 'batchdel':
+                    active.batchdel();
+                    break;
+                case 'batchExamine':
+                    active.batchExamine();
+                    break;
+            };
+        });
+
+        //行工具栏事件
+        table.on('tool(dataTable)', function (obj) {
+            var data = obj.data;
+            if (obj.event === 'view') {
+                active.view(data.returnOrderId);
+            } else if(obj.event === 'edit'){
+                active.edit(data.returnOrderId);
+            } else if (obj.event === 'del') {
+                active.del(data.returnOrderId);
+            }else if (obj.event === 'examine') {
+                active.examine(data.returnOrderId);
+            }
+        });
+
+        //事件
+        var active = {
+            batchExamine: function(){
+                var checkStatus = table.checkStatus('dataTable')
+                    , checkData = checkStatus.data; //得到选中的数据
+
+                if (checkData.length === 0) {
+                    return admin.info('请选择数据');
+                }
+
+                var ids = [];
+                var codes=[]
+                layui.each(checkData, function (index, item) {
+                    if(item.status!=1){
+                        codes.push(item.code)
+                    }else {
+                        ids.push(item.returnOrderId);
+                    }
+
+                });
+                if(codes.length>0){
+                    return admin.info('订单编号【'+codes.join(',')+'】不属于待审核订单，请重新选择');
+                }
+                confirm('共'+ids.length+'条订单', ids.join(','))
+            }
+            ,
+            batchdel: function () {
+                var checkStatus = table.checkStatus('dataTable')
+                        , checkData = checkStatus.data; //得到选中的数据
+
+                if (checkData.length === 0) {
+                    return admin.info('请选择数据');
+                }
+
+                var ids = [];
+                layui.each(checkData, function (index, item) {
+                    ids.push(item.retunOrderId);
+                });
+
+                admin.confirm('确定删除吗？', function () {
+                    admin.req(removeUrl, {ids: ids.join(',')}, function (result) {
+                        if (result.code == 0) {
+                            table.reload('dataTable');
+                            admin.success('删除成功!');
+                        } else {
+                            admin.error(result.msg);
+                        }
+                    },'post')
+                });
+            }
+            ,view: function (id) {
+                var editUrl = updateUrl.replace("{id}", id);
+                parent.layui.admin.openDialogView3('查看退货单信息', editUrl,'100%', '100%');
+            }
+            ,add: function () {
+                parent.layui.admin.openDialogView2('新增退货单信息主', createUrl, '100%', '100%',function () {
+                    //执行重载
+                    queryList(getFormData())
+                });
+            }
+            ,edit: function (id) {
+                var editUrl = updateUrl.replace("{id}", id);
+                parent.layui.admin.openDialogView2('修改退货单信息主', editUrl, '100%', '100%',function () {
+                    //执行重载
+                    queryList(getFormData())
+                });
+            }
+            ,del: function(id){
+
+                admin.confirm('确定删除吗?',function(){
+                    admin.req(removeUrl, {ids: id}, function (data) {
+                        if (data.code == 0) {
+                            table.reload('dataTable');
+                            admin.success('删除成功!');
+                        } else {
+                            admin.error(data.msg);
+                        }
+                    },'post')
+                });
+            },examine:function (id) {
+                confirm('共1条订单', id)
+            }
+        }
+        function getFormData(){
+            var d = {
+                orderKey:$("#orderKey").val(),
+                deliveryKey:$("#deliveryKey").val(),
+                status:$("#status").val(),
+                createBeginDate:$("#createBeginDate").val(),
+                createEndDate:$("#createEndDate").val(),
+                deptId:$("#deptId").val()
+            }
+            return d;
+        }
+        function confirm(msg,ids) {
+            layer.confirm(msg, {
+                icon: 3, title:'审核订单', skin:'layui-layer-admin', btn: ['通过','不通过','取消']
+            }, function(index){
+                saveExamine({ids:ids,status:2})
+                layer.close(index);
+            }, function(index){
+                saveExamine({ids:ids,status:3})
+                layer.close(index);
+            }, function(index){
+                if(typeof no == 'function'){
+                    no();
+                }
+                layer.close(index);
+            });
+            return false;
+        }
+
+
+        function saveExamine(params) {
+            admin.req(examineUrl,params, function (result) {
+                if (result.code == 0) {
+                    table.reload('dataTable');
+                    admin.success('成功!');
+                } else {
+                    admin.error(result.msg);
+                }
+            },'post')
+        }
+    });
+</script>
+
+</body>
+</html>

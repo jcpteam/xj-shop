@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('商品列表列表')" />
+    <style>
+        .layui-table-cell {
+            min-height: 30px;
+            height: initial;
+            white-space: initial;
+            word-break: break-word;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<!-- 正文开始 -->
+<div class="layui-fluid">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-card">
+            <!-- 搜索区 -->
+            <form class="layui-form toolbar" th:onsubmit="return false" lay-filter="inputForm" id="inputForm">
+                <div class="layui-form-item">
+
+                    <div class="layui-inline">
+                        <label class="layui-form-label label-auto">商品名称：</label>
+                        <div class="layui-input-inline">
+                            <input class="layui-input" name="searchKey"  id="searchKey" type="text" placeholder="商品名称|商品编号"/>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label label-auto">商品分类：</label>
+                        <div class="layui-input-inline">
+                            <input   id="classifyId" name="classifyId" placeholder="请选择商品分类" class="layui-hide"/>
+                        </div>
+                    </div>
+                    <div class="layui-inline " th:if="${#strings.isEmpty(quotationId)}">
+                        <label class="layui-form-label">报价单:</label>
+                        <div class="layui-input-inline">
+                            <select name="quotationId" id="quotationId" lay-search>
+                                <option value="">请选择报价单</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-inline form-search-show-expand">
+                        <label class="layui-form-label label-auto">所属区域：</label>
+                        <div class="layui-input-inline">
+                            <select name="deptId"   id="deptId"  lay-filter="deptId" lay-search>
+                                <option  value="" th:checked="true">选择区域</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-inline " th:if="${#strings.isEmpty(quotationId)}">
+                        <a class="layui-btn layui-btn-primary form-search-expand" data-expand="true">
+                            展开 <i class="layui-icon layui-icon-down"></i>
+                        </a>
+                    </div>
+                    <div class="layui-inline" style="padding-left: 13px;">
+                        <button class="layui-btn layui-btn-sm icon-btn" lay-submit lay-filter="searchBtn" id="searchBtn">
+                            <i class="layui-icon layui-icon-search"></i>搜索
+                        </button>
+                        <button class="layui-btn layui-btn-sm icon-btn" type="reset">
+                            <i class="layui-icon layui-icon-refresh"></i>重置
+                        </button>
+                        <button class="layui-btn layui-btn-normal layui-btn-sm" lay-event="add" id="add" shiro:hasPermission="shop:goods:add"><i class="layui-icon layui-icon-addition"></i>创建商品</button>
+                        <button class="layui-btn layui-btn-warm layui-btn-sm" lay-event="goodsUp" id="goodsUp" shiro:hasPermission="shop:goods:add"><i class="layui-icon layui-icon-edit"></i>上架</button>
+                        <button class="layui-btn layui-btn-danger layui-btn-sm" lay-event="goodsDown" id="goodsDown" shiro:hasPermission="shop:goods:add"><i class="layui-icon layui-icon-delete"></i>下架</button>
+
+                    </div>
+                </div>
+            </form>
+            <table class="layui-table" id="dataTable" lay-filter="dataTable"></table>
+        </div>
+
+    </div>
+</div>
+
+
+<!-- 行工具栏 -->
+<script type="text/html" id="toolbarRow">
+    <a class="layui-btn layui-btn-xs" lay-event="view" shiro:hasPermission="shop:goods:edit">查看</a>
+    <a class="layui-btn layui-btn-xs" lay-event="edit" shiro:hasPermission="shop:goods:edit">修改</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del" shiro:hasPermission="shop:goods:remove">删除</a>
+</script>
+
+<!-- js部分 -->
+<th:block th:include="include :: footer" />
+<script type="text/javascript" th:inline="javascript">
+    var ctx = [[@{/}]];
+    var quotationId = [[${quotationId}]];
+</script>
+<script type="text/javascript" th:inline="none">
+
+    layui.use(['index', 'layer', 'form', 'table', 'util', 'ext','cascader'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        var table = layui.table;
+        var util = layui.util;
+        var laydate = layui.laydate;
+        var ext = layui.ext;
+        var admin = layui.admin;
+        var index = layui.index;
+
+        var prefix = ctx + "shop/quotationGoods";
+        var listUrl = prefix + "/list";
+        var createUrl = prefix + "/add?quotationId="+quotationId;
+        var updateUrl = prefix + "/edit/{id}";
+        var viewUrl = prefix + "/view/{id}";
+        var removeUrl = prefix + "/remove";
+        var cascader = layui.cascader;
+        queryList()
+        var webUrl=getLocationUrl();
+        function queryList(field){
+            var params={}
+            if(field!=null){
+                params=field;
+            }
+            params.orderByColumn='last_modify_time';
+            params.isAsc='desc'
+            if(quotationId) {
+                params.quotationId=quotationId
+            } else {
+                params.quotationId=$("#quotationId").val()
+            }
+            table.render({
+                elem: '#dataTable'
+                ,url: listUrl
+                ,method: 'POST'
+                ,height: 'full-100'
+                ,cellHeight: 300
+                ,cellMinWidth: 80
+                ,page: true
+                ,request: {
+                    pageName: 'pageNum' //页码的参数名称，默认：page
+                    ,limitName: 'pageSize' //每页数据量的参数名，默认：limit
+                }
+                ,where:params
+                ,limit: 10
+                ,cols: [[
+                    {type: 'checkbox'}
+                    ,{field: 'goodsId', title: '商品id', hide: true}
+                    ,{field: 'quotationId', title: '报价单id', hide: true}
+                    ,{field: 'spuNo', title: '商品编号', width:150}
+                    ,{field: 'spuName', title: 'spu名称', width:180}
+                   // ,{field: 'goodsCode', title: '编号'}
+                    ,{field: 'url', title: '商品图片',width:100,height:'50px', templet: function (d) {
+                            var url=d.url&&d.url!=null?webUrl+d.url:"/assets/images/logo.png";
+                            return  ' <img src=\"'+url+'\" style=\"width: 70px;height: 50px\">';
+
+                        }}
+                    ,{field: 'classifyName', title: '规格名称', width:150}
+                    ,{field: 'propertyName', title: '商品名称', width:150}
+                    ,{field: 'deptName', title: '所属区域', width:150}
+                    ,{field: 'mainUnitName', title: '结算单位', width:90}
+                    ,{field: 'unitName', title: '销售单位',width:90, templet: function (d) {
+                            return  d.unitPriceList[0].unitName;
+                    }}
+                    // ,{field: 'baseUnit', title: '基本单位', width:150,templet: function (d) {
+                    //         return  d.baseUnit==null?'公斤':d.baseUnit;
+                    //     }}
+                    // ,{field: 'price', title: '结算单价',width:150, templet: function (d) {
+                    //         var txt='';
+                    //         if(d.unitPriceList && d.unitPriceList.length > 0){
+                    //             for (var i=0;i<d.unitPriceList.length;i++) {
+                    //                 txt += d.unitPriceList[i].price + '元/' + d.unitPriceList[i].unitName + '<br>';
+                    //             }
+                    //         } else {
+                    //             txt = d.price;
+                    //         }
+                    //         return  txt;
+                    //     }}
+                    // ,{field: 'price', title: '结算单价',width:120, templet: function (d) {
+                    //         return  d.price + '元/' + d.mainUnitName;
+                    //     }}
+                    ,{field: 'price', title: '结算单价',width:120, templet: function (d) {
+                            return  (d.settingPrice ? d.settingPrice : d.price) + '元/' + d.mainUnitName;
+                        }}
+                    ,{field: 'status', title: '上下架', templet: function (d) {
+                            var txt=d.status=='1'?'checked=\"true\"':'';
+                            return  ' <input type=\"checkbox\" lay-filter=\"change_status\" data-goodsId=\"'+d.goodsId+'\"   '+txt+'lay-skin=\"switch\"   >';
+                        }}
+                    ,{field: 'operate', title: '操作', minWidth: 180, toolbar: '#toolbarRow', fixed: 'right'}
+                ]]
+                ,parseData: function(res){ //将原始数据解析成 table 组件所规定的数据
+                    return {
+                        "code": res.code, //解析接口状态
+                        "msg": res.msg, //解析提示文本
+                        "count": res.total, //解析数据长度
+                        "data": res.rows //解析数据列表
+                    };
+                }
+                ,done:function(res, curr, count){
+                    //动态监听表头高度变化，冻结行跟着改变高度
+                    $(".layui-table-header  tr").resize(function () {
+                        $(".layui-table-header  tr").each(function (index, val) {
+                            $($(".layui-table-fixed .layui-table-header table tr")[index]).height($(val).height());
+                        });
+                    });
+                    //初始化高度，使得冻结行表头高度一致
+                    $(".layui-table-header  tr").each(function (index, val) {
+                        $($(".layui-table-fixed .layui-table-header table tr")[index]).height($(val).height());
+                    });
+                    //动态监听表体高度变化，冻结行跟着改变高度
+                    $(".layui-table-body  tr").resize(function () {
+                        $(".layui-table-body  tr").each(function (index, val) {
+                            $($(".layui-table-fixed .layui-table-body table tr")[index]).height($(val).height());
+                        });
+                    });
+                    //初始化高度，使得冻结行表体高度一致
+                    $(".layui-table-body  tr").each(function (index, val) {
+                        $($(".layui-table-fixed .layui-table-body table tr")[index]).height($(val).height());
+                    });
+                }
+            });
+        }
+        function getLocationUrl() {
+            //获取当前网址，如： http://localhost:8083/uimcardprj/share/meun.jsp
+            var curWwwPath = window.document.location.href;
+            //获取主机地址之后的目录，如： uimcardprj/share/meun.jsp
+            var pathName = window.document.location.pathname;
+            var pos = curWwwPath.indexOf(pathName);
+            //获取主机地址，如： http://localhost:8083
+            var localhostPaht = curWwwPath.substring(0, pos);
+            //获取带"/"的项目名，如：/uimcardprj
+            var projectName = pathName.substring(0, pathName.substr(1).indexOf('/') + 1);
+            return localhostPaht;
+        }
+        //查询报价单----------------------------------------------------------------------------------------------------
+        if(!quotationId){
+            getQuotation()
+        }
+        function getQuotation(){
+            admin.req(ctx + "shop/quotation/selectStoreGoodsQuotationListOfUserOrQuotation", {deptId:$("#deptId").val()}, function (result) {
+                $("#quotationId").html($('<option value="">请选择报价单</option>'));
+                for (var i=0;i<result.rows.length;i++) {
+                    var data= result.rows[i];
+                    var option = $('<option></option>');
+                    option.attr("value", data.quotationId);
+                    option.attr("deptId", data.deptId);
+                    option.text(data.quotationName);
+                    $("#quotationId").append(option)
+                }
+                form.render('select');
+            }, 'post')
+        }
+        //分类级联------------------------------------------------------------------------------------------------------
+        admin.req(ctx + "shop/classify/queryClassifyTree", {}, function (result) {
+            cascader.render({
+                elem: '#classifyId',
+                data: result.rows
+            });
+            form.render('select');
+        }, 'post');
+        //所属区域------------------------------------------------------------------------------------------------------
+        admin.req(ctx + "system/dept/getLoginUserDept", { }, function (result) {
+            var select= document.getElementById('deptId');
+            for (var i=0;i<result.data.length;i++) {
+                var data= result.data[i];
+                var option = document.createElement("option");
+                option.setAttribute("value", data.value);
+                option.innerText =data.name;
+                select.appendChild(option)
+            }
+            form.render('select');
+        },'get')
+        //监听搜索------------------------------------------------------------------------------------------------------
+        form.on('submit(searchBtn)', function (data) {
+            var field = data.field;
+            if(quotationId!=null){
+                field.quotationId=quotationId
+             }else{
+                field.quotationId=$("#quotationId").val()
+            }
+            var arr=field.classifyId.split(',');
+            field.classifyId=arr.length>1?arr[1]:field.classifyId
+            //执行重载
+            queryList(field)
+        });
+        form.on('select(deptId)', function (data) {
+            getQuotation()
+        });
+        //创建商品------------------------------------------------------------------------------------------------------
+        $("#add").click(function () {
+            parent.layui.admin.openDialogView2('创建商品', createUrl, '100%', '100%',function () {
+                //执行重载
+                queryList(getFormData())
+            });
+        });
+
+        //创建商品------------------------------------------------------------------------------------------------------
+        $("#goodsUp").click(function () {
+            goodsUpOrDown("1")
+        });
+
+        //创建商品------------------------------------------------------------------------------------------------------
+        $("#goodsDown").click(function () {
+            goodsUpOrDown("2")
+        });
+
+        function goodsUpOrDown(status) {
+            var checkStatus = table.checkStatus('dataTable')
+                , checkData = checkStatus.data; //得到选中的数据
+
+            if (checkData.length === 0) {
+                return admin.info('请选择数据');
+            }
+
+            var ids = [];
+            layui.each(checkData, function (index, item) {
+                ids.push(item.goodsId);
+            });
+            var obj={goodsIds:ids.join(','),status:status}
+            admin.req(prefix + "/batchEdit", obj, function (result) {
+                if (result.code == 0) {
+                    admin.success('操作成功!');
+                    queryList(getFormData())
+                } else {
+                    admin.error(result.msg);
+                }
+            },'post')
+        }
+        function getFormData(){
+            var d = {
+                searchKey:$("#searchKey").val(),
+                classifyId:$("#classifyId").val(),
+                deptId:$("#deptId").val()
+            }
+           return d;
+        }
+        //上下架--------------------------------------------------------------------------------------------------------
+        form.on('switch(change_status)', function (data) {
+            var obj={goodsId: data.elem.attributes['data-goodsid'].nodeValue,status:data.elem.checked?'1':'2'}
+            admin.req(prefix + "/edit", obj, function (result) {
+                if (result.code == 0) {
+                    admin.success('操作成功!');
+                } else {
+                    admin.error(result.msg);
+                }
+            },'post')
+
+        });
+        //行工具栏事件--------------------------------------------------------------------------------------------------
+        table.on('tool(dataTable)', function (obj) {
+            var data = obj.data;
+            if (obj.event === 'view') {
+                active.view(data.goodsId);
+            } else if(obj.event === 'edit'){
+                active.edit(data.goodsId);
+            } else if (obj.event === 'del') {
+                active.del(data.goodsId);
+            }
+        });
+        //事件----------------------------------------------------------------------------------------------------------
+        var active = {
+              view: function (id) {
+                  parent.layui.admin.openDialogView2('查看商品列表', viewUrl.replace("{id}", id), '100%', '100%',function () {
+                      //执行重载
+
+
+                  });
+            }
+            ,edit: function (id) {
+                var editUrl = updateUrl.replace("{id}", id);
+                parent.layui.admin.openDialogView2('修改商品', editUrl, '100%', '100%',function () {
+                    //执行重载
+                    queryList(getFormData())
+                });
+            }
+            ,del: function(id){
+                admin.confirm('确定删除吗?',function(){
+                    admin.req(removeUrl, {ids: id}, function (data) {
+                        if (data.code == 0) {
+                            admin.success('删除成功!');
+                        } else {
+                            admin.error(data.msg);
+                        }
+                        queryList(getFormData())
+                    },'post')
+                });
+            }
+        }
+    });
+</script>
+
+</body>
+</html>

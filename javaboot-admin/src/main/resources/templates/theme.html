@@ -1,0 +1,1669 @@
+﻿<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <title>主题生成器</title>
+    <link href="../static/assets/images/favicon.ico" rel="icon" th:href="@{/assets/images/favicon.ico}">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="iframe\assets\libs\layui\css\layui.css" th:href="@{/assets/libs/layui/css/layui.css}">
+    <script type="text/javascript" src="iframe\assets\libs\layui\layui.js" th:src="@{/assets/libs/layui/layui.js}"></script>
+</head>
+<body>
+<div class="left-part">
+    <iframe th:src="@{/index}" frameborder="0" onload="leftOk()"></iframe>
+</div>
+<div class="right-part">
+    <div class="right-title">主题生成器</div>
+    <div class="layui-form" lay-filter="theme-form">
+        <div class="item-hr"><span>header</span></div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">Logo背景颜色</label>
+            <div class="layui-input-block">
+                <input name="logo_bg" class="layui-input" value="#191a23" color-picker="" lay-vertype="tips" lay-verify="required" required/="">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">Logo文字颜色</label>
+            <div class="layui-input-block">
+                <input name="logo_color" class="layui-input" value="#dddddd" color-picker="" lay-vertype="tips" lay-verify="required" required/="">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">Logo阴影</label>
+            <div class="layui-input-block">
+                <select name="logo_shadow" lay-vertype="tips" lay-verify="required" required="">
+                    <option value="0">无</option>
+                    <option value="1" selected="">轻</option>
+                    <option value="2">重</option>
+                </select>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">header背景颜色</label>
+            <div class="layui-input-block">
+                <input name="header_bg" class="layui-input" value="#ffffff" color-picker="" lay-vertype="tips" lay-verify="required" required/="">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">header文字颜色</label>
+            <div class="layui-input-block">
+                <input name="header_color" class="layui-input" value="#595959" color-picker="" lay-vertype="tips" lay-verify="required" required/="">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">header选中线条</label>
+            <div class="layui-input-block">
+                <input name="header_bar" class="layui-input" value="#191a23" color-picker="" lay-vertype="tips" lay-verify="required" required/="">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">header阴影</label>
+            <div class="layui-input-block">
+                <select name="header_shadow" lay-vertype="tips" lay-verify="required" required="">
+                    <option value="0">无</option>
+                    <option value="1" selected="">轻</option>
+                    <option value="2">重</option>
+                </select>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">header高度</label>
+            <div class="layui-input-block">
+                <input class="layui-input" name="header_height" type="number" placeholder="默认50(px)">
+            </div>
+        </div>
+        <div class="item-hr"><span>side</span></div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">侧边栏颜色</label>
+            <div class="layui-input-block">
+                <input name="side_bg" class="layui-input" value="#191a23" color-picker="" lay-vertype="tips" lay-verify="required" required/="">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">侧边栏阴影</label>
+            <div class="layui-input-block">
+                <select name="side_shadow" lay-vertype="tips" lay-verify="required" required="">
+                    <option value="0">无</option>
+                    <option value="1" selected="">轻</option>
+                    <option value="2">重</option>
+                </select>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">侧边栏风格</label>
+            <div class="layui-input-block">
+                <select name="side_style" lay-vertype="tips" lay-verify="required" required="">
+                    <option value="dark">暗色系</option>
+                    <option value="light">亮色系</option>
+                </select>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">侧边栏图标</label>
+            <div class="layui-input-block">
+                <select name="side_icon" lay-vertype="tips" lay-verify="required" required="">
+                    <option value="default">默认</option>
+                    <option value="colorful" selected="">colorful</option>
+                </select>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">侧边栏宽度</label>
+            <div class="layui-input-block">
+                <input class="layui-input" name="side_width" type="number" placeholder="默认235(px)">
+            </div>
+        </div>
+        <div class="item-hr"><span>body</span></div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">选项卡风格</label>
+            <div class="layui-input-block">
+                <select name="tab_style" lay-vertype="tips" lay-verify="required" required="">
+                    <option value="default">默认</option>
+                    <option value="card">卡片式</option>
+                </select>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">选项卡线条</label>
+            <div class="layui-input-block">
+                <input name="tab_bar" class="layui-input" value="#191a23" color-picker="" lay-vertype="tips" lay-verify="required" required/="">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">弹窗标题背景</label>
+            <div class="layui-input-block">
+                <input name="dialog_bg" class="layui-input" value="#191a23" color-picker="" lay-vertype="tips" lay-verify="required" required/="">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">弹窗标题颜色</label>
+            <div class="layui-input-block">
+                <input name="dialog_color" class="layui-input" value="#ffffff" color-picker="" lay-vertype="tips" lay-verify="required" required/="">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">弹窗标题高度</label>
+            <div class="layui-input-block">
+                <select name="dialog_title_height">
+                    <option value="">50px(默认)</option>
+                    <option value="47px,15px">47px</option>
+                    <option value="45px,14px">45px</option>
+                </select>
+            </div>
+        </div>
+        <div class="item-hr"><span>other</span></div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">input风格</label>
+            <div class="layui-input-block">
+                <select name="input_style">
+                    <option value="">默认</option>
+                    <option value="border">focus加边框</option>
+                    <option value="focus">focus加边框+发光</option>
+                </select>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">input高度</label>
+            <div class="layui-input-block">
+                <select name="input_height">
+                    <option value="">38px(默认)</option>
+                    <option value="36px,4px,8px,4px,34px">36px</option>
+                    <option value="32px,4px,6px,2px,30px">32px</option>
+                </select>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">主题颜色</label>
+            <div class="layui-input-block">
+                <input name="primary_color" class="layui-input" value="#009688" color-picker="" lay-vertype="tips" lay-verify="required" required/="">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label lay-tips="主题补丁解决v3.1.7之前版本的主题对穿梭框、圆角按钮、按钮组、复选框、分页组件输入框、其他颜色按钮等组件的影响" lay-offset="3px,45px" lay-direction="4" class="layui-form-label">
+                <i class="layui-icon layui-icon-tips" style="font-size: 12px;"></i> 主题补丁</label>
+            <div class="layui-input-block">
+                <select name="theme_patch">
+                    <option value="">不需要</option>
+                    <option value="need">需要</option>
+                </select>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">主题名称</label>
+            <div class="layui-input-block">
+                <input name="theme_name" class="layui-input" value="theme-my" lay-vertype="tips" lay-verify="required" required/="">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">缩略图</label>
+            <div class="layui-input-block">
+                <div style="transform: scale(0.96);transform-origin: 0 0;">
+                    <canvas id="preCanvas" width="160" height="100" class="pre-canvas"></canvas>
+                </div>
+            </div>
+        </div>
+        <i lay-filter="submit-theme" lay-submit="" class="layui-hide"></i>
+    </div>
+    <div class="right-btn-group">
+        <button class="layui-btn layui-btn-normal layui-btn-sm layui-btn-radius" id="btnPreview">预览</button>
+        <button class="layui-btn layui-btn-normal layui-btn-sm layui-btn-radius" id="btnDownload">下载</button>
+        <button class="layui-btn layui-btn-normal layui-btn-sm layui-btn-radius" id="btnImport">导入</button>
+        <button class="layui-btn layui-btn-normal layui-btn-sm layui-btn-radius" id="btnExport">导出</button>
+    </div>
+</div>
+<i class="layui-icon layui-icon-close ew-theme-btn-setting"></i>
+<div class="layui-form" id="import-from" style="display: none;padding:20px 35px 0 0;">
+    <div class="layui-form-item">
+        <label class="layui-form-label">系统主题</label>
+        <div class="layui-input-block">
+            <select name="tab_style" lay-filter="sel-sys-theme">
+                <option value="">自定义</option>
+                <option value="cyan">藏青主题</option>
+                <option value="white">白色主题</option>
+                <option value="colorful">colorful主题</option>
+                <option value="blue">蓝色主题</option>
+            </select>
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">主题配置</label>
+        <div class="layui-input-block">
+            <textarea class="layui-textarea" id="edt-import"></textarea>
+        </div>
+    </div>
+</div>
+<script>
+    var isFirstOk = false;
+    window.leftOk = function() {
+        if (isFirstOk) {
+            layui.layer.closeAll();
+            layui.jquery("#btnPreview").trigger("click")
+        } else {
+            isFirstOk = true
+        }
+    };
+    layui.use(["layer", "form", "colorpicker"],
+    function() {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        var colorpicker = layui.colorpicker;
+        var a = true;
+        function b() {
+            $(".color-picker-group").remove();
+            $("[color-picker]").each(function(k) {
+                var l = $(this);
+                l.prop("readonly", true);
+                l.parent().append('<div class="color-picker-group" id="color-picker' + k + '">');
+                colorpicker.render({
+                    elem: "#color-picker" + k,
+                    color: l.val(),
+                    predefine: true,
+                    done: function(m) {
+                        $(this.elem).prev().val(m)
+                    },
+                    change: function(m) {
+                        $(this.elem).prev().val(m)
+                    }
+                })
+            })
+        }
+        b();
+        $("#btnPreview").click(function() {
+            a = true;
+            $('[lay-filter="submit-theme"]').trigger("click")
+        });
+        $("#btnDownload").click(function() {
+            a = false;
+            $('[lay-filter="submit-theme"]').trigger("click")
+        });
+        form.on("submit(submit-theme)",
+        function(o) {
+            g(o.field);
+            o.field.side_active_bg = j(o.field.primary_color, ".07");
+            o.field.input_shadow_color = j(o.field.primary_color, ".2");
+            o.field.laydate_sel_color = j(o.field.primary_color, ".1");
+            o.field.steps_light_color = j(o.field.primary_color, ".5");
+            var l = o.field.input_height.split(",");
+            o.field.input_height_0 = l[0] || "";
+            o.field.input_height_1 = l[1] || "";
+            o.field.input_height_2 = l[2] || "";
+            o.field.input_height_3 = l[3] || "";
+            o.field.input_height_4 = l[4] || "";
+            var k = o.field.dialog_title_height.split(",");
+            o.field.dialog_title_height_0 = k[0] || "";
+            o.field.dialog_title_height_1 = k[1] || "";
+            var m = d($("#tpl-theme").text(), o.field);
+            var p = $(".left-part>iframe")[0].contentWindow;
+            p.layui.jquery("#theme-preview").remove();
+            p.layui.jquery("head").append('<style id="theme-preview">' + m + "</style>");
+            var n = p.layui.jquery("body");
+            n.removeClass(n.data("theme"));
+            n.addClass(o.field.theme_name);
+            n.data("theme", o.field.theme_name);
+            if (!a) {
+                layer.prompt({
+                    title: "请根据开发文档说明把下面css放在指定位置",
+                    formType: 2,
+                    value: m,
+                    area: ["450px", "400px"],
+                    shade: 0.1,
+                    btn: []
+                })
+            }
+        });
+        $("#btnExport").click(function() {
+            layer.prompt({
+                title: "保存下面内容可用于以后导入",
+                formType: 2,
+                area: ["400px", "200px"],
+                value: JSON.stringify(form.val("theme-form")),
+                shade: 0.1,
+                btn: []
+            })
+        });
+        $("#btnImport").click(function() {
+            $("#edt-import").val("");
+            $('[lay-filter="sel-sys-theme"]').val("");
+            form.render("select");
+            layer.open({
+                title: "导入配置",
+                type: 1,
+                shade: 0.1,
+                area: "400px",
+                content: $("#import-from"),
+                btn: ["确定", "取消"],
+                success: function(k, l) {
+                    $(k).children(".layui-layer-content").css("overflow", "visible")
+                },
+                yes: function(m, k) {
+                    var l = $("#edt-import").val();
+                    if (!l) {
+                        layer.msg("请填写主题配置", {
+                            icon: 2,
+                            anim: 6
+                        });
+                        return
+                    }
+                    form.val("theme-form", JSON.parse(l));
+                    g(JSON.parse(l));
+                    b();
+                    $("#btnPreview").trigger("click");
+                    layer.close(m)
+                }
+            })
+        });
+        form.on("select(sel-sys-theme)",
+        function(k) {
+            if (!k.value) {
+                $("#edt-import").val("")
+            } else {
+                $("#edt-import").val(JSON.stringify(h[k.value]))
+            }
+        });
+        if (isFirstOk) {
+            $("#btnPreview").trigger("click")
+        } else {
+            isFirstOk = true;
+            layer.msg("稍等片刻，马上就好...", {
+                icon: 16,
+                shade: 0.01,
+                time: 0
+            })
+        }
+        function g(k) {
+            var l = document.getElementById("preCanvas");
+            var m = l.getContext("2d");
+            m.clearRect(0, 0, l.width, l.height);
+            m.fillStyle = k.logo_bg;
+            m.beginPath();
+            m.fillRect(0, 0, 40, 20);
+            m.closePath();
+            m.fill();
+            m.fillStyle = k.side_bg;
+            m.beginPath();
+            m.fillRect(0, 20, 40, 80);
+            m.closePath();
+            m.fill();
+            m.fillStyle = k.header_bg;
+            m.beginPath();
+            m.fillRect(40, 0, 120, 20);
+            m.closePath();
+            m.fill();
+            m.fillStyle = k.primary_color;
+            m.beginPath();
+            m.fillRect(138, 30, 8, 8);
+            m.arc(138, 34, 4, 0, Math.PI * 2, true);
+            m.arc(146, 34, 4, 0, Math.PI * 2, true);
+            m.fillRect(117, 30, 8, 8);
+            m.arc(117, 34, 4, 0, Math.PI * 2, true);
+            m.arc(125, 34, 4, 0, Math.PI * 2, true);
+            m.closePath();
+            m.fill();
+            m.fillStyle = "#e8eaec";
+            m.beginPath();
+            m.fillRect(50, 45, 94, 5);
+            m.fillRect(50, 57, 79, 5);
+            m.fillRect(50, 69, 64, 5);
+            m.fillRect(50, 81, 49, 5);
+            m.closePath();
+            m.fill();
+            if ("colorful" === k.side_icon) {
+                m.fillStyle = "#61B2FC";
+                m.beginPath();
+                m.arc(12, 30, 4, 0, Math.PI * 2, true);
+                m.closePath();
+                m.fill();
+                m.fillStyle = "#7DD733";
+                m.beginPath();
+                m.arc(12, 46, 4, 0, Math.PI * 2, true);
+                m.closePath();
+                m.fill();
+                m.fillStyle = "#32A2D4";
+                m.beginPath();
+                m.arc(12, 62, 4, 0, Math.PI * 2, true);
+                m.closePath();
+                m.fill();
+                m.fillStyle = "#2BCCCE";
+                m.beginPath();
+                m.arc(12, 78, 4, 0, Math.PI * 2, true);
+                m.closePath();
+                m.fill()
+            }
+        }
+        g(form.val("theme-form"));
+        function j(o, n) {
+            if (o.indexOf("#") === 0) {
+                o = o.substr(1, o.length - 1)
+            }
+            if (o.length === 3) {
+                o = o[0] + o[0] + o[1] + o[1] + o[2] + o[2]
+            }
+            var m = parseInt(o.substr(0, 2), 16);
+            var l = parseInt(o.substr(2, 2), 16);
+            var k = parseInt(o.substr(4, 2), 16);
+            return "rgba(" + m + "," + l + "," + k + "," + n + ")"
+        }
+        function d(m, n, k, o) {
+            if (m === undefined || m === null || typeof m !== "string") {
+                return m
+            }
+            if (!n) {
+                n = {}
+            }
+            if (!k) {
+                k = "{{"
+            }
+            if (!o) {
+                o = "}}"
+            }
+            var l = {
+                exp: function(p) {
+                    return new RegExp(p, "g")
+                },
+                query: function(r, p, s) {
+                    var q = ["#([\\s\\S])+?", "([^{#}])*?"][r || 0];
+                    return l.exp((p || "") + k + q + o + (s || ""))
+                },
+                escape: function(p) {
+                    return String(p || "").replace(/&(?!#?[a-zA-Z0-9]+;)/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/'/g, "&#39;").replace(/"/g, "&quot;")
+                },
+                error: function(q, p) {
+                    console.error("Laytpl Error：" + q + "\n" + (p || ""))
+                },
+                parse: function(q, r) {
+                    var p = q;
+                    try {
+                        var t = l.exp("^" + k + "#"),
+                        u = l.exp(o + "$");
+                        q = q.replace(l.exp(k + "#"), k + "# ").replace(l.exp(o + "}"), "} " + o).replace(/\\/g, "\\\\").replace(l.exp(k + "!(.+?)!" + o),
+                        function(v) {
+                            v = v.replace(l.exp("^" + k + "!"), "").replace(l.exp("!" + o), "").replace(l.exp(k + "|" + o),
+                            function(w) {
+                                return w.replace(/(.)/g, "\\$1")
+                            });
+                            return v
+                        }).replace(/(?="|')/g, "\\").replace(l.query(),
+                        function(v) {
+                            v = v.replace(t, "").replace(u, "");
+                            return '";' + v.replace(/\\/g, "") + ';view+="'
+                        }).replace(l.query(1),
+                        function(v) {
+                            var w = '"+(';
+                            if (v.replace(/\s/g, "") === k + o) {
+                                return ""
+                            }
+                            v = v.replace(l.exp(k + "|" + o), "");
+                            if (/^=/.test(v)) {
+                                v = v.replace(/^=/, "");
+                                w = '"+_escape_('
+                            }
+                            return w + v.replace(/\\/g, "") + ')+"'
+                        }).replace(/\r\n/g, '\\r\\n" + "').replace(/\n/g, '\\n" + "').replace(/\r/g, '\\r" + "');
+                        q = '"use strict";var view = "' + q + '";return view;';
+                        q = new Function("d, _escape_", q);
+                        return q(r, l.escape)
+                    } catch(s) {
+                        l.error(s, p);
+                        return p
+                    }
+                }
+            };
+            return l.parse(m, n)
+        }
+        $(document).on("mouseenter", "*[lay-tips]",
+        function() {
+            var l = $(this);
+            function k(m) {
+                layer.tips(m.text, m.elem, {
+                    tips: [m.direction || 1, m.bg || "#303133"],
+                    time: m.time || -1,
+                    success: function(n) {
+                        if (!m.offset) {
+                            return
+                        }
+                        var q = m.offset.split(",");
+                        var p = q[0],
+                        o = q.length > 1 ? q[1] : undefined;
+                        if (p) {
+                            $(n).css("margin-top", p)
+                        }
+                        if (o) {
+                            $(n).css("margin-left", o)
+                        }
+                    }
+                })
+            }
+            k({
+                elem: this,
+                text: l.attr("lay-tips"),
+                direction: l.attr("lay-direction"),
+                offset: l.attr("lay-offset")
+            })
+        }).on("mouseleave", "*[lay-tips]",
+        function() {
+            layer.closeAll("tips")
+        });
+        var h = {
+            cyan: {
+                dialog_bg: "#ffffff",
+                dialog_color: "#333333",
+                header_bar: "#001529",
+                header_bg: "#ffffff",
+                header_color: "#393d49",
+                header_shadow: "1",
+                logo_bg: "#001529",
+                logo_color: "#dddddd",
+                logo_shadow: "1",
+                primary_color: "#1890ff",
+                side_bg: "#001529",
+                side_icon: "default",
+                side_shadow: "1",
+                side_style: "dark",
+                tab_bar: "#001529",
+                tab_style: "default",
+                theme_name: "theme-cyan2",
+                dialog_title_height: "47px,15px",
+                input_style: "border",
+                input_height: "36px,4px,8px,4px,34px"
+            },
+            white: {
+                dialog_bg: "#ffffff",
+                dialog_color: "#333333",
+                header_bar: "#2d8cf0",
+                header_bg: "#ffffff",
+                header_color: "#393d49",
+                header_shadow: "2",
+                logo_bg: "#ffffff",
+                logo_color: "#262626",
+                logo_shadow: "2",
+                primary_color: "#2d8cf0",
+                side_bg: "#ffffff",
+                side_icon: "default",
+                side_shadow: "2",
+                side_style: "light",
+                tab_bar: "#2d8cf0",
+                tab_style: "card",
+                theme_name: "theme-white2",
+                dialog_title_height: "47px,15px",
+                input_style: "border",
+                input_height: "36px,4px,8px,4px,34px"
+            },
+            colorful: {
+                dialog_bg: "#ffffff",
+                dialog_color: "#333333",
+                header_bar: "#2d8cf0",
+                header_bg: "#ffffff",
+                header_color: "#393d49",
+                header_shadow: "2",
+                logo_bg: "#ffffff",
+                logo_color: "#262626",
+                logo_shadow: "2",
+                primary_color: "#2d8cf0",
+                side_bg: "#ffffff",
+                side_icon: "colorful",
+                side_shadow: "2",
+                side_style: "light",
+                tab_bar: "#2d8cf0",
+                tab_style: "card",
+                theme_name: "theme-colorful2",
+                dialog_title_height: "47px,15px",
+                input_style: "border",
+                input_height: "36px,4px,8px,4px,34px"
+            },
+            blue: {
+                dialog_bg: "#3C8DBC",
+                dialog_color: "#ffffff",
+                header_bar: "#ffffff",
+                header_bg: "#3C8DBC",
+                header_color: "#ffffff",
+                header_shadow: "1",
+                logo_bg: "#3C8DBC",
+                logo_color: "#ffffff",
+                logo_shadow: "0",
+                primary_color: "#3C8DBC",
+                side_bg: "#222D32",
+                side_icon: "default",
+                side_shadow: "1",
+                side_style: "dark",
+                tab_bar: "#3C8DBC",
+                tab_style: "default",
+                theme_name: "theme-blue2",
+                dialog_title_height: "",
+                input_style: "",
+                input_height: ""
+            }
+        };
+        $(".ew-theme-btn-setting").click(function() {
+            $("body").toggleClass("ew-theme-close-setting")
+        })
+});
+</script>
+<style>
+    body {
+        width: 100vw;
+        height: 100vh;
+        position: fixed;
+        overflow: hidden;
+    }
+
+    .left-part, .left-part > iframe, .right-part {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        transition: all .3s;
+    }
+
+    .left-part {
+        left: 0;
+        right: 320px;
+    }
+
+    .left-part > iframe {
+        left: 0;
+        right: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    .right-part {
+        right: 0;
+        width: 320px;
+        background-color: #fff;
+        box-shadow: -1px 0 4px rgba(0, 21, 41, .08);
+    }
+
+    .right-btn-group {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        padding: 15px;
+        text-align: center;
+    }
+
+    .right-title {
+        padding: 15px;
+        font-size: 16px;
+        text-align: center;
+    }
+
+    .right-part > .layui-form {
+        padding: 20px 25px 10px 0;
+        position: absolute;
+        top: 54px;
+        bottom: 60px;
+        left: 0;
+        right: 0;
+        overflow: auto;
+        border-top: 1px solid #f6f6f6;
+        border-bottom: 1px solid #f6f6f6;
+    }
+
+    .right-part > .layui-form .layui-form-label {
+        width: 100px;
+    }
+
+    .right-part > .layui-form .layui-input-block {
+        margin-left: 130px;
+    }
+
+    .color-picker-group {
+        position: absolute;
+        top: 0;
+        right: 0;
+        margin: 0 !important;
+    }
+
+    .pre-canvas {
+        background: #f5f7f9;
+        border: 1px solid #eeeeee;
+    }
+
+    .item-hr {
+        color: #aaa;
+        font-size: 12px;
+        text-align: center;
+        position: relative;
+        margin: 0 0 15px 20px;
+    }
+
+    .item-hr span {
+        z-index: 1;
+        padding: 0 10px;
+        position: relative;
+        display: inline-block;
+        background-color: #fff;
+    }
+
+    .item-hr:before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 50%;
+        width: 100%;
+        border-top: 1px dashed #ccc;
+    }
+
+    .ew-theme-btn-setting {
+        position: fixed;
+        top: 50%;
+        right: 320px;
+        width: 40px;
+        height: 40px;
+        line-height: 40px;
+        margin-top: -20px;
+        color: #fff;
+        background-color: #1E9FFF;
+        border-top-left-radius: 4px;
+        border-bottom-left-radius: 4px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, .1);
+        transition: all .3s;
+        text-align: center;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    .ew-theme-close-setting .ew-theme-btn-setting {
+        right: 0;
+        font-weight: 500;
+    }
+
+    .ew-theme-close-setting .ew-theme-btn-setting:before {
+        content: "\e714";
+    }
+
+    .ew-theme-close-setting .right-part {
+        right: -320px;
+        box-shadow: none;
+    }
+
+    .ew-theme-close-setting .left-part {
+        right: 0;
+    }
+
+    @media screen and (max-width: 700px) {
+        .left-part {
+            right: 0 !important;
+        }
+
+        .right-part {
+            right: -320px;
+            box-shadow: none;
+            z-index: 999;
+        }
+
+        .ew-theme-btn-setting {
+            right: 0;
+            z-index: 999;
+        }
+
+        .ew-theme-btn-setting:before {
+            content: "\e714";
+            font-weight: 500;
+        }
+
+        .ew-theme-close-setting .ew-theme-btn-setting {
+            right: 320px;
+        }
+
+        .ew-theme-close-setting .ew-theme-btn-setting:before {
+            content: "\1006";
+            font-weight: 600;
+        }
+
+        .ew-theme-close-setting .right-part {
+            right: 0;
+            box-shadow: -1px 0 4px rgba(0, 21, 41, .08);
+        }
+
+        .ew-theme-close-setting .left-part:before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 998;
+            background-color: rgba(0, 0, 0, .25);
+        }
+
+    }
+
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+        background: transparent;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        border-radius: 4px;
+        background-color: #C1C1C1;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background-color: #A8A8A8;
+    }
+</style>
+<pre id="tpl-theme" style="display: none;">
+/** ---------------------------{{ d.theme_name }}主题start----------------------------------- */
+/* logo */
+.{{ d.theme_name }} .layui-layout-admin .layui-header .layui-logo {
+    color: {{ d.logo_color }};
+    background-color: {{ d.logo_bg }};
+    {{# if(d.logo_shadow=='0'){ }}
+    box-shadow: none;
+    {{# }else if(d.logo_shadow=='2'){ }}
+    box-shadow: 2px 8px 8px 0 rgba(29, 35, 41, .05);
+    {{# } }}
+}
+
+/* header */
+{{# if(d.header_shadow=='0'){ }}
+.{{ d.theme_name }} .layui-layout-admin .layui-header {
+    box-shadow: none;
+}
+{{# }else if(d.header_shadow=='2'){ }}
+.{{ d.theme_name }} .layui-layout-admin .layui-header {
+    box-shadow: 0 1px 4px rgba(0, 21, 41, .08);
+}
+{{# } }}
+
+.{{ d.theme_name }} .layui-layout-admin .layui-header {
+    background-color: {{ d.header_bg }};
+}
+
+.{{ d.theme_name }} .layui-layout-admin .layui-header a {
+    color: {{ d.header_color }};
+}
+
+.{{ d.theme_name }} .layui-layout-admin .layui-header a:hover {
+    color: {{ d.header_color }};
+}
+
+.{{ d.theme_name }} .layui-layout-admin .layui-header .layui-nav-child a {
+    color: #595959;
+}
+
+.{{ d.theme_name }} .layui-layout-admin .layui-header .layui-nav .layui-nav-more {
+    border-color: {{ d.header_color }} transparent transparent;
+}
+
+.{{ d.theme_name }} .layui-layout-admin .layui-header .layui-nav .layui-nav-mored {
+    border-color: transparent transparent {{ d.header_color }};
+}
+
+.{{ d.theme_name }} .layui-layout-admin .layui-header .layui-nav .layui-this:after,
+.{{ d.theme_name }} .layui-layout-admin .layui-header .layui-nav-bar {
+    background-color: {{ d.header_bar }};
+}
+
+{{# if(d.header_height){ }}
+/* header height */
+.{{ d.theme_name }} .layui-header {
+    height: {{ d.header_height }}px;
+}
+
+.{{ d.theme_name }} .layui-header .layui-logo,
+.{{ d.theme_name }} .layui-header .layui-nav .layui-nav-item {
+    line-height: {{ d.header_height }}px;
+}
+
+.{{ d.theme_name }} .layui-body,
+.{{ d.theme_name }} .layui-side {
+    top: {{ d.header_height }}px;
+}
+{{# } }}
+
+/* side */
+.{{ d.theme_name }} .layui-layout-admin .layui-side {
+    background-color: {{ d.side_bg }};
+    {{# if(d.side_shadow=='0'){ }}
+    box-shadow: none;
+    {{# }else if(d.side_shadow=='2'){ }}
+    box-shadow: 2px 8px 8px 0 rgba(29, 35, 41, .05);
+    {{# } }}
+}
+
+{{# if(d.side_style=='light'){ }}
+.{{ d.theme_name }} .layui-side .layui-nav .layui-nav-item a {
+    color: #595959;
+}
+
+.{{ d.theme_name }} .layui-side .layui-nav .layui-nav-item a:hover {
+    color: {{ d.primary_color }};
+}
+
+.{{ d.theme_name }} .layui-side .layui-nav-itemed > a,
+.{{ d.theme_name }} .layui-side .layui-nav-tree .layui-nav-title a,
+.{{ d.theme_name }} .layui-side .layui-nav-tree .layui-nav-title a:hover {
+    color: #595959 !important;
+}
+
+.{{ d.theme_name }} .layui-side .layui-nav-itemed > a:hover {
+    color: {{ d.primary_color }} !important;
+}
+
+.{{ d.theme_name }} .layui-side .layui-nav-tree .layui-nav-child dd.layui-this a,
+.{{ d.theme_name }} .layui-side .layui-nav-tree .layui-this > a,
+.{{ d.theme_name }} .layui-side .layui-nav-tree .layui-this > a:hover {
+    color: {{ d.primary_color }};
+    background: {{ d.side_active_bg }};
+    border-right: 2px solid {{ d.primary_color }};
+}
+
+.{{ d.theme_name }} .layui-side .layui-nav-tree .layui-nav-item .layui-nav-child {
+    background-color: transparent !important;
+}
+
+@media screen and (min-width: 769px) {
+    .{{ d.theme_name }} .layui-layout-admin.admin-nav-mini .layui-side .layui-nav li.layui-nav-itemed > a {
+        background: {{ d.side_active_bg }};
+        color: {{ d.primary_color }} !important;
+    }
+}
+
+.{{ d.theme_name }} .layui-nav-tree > .layui-nav-item > a:before {
+    display: none;
+}
+
+/* side arrow */
+.{{ d.theme_name }} .layui-side .layui-nav .layui-nav-more {
+    border-color: rgba(89, 89, 89, .7) transparent transparent;
+}
+
+.{{ d.theme_name }} .layui-side .layui-nav .layui-nav-mored,
+.{{ d.theme_name }} .layui-side .layui-nav-itemed > a .layui-nav-more {
+    border-color: transparent transparent rgba(89, 89, 89, .7);
+}
+
+.{{ d.theme_name }} .layui-side .layui-nav-tree.arrow3 .layui-nav-itemed > a > .layui-nav-more:before {
+    background-color: rgba(89, 89, 89, .7);
+}
+
+@media screen and (min-width: 769px) {
+    .{{ d.theme_name }} .layui-layout-admin.admin-nav-mini .layui-side .layui-nav .admin-nav-hover > .layui-nav-child > dd > a .layui-nav-more {
+        border-color: transparent transparent transparent rgba(89, 89, 89, .7);
+    }
+}
+{{# }else{ }}
+.{{ d.theme_name }} .layui-nav-tree .layui-nav-child dd.layui-this a,
+.{{ d.theme_name }} .layui-nav-tree .layui-this > a,
+.{{ d.theme_name }} .layui-nav-tree .layui-this > a:hover {
+    background-color: {{ d.primary_color }};
+}
+
+.{{ d.theme_name }} .layui-nav-tree > .layui-nav-item > a:before {
+    background-color: {{ d.primary_color }};
+}
+{{# } }}
+
+.{{ d.theme_name }} .layui-layout-admin.admin-nav-mini .layui-side .layui-nav .admin-nav-hover > .layui-nav-child:before {
+    background: {{ d.side_bg }} !important;
+}
+
+{{# if(d.side_width){ }}
+/* side width */
+.{{ d.theme_name }} .layui-header .layui-logo,
+.{{ d.theme_name }} .layui-side,
+.{{ d.theme_name }} .layui-side .layui-nav {
+    width: {{ d.side_width }}px;
+}
+
+.{{ d.theme_name }} .layui-side .layui-side-scroll {
+    width: {{ parseInt(d.side_width)+20 }}px;
+}
+
+.{{ d.theme_name }} .layui-body,
+.{{ d.theme_name }} .layui-footer {
+    left: {{ d.side_width }}px;
+}
+
+@media screen and (max-width: 768px) {
+    .{{ d.theme_name }} .layui-layout-admin {
+        left: -{{ d.side_width }}px;
+    }
+
+    .{{ d.theme_name }} .layui-layout-admin.admin-nav-mini .site-mobile-shade {
+        left: {{ d.side_width }}px;
+    }
+
+    body .layui-layout-admin.admin-nav-mini {
+        left: 0;
+    }
+}
+{{# } }}
+
+{{# if(d.side_icon=='colorful'){ }}
+/* side icon */
+.{{ d.theme_name }} .layui-side .layui-nav-item > a > .layui-icon {
+    color: #fff;
+    width: 28px;
+    height: 28px;
+    font-size: 12px !important;
+    line-height: 28px;
+    text-align: center;
+    border-radius: 50%;
+    display: inline-block;
+    vertical-align: middle;
+    background-color: #61B2FC;
+}
+
+.{{ d.theme_name }} .layui-side .layui-nav-item:nth-child(even) > a > .layui-icon {
+    background-color: #7DD733;
+}
+
+.{{ d.theme_name }} .layui-side .layui-nav-item:nth-child(3) > a > .layui-icon {
+    background-color: #32A2D4;
+}
+
+.{{ d.theme_name }} .layui-side .layui-nav-item:nth-child(4) > a > .layui-icon {
+    background-color: #2BCCCE;
+}
+
+.{{ d.theme_name }} .layui-side .layui-nav-item:nth-child(5) > a > .layui-icon {
+    background-color: #7383CF;
+}
+
+@media screen and (min-width: 768px) {
+    .{{ d.theme_name }} .admin-nav-mini .layui-side .layui-nav-item > a {
+        padding-left: 16px;
+    }
+}
+
+.{{ d.theme_name }} .layui-layout-admin .layui-side .layui-nav .layui-nav-item .layui-nav-child a {
+    padding-left: 63px;
+}
+
+.{{ d.theme_name }} .layui-layout-admin .layui-side .layui-nav .layui-nav-item .layui-nav-child .layui-nav-child a {
+    padding-left: 83px;
+}
+
+.{{ d.theme_name }} .layui-layout-admin .layui-side .layui-nav .layui-nav-item .layui-nav-child .layui-nav-child .layui-nav-child a {
+    padding-left: 103px;
+}
+
+.{{ d.theme_name }} .layui-layout-admin .layui-side .layui-nav .layui-nav-item .layui-nav-child .layui-nav-child .layui-nav-child .layui-nav-child a {
+    padding-left: 123px;
+}
+
+.{{ d.theme_name }} .layui-side .layui-nav .layui-nav-item a cite {
+    vertical-align: middle;
+}
+{{# } }}
+
+/* body tab */
+{{# if('card'==d.tab_style){ }}
+.{{ d.theme_name }} .layui-layout-admin .layui-body > .layui-tab > .layui-tab-title {
+    top: 8px;
+    right: 8px;
+    height: 32px;
+    line-height: 32px;
+    box-sizing: border-box;
+    background-color: transparent;
+    box-shadow: -4px 4px 0 #f5f7f9;
+    padding-right: 70px;
+}
+
+.{{ d.theme_name }} .layui-layout-admin .layui-body > .layui-tab > .layui-tab-content {
+    top: 40px;
+}
+
+.{{ d.theme_name }} .layui-layout-admin .layui-body > .layui-tab > .layui-tab-title li {
+    border: none;
+    margin-right: 6px;
+    border-radius: 4px;
+    background-color: #fff;
+    line-height: 32px;
+    height: 32px;
+}
+
+.{{ d.theme_name }} .layui-layout-admin .layui-body > .layui-tab > .layui-tab-title li.layui-this {
+    color: {{ d.tab_bar }};
+    background-color: #fff;
+}
+
+.{{ d.theme_name }} .layui-layout-admin .layui-body > .layui-tab > .layui-tab-title li:hover {
+    background-color: #fff;
+}
+
+.{{ d.theme_name }} .layui-layout-admin .layui-body > .layui-tab > .layui-tab-title li.layui-this:after {
+    display: none;
+}
+
+.{{ d.theme_name }} .layui-layout-admin .layui-body > .layui-tab > .layui-tab-title li .layui-tab-close,
+.{{ d.theme_name }} .layui-layout-admin .layui-body > .layui-tab > .layui-tab-title li .layui-tab-close:hover {
+    top: 8px;
+    color: #8c8c8c;
+    background-color: transparent;
+}
+
+.{{ d.theme_name }} .layui-layout-admin .layui-body .admin-tabs-control,
+.{{ d.theme_name }} .layui-layout-admin .layui-body .admin-tabs-control:hover {
+    top: 8px;
+    height: 32px;
+    line-height: 32px;
+    background-color: #f5f7f9;
+    border: none;
+}
+
+.{{ d.theme_name }} .layui-layout-admin .layui-body .admin-tabs-control.layui-icon-down {
+    border-radius: 4px;
+    background-color: #fff;
+    width: 32px;
+    right: 8px;
+}
+
+.{{ d.theme_name }} .admin-tabs-control > .layui-nav .layui-nav-item {
+    line-height: 32px;
+}
+
+.{{ d.theme_name }} .admin-tabs-control > .layui-nav .layui-nav-item > a {
+    height: 32px;
+    width: 32px;
+    padding: 0;
+}
+
+.{{ d.theme_name }} .admin-tabs-control > .layui-nav .layui-nav-child {
+    top: 36px;
+    border: none;
+    border-radius: 4px;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, .2);
+}
+
+.{{ d.theme_name }} .layui-layout-admin .layui-body .admin-tabs-control.layui-icon-prev:before {
+    content: "\e603";
+}
+
+.{{ d.theme_name }} .layui-layout-admin .layui-body .admin-tabs-control.layui-icon-next:before {
+    content: "\e602";
+}
+{{# }else{ }}
+.{{ d.theme_name }} .layui-layout-admin .layui-body > .layui-tab > .layui-tab-title li.layui-this:after {
+    background-color: {{ d.tab_bar }};
+    {{# if(d.header_bg!='#fff'&&d.header_bg!='#ffffff'){ }}
+    top: 38px;
+    {{# } }}
+}
+{{# } }}
+
+/* body title */
+.{{ d.theme_name }} .layui-body-header-title {
+    border-left-color: {{ d.primary_color }};
+}
+
+{{# if('0'==d.header_shadow){ }}
+.{{ d.theme_name }} .layui-body-header {
+    box-shadow: none;
+}
+{{# }else if('2'==d.header_shadow){ }}
+.{{ d.theme_name }} .layui-body-header {
+    box-shadow: 0 1px 4px rgba(0, 21, 41, .08);
+}
+{{# } }}
+
+/* admin dialog */
+.{{ d.theme_name }} .layui-layer.layui-layer-admin .layui-layer-title {
+    color: {{ d.dialog_color }};
+    background-color: {{ d.dialog_bg }};
+    {{# if('border'==d.input_style||'focus'==d.input_style){ }}
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    {{# } }}
+    {{# if('#fff'==d.dialog_bg||'#ffffff'==d.dialog_bg){ }}
+    font-size: 16px;
+    padding-left: 23px;
+    border-bottom: 1px solid #f1f1f1;
+    {{# } }}
+}
+
+{{# if('#fff'==d.dialog_bg||'#ffffff'==d.dialog_bg){ }}
+.{{ d.theme_name }} .layui-layer.layui-layer-admin .layui-layer-setwin a {
+    color: #8c8c8c;
+    font-weight: 600;
+}
+
+.{{ d.theme_name }} .layui-layer.layui-layer-admin .layui-layer-setwin .layui-layer-min cite {
+    background-color: #8c8c8c;
+}
+{{# } }}
+
+.{{ d.theme_name }} .layui-layer.layui-layer-admin .layui-layer-btn .layui-layer-btn0 {
+    border-color: {{ d.primary_color }};
+    background-color: {{ d.primary_color }};
+}
+
+{{# if('border'==d.input_style||'focus'==d.input_style){ }}
+.{{ d.theme_name }} .layui-layer.layui-layer-admin .layui-layer-btn a {
+    box-shadow: 0 1px 0 rgba(0, 0, 0, .03);
+}
+
+.{{ d.theme_name }} .layui-layer.layui-layer-admin {
+    border-radius: 4px;
+}
+{{# } }}
+
+{{# if(d.dialog_title_height){ }}
+.{{ d.theme_name }} .layui-layer.layui-layer-admin .layui-layer-title {
+    height: {{ d.dialog_title_height_0 }};
+    line-height: {{ d.dialog_title_height_0 }};
+}
+
+.{{ d.theme_name }} .layui-layer.layui-layer-admin .layui-layer-setwin {
+    top: {{ d.dialog_title_height_1 }};
+}
+{{# } }}
+
+/* other */
+.{{ d.theme_name }} .more-theme-item:hover,
+.{{ d.theme_name }} .more-theme-item.active {
+    border-color: {{ d.primary_color }};
+}
+
+.{{ d.theme_name }} .btn-circle {
+    background: {{ d.primary_color }};
+}
+
+.{{ d.theme_name }} .ball-loader > span,
+.{{ d.theme_name }} .signal-loader > span {
+    background-color: {{ d.primary_color }};
+}
+
+.{{ d.theme_name }} .text-primary,
+.{{ d.theme_name }} .layui-link {
+    color: {{ d.primary_color }} !important;;
+}
+
+{{# if(d.tab_style=='card'){ }}
+.{{ d.theme_name }} .layui-card {
+    border-radius: 4px;
+    box-shadow: none;
+}
+
+.{{ d.theme_name }} .layui-fluid {
+    padding-top: 10px;
+}
+{{# } }}
+
+/* button */
+.{{ d.theme_name }} .layui-btn {
+    background-color: {{ d.primary_color }};
+    {{# if('border'==d.input_style||'focus'==d.input_style){ }}
+    box-shadow: 0 1px 0 rgba(0, 0, 0, .03);
+    {{# } }}
+}
+
+{{# if('border'==d.input_style||'focus'==d.input_style){ }}
+/* input */
+.{{ d.theme_name }} .layui-input:focus,
+.{{ d.theme_name }} .layui-textarea:focus,
+.{{ d.theme_name }} xm-select:hover {
+    border-color: {{ d.primary_color }} !important;
+}
+
+{{# if('focus'==d.input_style){ }}
+.{{ d.theme_name }} .layui-input:focus,
+.{{ d.theme_name }} .layui-textarea:focus,
+.{{ d.theme_name }} .layui-btn:active,
+.{{ d.theme_name }} .layui-layer.layui-layer-admin .layui-layer-btn a:focus,
+.{{ d.theme_name }} .layui-layer.layui-layer-admin .layui-layer-btn a:active,
+.{{ d.theme_name }} xm-select:active {
+    box-shadow: 0 0 0 2px {{ d.input_shadow_color }};
+}
+
+.{{ d.theme_name }} .layui-form-danger:focus,
+.{{ d.theme_name }} .layui-form-danger + .layui-form-select .layui-input {
+    box-shadow: 0 0 0 2px rgba(237, 64, 20, .2);
+}
+
+.{{ d.theme_name }} .layui-btn.layui-btn-normal:focus,
+.{{ d.theme_name }} .layui-btn.layui-btn-normal:active {
+    box-shadow-color: rgba(20, 159, 255, .2);
+}
+
+.{{ d.theme_name }} .layui-btn.layui-btn-warm:active {
+    box-shadow: 0 0 0 2px rgba(255, 184, 0, .2);
+}
+
+.{{ d.theme_name }} .layui-btn.layui-btn-danger:active {
+    box-shadow: 0 0 0 2px rgba(255, 87, 34, .2);
+}
+{{# } }}
+{{# } }}
+
+{{# if(d.input_height){ }}
+/* input、button height */
+/* button */
+.{{ d.theme_name }} .layui-btn {
+    height: {{ d.input_height_0 }};
+    line-height: {{ d.input_height_0 }};
+    border-radius: {{ d.input_height_1 }};
+}
+
+.{{ d.theme_name }} .layui-layer.layui-layer-admin .layui-layer-btn a {
+    height: {{ d.input_height_4 }};
+    line-height: {{ d.input_height_4 }};
+    border-radius: {{ d.input_height_1 }};
+}
+
+/* input */
+.{{ d.theme_name }} .layui-input,
+.{{ d.theme_name }} .layui-select,
+.{{ d.theme_name }} .layui-textarea,
+.{{ d.theme_name }} xm-select {
+    height: {{ d.input_height_0 }};
+    border-radius: {{ d.input_height_1 }};
+}
+
+/* form */
+.{{ d.theme_name }} .layui-form-label,
+.{{ d.theme_name }} .layui-form-mid {
+    padding-top: {{ d.input_height_2 }};
+    padding-bottom: {{ d.input_height_2 }};
+}
+
+.{{ d.theme_name }} .layui-input-block {
+    min-height: {{ d.input_height_0 }};
+}
+
+.{{ d.theme_name }} .layui-form-radio {
+    margin-top: {{ d.input_height_3 }};
+}
+
+/* button lg sm */
+.{{ d.theme_name }} .layui-btn-lg {
+    height: 42px;
+    line-height: 42px;
+}
+
+.{{ d.theme_name }} .layui-btn.layui-btn-sm {
+    height: 28px;
+    line-height: 28px;
+}
+
+.{{ d.theme_name }} .layui-btn.layui-btn-xs {
+    height: 22px;
+    line-height: 22px;
+}
+{{# } }}
+
+/* switch */
+.{{ d.theme_name }} .layui-form-onswitch {
+    border-color: {{ d.primary_color }};
+    background-color: {{ d.primary_color }};
+}
+
+/* radio */
+.{{ d.theme_name }} .layui-form-radio > i:hover,
+.{{ d.theme_name }} .layui-form-radioed > i,
+.{{ d.theme_name }} .layui-form-checked i,
+.{{ d.theme_name }} .layui-form-checked:hover i {
+    color: {{ d.primary_color }};
+}
+
+/* checkbox */
+.{{ d.theme_name }} .layui-form-checked[lay-skin=primary] i,
+.{{ d.theme_name }} .layui-form-checked span,
+.{{ d.theme_name }} .layui-form-checked:hover span {
+    border-color: {{ d.primary_color }} !important;
+    background-color: {{ d.primary_color }};
+}
+
+.{{ d.theme_name }} .layui-form-checkbox[lay-skin=primary] i:hover,
+.{{ d.theme_name }} .layui-form-checkbox[lay-skin=primary]:hover i {
+    border-color: {{ d.primary_color }};
+}
+
+/* select */
+.{{ d.theme_name }} .layui-form-select dl dd.layui-this {
+    background-color: {{ d.primary_color }};
+}
+
+/* laypage */
+.{{ d.theme_name }} .layui-laypage .layui-laypage-curr .layui-laypage-em {
+    background-color: {{ d.primary_color }};
+}
+
+.{{ d.theme_name }} .layui-laypage input:focus,
+.{{ d.theme_name }} select:focus {
+    border-color: {{ d.primary_color }} !important;
+}
+
+.{{ d.theme_name }} .layui-laypage a:hover {
+    color: {{ d.primary_color }};
+}
+
+/* tab */
+.{{ d.theme_name }} .layui-tab-brief > .layui-tab-title .layui-this {
+    color: {{ d.primary_color }};
+}
+
+.{{ d.theme_name }} .layui-tab-brief > .layui-tab-more li.layui-this:after,
+.{{ d.theme_name }} .layui-tab-brief > .layui-tab-title .layui-this:after {
+    border-color: {{ d.primary_color }} !important;
+}
+
+.{{ d.theme_name }} .layui-tab.layui-tab-vertical > .layui-tab-title > li.layui-this {
+    border-color: {{ d.primary_color }};
+    color: {{ d.primary_color }};
+}
+
+/* breadcrumb */
+.{{ d.theme_name }} .layui-breadcrumb a:hover {
+    color: {{ d.primary_color }} !important;
+}
+
+/* laydate */
+.{{ d.theme_name }} .layui-laydate-footer span:hover,
+.{{ d.theme_name }} .layui-laydate-header i:hover,
+.{{ d.theme_name }} .layui-laydate-header span:hover {
+    color: {{ d.primary_color }};
+}
+
+.{{ d.theme_name }} .layui-laydate .layui-this {
+    background-color: {{ d.primary_color }} !important;
+}
+
+.{{ d.theme_name }} .layui-laydate-content td.laydate-selected {
+    background-color: {{ d.laydate_sel_color }};
+}
+
+.{{ d.theme_name }} .laydate-selected:hover {
+    background-color: {{ d.laydate_sel_color }} !important;
+}
+
+/* timeline */
+.{{ d.theme_name }} .layui-timeline-axis {
+    color: {{ d.primary_color }};
+}
+
+/* transfer */
+.{{ d.theme_name }} .layui-transfer-active .layui-btn {
+    background-color: {{ d.primary_color }} !important;
+    border-color: {{ d.primary_color }} !important;
+}
+
+/* progress-bar */
+.{{ d.theme_name }} .layui-progress-bar {
+    background-color: {{ d.primary_color }};
+}
+
+/* slider */
+.{{ d.theme_name }} .layui-slider-bar {
+    background-color: {{ d.primary_color }} !important;
+}
+
+.theme-colorful .layui-slider-wrap-btn {
+    border-color: {{ d.primary_color }} !important;
+}
+
+/* steps */
+.{{ d.theme_name }} .layui-tab.layui-steps > .layui-tab-title > li > .layui-icon {
+    color: {{ d.primary_color }};
+}
+
+.{{ d.theme_name }} .layui-tab.layui-steps > .layui-tab-title > li > .layui-icon.layui-icon-ok,
+.{{ d.theme_name }} .layui-elem-quote {
+    border-color: {{ d.primary_color }};
+}
+
+.{{ d.theme_name }} .layui-tab.layui-steps > .layui-tab-title > li:before,
+.{{ d.theme_name }} .layui-tab.layui-steps > .layui-tab-title > li.layui-this > .layui-icon.layui-icon-ok {
+    background-color: {{ d.primary_color }};
+}
+
+.{{ d.theme_name }} .layui-tab.layui-steps.layui-steps-simple > .layui-tab-title > li {
+    background-color: {{ d.steps_light_color }};
+}
+
+.{{ d.theme_name }} .layui-tab.layui-steps.layui-steps-simple > .layui-tab-title > li.layui-this {
+    background-color: {{ d.primary_color }};
+}
+
+.{{ d.theme_name }} .layui-tab.layui-steps.layui-steps-simple > .layui-tab-title > li:after {
+    border-left-color: {{ d.steps_light_color }} !important;
+}
+
+.{{ d.theme_name }} .layui-tab.layui-steps.layui-steps-simple > .layui-tab-title > li.layui-this + li:after {
+    border-left-color: {{ d.primary_color }} !important;
+}
+
+/* xmSelect */
+.{{ d.theme_name }} xm-select .xm-body .xm-option .xm-option-icon {
+    border-color: {{ d.primary_color }} !important;
+}
+
+.{{ d.theme_name }} xm-select .xm-body .xm-option.selected .xm-option-icon,
+.{{ d.theme_name }} xm-select > .xm-body .xm-toolbar .toolbar-tag:hover,
+.{{ d.theme_name }} .ew-xmselect-tree xm-select .xm-body .xm-option.selected .xm-option-content {
+    color: {{ d.primary_color }} !important;
+}
+
+.{{ d.theme_name }} xm-select .xm-label .xm-label-block,
+.{{ d.theme_name }} xm-select > .xm-body .xm-option.hide-icon.selected {
+    background-color: {{ d.primary_color }} !important;
+}
+
+/* tagsinput */
+.{{ d.theme_name }} div.tagsinput span.tag {
+    background: {{ d.primary_color }};
+}
+
+/* cascader */
+.{{ d.theme_name }} .ew-cascader-dropdown-list-item.active,
+.{{ d.theme_name }} .ew-cascader-dropdown-list-item.active .ew-icon-right {
+    color: {{ d.primary_color }};
+}
+
+/* city-select */
+.{{ d.theme_name }} .city-select a.active {
+    color: #fff !important;
+    background-color: {{ d.primary_color }} !important;
+}
+
+.{{ d.theme_name }} .city-select a:hover,
+.{{ d.theme_name }} .city-select a:focus {
+    background-color: {{ d.side_active_bg }};
+    color: {{ d.primary_color }};
+}
+
+.{{ d.theme_name }} .city-picker-span > .title > span:hover {
+    background-color: {{ d.side_active_bg }};
+}
+
+.{{ d.theme_name }} .city-select-tab > a.active {
+    color: {{ d.primary_color }};
+}
+
+{{# if(d.theme_patch){ }}
+/* theme patch */
+/* checkbox */
+body .layui-form-checked[lay-skin=primary] i,
+body .layui-form-checked[lay-skin=primary]:hover i {
+    color: #fff;
+}
+
+body .layui-form-checkbox[lay-skin=primary] span,
+body .layui-form-checkbox[lay-skin=primary]:hover span {
+    background-color: transparent;
+}
+
+/* form danger */
+body .layui-form-danger + .layui-form-select .layui-input,
+body .layui-input.layui-form-danger:focus,
+body .layui-textarea.layui-form-danger:focus {
+    border-color: #FF5722 !important;
+}
+
+/* laypage */
+body .layui-laypage input.layui-input {
+    height: 30px;
+    line-height: 30px;
+}
+
+body .layui-table-page .layui-laypage input.layui-input {
+    height: 26px;
+    line-height: 26px;
+}
+
+/* button */
+body .layui-btn.layui-btn-radius {
+    border-radius: 100px;
+}
+
+.layui-btn-primary:hover, .layui-btn-group .layui-btn-primary:hover {
+    color: #262626;
+    border-color: #e6e6e6;
+}
+
+.layui-btn-group .layui-btn-primary:first-child {
+    border-left: 1px solid #e6e6e6;
+}
+
+body .layui-btn.layui-btn-disabled,
+body .layui-transfer-active .layui-btn.layui-btn-disabled {
+    background-color: #FBFBFB !important;
+    border-color: #e6e6e6 !important;
+    color: #C9C9C9 !important;
+}
+
+body .layui-btn.layui-btn-primary {
+    background-color: #fff;
+}
+
+body .layui-btn.layui-btn-normal {
+    background-color: #1E9FFF;
+}
+
+body .layui-btn.layui-btn-warm {
+    background-color: #FFB800;
+}
+
+body .layui-btn.layui-btn-danger {
+    background-color: #FF5722;
+}
+
+.layui-btn-group > .layui-btn + .layui-btn {
+    border-radius: 0;
+}
+
+.layui-btn-group > .layui-btn:last-child {
+    border-top-right-radius: 2px;
+    border-bottom-right-radius: 2px;
+}
+
+.layui-transfer-active .layui-btn {
+    background-color: #5FB878 !important;
+    border-color: #5FB878 !important;
+    color: #fff !important;
+}
+{{# } }}
+/** ---------------------------{{ d.theme_name }}主题end----------------------------------- */
+</pre>
+</body>
+</html>

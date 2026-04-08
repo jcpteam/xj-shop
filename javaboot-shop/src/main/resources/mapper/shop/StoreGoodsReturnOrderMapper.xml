@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaboot.shop.mapper.StoreGoodsReturnOrderMapper">
+    
+    <resultMap type="com.javaboot.shop.vo.StoreGoodsReturnOrderVO" id="StoreGoodsReturnOrderResult">
+        <result property="returnOrderId"    column="return_order_id"    />
+        <result property="merchantId"    column="merchant_id"    />
+        <result property="deptId"    column="dept_id"    />
+        <result property="code"    column="code"    />
+        <result property="price"    column="price"    />
+        <result property="payStatus"    column="pay_status"    />
+        <result property="status"    column="status"    />
+        <result property="comment"    column="comment"    />
+        <result property="warehouseId"    column="warehouse_id"    />
+        <result property="returnType"    column="return_type"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="lastModifyTime"    column="last_modify_time"    />
+    </resultMap>
+
+    <sql id="selectStoreGoodsReturnOrderVo">
+        select * from store_goods_return_order
+    </sql>
+
+    <select id="selectStoreGoodsReturnOrderList" parameterType="com.javaboot.shop.dto.StoreGoodsReturnOrderQueryDTO" resultMap="StoreGoodsReturnOrderResult">
+        <include refid="selectStoreGoodsReturnOrderVo"/>
+        <where>  
+            <if test="merchantId != null  and merchantId != ''"> and merchant_id = #{merchantId}</if>
+            <if test="deptId != null  and deptId != ''"> and dept_id = #{deptId}</if>
+            <if test="code != null  and code != ''"> and code = #{code}</if>
+            <if test="price != null "> and price = #{price}</if>
+            <if test="payStatus != null  and payStatus != ''"> and pay_status = #{payStatus}</if>
+            <if test="status != null  and status != ''"> and status = #{status}</if>
+            <if test="comment != null  and comment != ''"> and comment = #{comment}</if>
+            <if test="warehouseId != null "> and warehouse_id = #{warehouseId}</if>
+            <if test="returnType != null  and returnType != ''"> and return_type = #{returnType}</if>
+            <if test="lastModifyTime != null "> and last_modify_time = #{lastModifyTime}</if>
+            <if test="loginUserDeptId != null  and loginUserDeptId !='' and (deptId==null or deptId=='')">
+                AND  dept_id IN (
+                SELECT
+                dept_id
+                FROM
+                sys_dept
+                WHERE
+                find_in_set( #{loginUserDeptId}, ancestors )  or dept_id=#{loginUserDeptId}
+                )
+            </if>
+            <if test="createBeginDate != null and createBeginDate!='' and createEndDate != null and createEndDate!='' ">
+                and create_time  BETWEEN
+                DATE_FORMAT(#{createBeginDate},'%Y-%m-%d %H:%i:%s')
+                AND DATE_FORMAT(#{createEndDate},'%Y-%m-%d %H:%i:%s')
+            </if>
+            <if test="orderKey != null and orderKey!='' ">and
+                (
+                code like concat('%', #{orderKey}, '%')
+                or
+                EXISTS
+                (
+                SELECT
+                1
+                FROM
+                store_goods_return_order_item t1
+                JOIN store_goods_quotation_goods t2 ON t1.goods_id = t2.goods_id
+                JOIN store_goods_spu t3 ON t2.spu_no = t3.spu_no
+                where t3.code like concat('%', #{orderKey}, '%') and t1.order_id=order_id
+                )
+                )
+            </if>
+            <if test="deliveryKey != null and deliveryKey!='' ">
+                AND EXISTS (
+                SELECT
+                1
+                FROM
+                store_member s1
+                WHERE
+                s1.id=merchant_id AND
+                (
+                s1.nickname like concat('%', #{deliveryKey}, '%')
+                OR
+                s1.phone like concat('%', #{deliveryKey}, '%')
+                )
+                )
+            </if>
+            <if test="returnOrderIds!=null and returnOrderIds.size()>0">
+                AND return_order_id IN
+                <foreach item="id" collection="returnOrderIds" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    
+    <select id="selectStoreGoodsReturnOrderById" parameterType="Long" resultMap="StoreGoodsReturnOrderResult">
+        <include refid="selectStoreGoodsReturnOrderVo"/>
+        where return_order_id = #{returnOrderId}
+    </select>
+        
+    <insert id="insertStoreGoodsReturnOrder" parameterType="com.javaboot.shop.dto.StoreGoodsReturnOrderDTO" useGeneratedKeys="true" keyProperty="returnOrderId">
+        insert into store_goods_return_order
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="merchantId != null  and merchantId != ''">merchant_id,</if>
+            <if test="deptId != null  and deptId != ''">dept_id,</if>
+            <if test="code != null  and code != ''">code,</if>
+            <if test="price != null ">price,</if>
+            <if test="payStatus != null  and payStatus != ''">pay_status,</if>
+            <if test="status != null  and status != ''">status,</if>
+            <if test="comment != null  and comment != ''">comment,</if>
+            <if test="warehouseId != null ">warehouse_id,</if>
+            <if test="returnType != null  and returnType != ''">return_type,</if>
+            create_time,last_modify_time
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="merchantId != null  and merchantId != ''">#{merchantId},</if>
+            <if test="deptId != null  and deptId != ''">#{deptId},</if>
+            <if test="code != null  and code != ''">#{code},</if>
+            <if test="price != null ">#{price},</if>
+            <if test="payStatus != null  and payStatus != ''">#{payStatus},</if>
+            <if test="status != null  and status != ''">#{status},</if>
+            <if test="comment != null  and comment != ''">#{comment},</if>
+            <if test="warehouseId != null ">#{warehouseId},</if>
+            <if test="returnType != null  and returnType != ''">#{returnType},</if>
+            now(),now()
+         </trim>
+    </insert>
+
+    <update id="updateStoreGoodsReturnOrder" parameterType="com.javaboot.shop.dto.StoreGoodsReturnOrderDTO">
+        update store_goods_return_order
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="merchantId != null  and merchantId != ''">merchant_id = #{merchantId},</if>
+            <if test="deptId != null  and deptId != ''">dept_id = #{deptId},</if>
+            <if test="code != null  and code != ''">code = #{code},</if>
+            <if test="price != null ">price = #{price},</if>
+            <if test="payStatus != null  and payStatus != ''">pay_status = #{payStatus},</if>
+            <if test="status != null  and status != ''">status = #{status},</if>
+            <if test="comment != null  and comment != ''">comment = #{comment},</if>
+            <if test="warehouseId != null ">warehouse_id = #{warehouseId},</if>
+            <if test="returnType != null  and returnType != ''">return_type = #{returnType},</if>
+            last_modify_time = now()
+        </trim>
+        where return_order_id = #{returnOrderId}
+    </update>
+
+    <update id="deleteStoreGoodsReturnOrderById" parameterType="Long">
+          update   store_goods_return_order set status=0, last_modify_time = now() where return_order_id = #{returnOrderId}
+    </update>
+
+    <update id="deleteStoreGoodsReturnOrderByIds" parameterType="String">
+        update   store_goods_return_order set status=0, last_modify_time = now() where return_order_id in
+        <foreach item="returnOrderId" collection="array" open="(" separator="," close=")">
+            #{returnOrderId}
+        </foreach>
+    </update>
+    <update id="examine" parameterType="com.javaboot.shop.dto.StoreGoodsReturnOrderExamineDTO">
+        update   store_goods_return_order set status=#{status}, last_modify_time = now() where return_order_id in
+        <foreach item="returnOrderId" collection="idList" open="(" separator="," close=")">
+            #{returnOrderId}
+        </foreach>
+        AND status=1
+    </update>
+</mapper>

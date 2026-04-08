@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('商品上数设置列表')" />
+    <style>
+        .layui-table-cell {
+            min-height: 30px;
+            height: initial;
+            white-space: initial;
+            word-break: break-word;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<!-- 正文开始 -->
+<div class="layui-fluid">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-card">
+            <!-- 搜索区 -->
+            <form class="layui-form toolbar" th:onsubmit="return false" lay-filter="inputForm" id="inputForm">
+                <div class="layui-form-item">
+
+                    <div class="layui-inline">
+                        <label class="layui-form-label label-auto">所属区域：</label>
+                        <div class="layui-input-inline">
+                            <select name="deptId"  id="deptId"   >
+                                <option  value="" th:checked="true">选择区域</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label label-auto">商品名称：</label>
+                        <div class="layui-input-inline">
+                            <input class="layui-input" name="spuName" type="text" placeholder="请输入商品SPU或商品名称"/>
+                        </div>
+                    </div>
+
+
+<!--                    <div class="layui-inline form-search-show-expand">-->
+<!--                        <label class="layui-form-label label-auto">上数时间：</label>-->
+<!--                        <div class="layui-input-inline">-->
+<!--                            <input id="createTime" type="text" placeholder="请选择开始和结束日期" class="layui-input date-icon" autocomplete="off"/>-->
+<!--                            <input id="beginDate" type="hidden" name="params[beginCreatetime]">-->
+<!--                            <input id="endDate" type="hidden" name="params[endCreatetime]">-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                    <div class="layui-inline form-search-show-expand">-->
+<!--                        <label class="layui-form-label label-auto">更新时间：</label>-->
+<!--                        <div class="layui-input-inline">-->
+<!--                            <input id="createTime" type="text" placeholder="请选择开始和结束日期" class="layui-input date-icon" autocomplete="off"/>-->
+<!--                            <input id="beginDate" type="hidden" name="params[beginLastmodifytime]">-->
+<!--                            <input id="endDate" type="hidden" name="params[endLastmodifytime]">-->
+<!--                        </div>-->
+<!--                    </div>-->
+                    <div class="layui-inline" style="padding-left: 13px;">
+                        <button class="layui-btn layui-btn-sm icon-btn" lay-submit lay-filter="searchBtn" id="searchBtn">
+                            <i class="layui-icon layui-icon-search"></i>搜索
+                        </button>
+                        <button class="layui-btn layui-btn-sm icon-btn" type="reset">
+                            <i class="layui-icon layui-icon-refresh"></i>重置
+                        </button>
+                        <button class="layui-btn layui-btn-sm layui-btn-sm" lay-submit lay-filter="add" shiro:hasPermission="shop:sale:add">
+                            <i class="layui-icon layui-icon-set-fill"></i>上数更新
+                        </button>
+                        <button class="layui-btn layui-btn-sm layui-btn-sm" lay-submit lay-filter="download" shiro:hasPermission="shop:sale:add">
+                            <i class="layui-icon layui-icon-template"></i>模板下载
+                        </button>
+                        <button class="layui-btn layui-btn-sm layui-btn-sm" id="importData" lay-submit lay-filter="upload" shiro:hasPermission="shop:sale:add">
+                            <i class="layui-icon layui-icon-upload"></i>导入
+                        </button>
+<!--                        <a class="layui-btn layui-btn-primary form-search-expand" data-expand="true">-->
+<!--                            展开 <i class="layui-icon layui-icon-down"></i>-->
+<!--                        </a>-->
+                    </div>
+                </div>
+            </form>
+
+            <table class="layui-table" id="dataTable" lay-filter="dataTable"></table>
+        </div>
+
+    </div>
+</div>
+
+<script type="text/html" id="openTools">
+    <i class="layui-icon layui-icon-addition" lay-event="add"></i>
+    <i class="layui-icon layui-icon-subtraction" lay-event="subtraction"></i>
+</script>
+
+<!-- 行工具栏 -->
+<script type="text/html" id="toolbarRow">
+    <a class="layui-btn layui-btn-xs" lay-event="view" shiro:hasPermission="shop:sale:edit">上数详情</a>
+<!--    <a class="layui-btn layui-btn-xs" lay-event="edit" shiro:hasPermission="shop:sale:edit">修改</a>-->
+<!--    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del" shiro:hasPermission="shop:sale:remove">删除</a>-->
+</script>
+
+<!-- js部分 -->
+<th:block th:include="include :: footer" />
+<script type="text/javascript" th:inline="javascript">
+    var ctx = [[@{/}]];
+</script>
+<script type="text/javascript" th:inline="none">
+    layui.use(['index', 'layer', 'form', 'table', 'util', 'ext','upload'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        var table = layui.table;
+        var util = layui.util;
+        var laydate = layui.laydate;
+        var ext = layui.ext;
+        var admin = layui.admin;
+        var index = layui.index;
+
+        var prefix = ctx + "shop/sale";
+        var listUrl = prefix + "/list";
+        var createUrl = prefix + "/add";
+        var updateUrl = prefix + "/edit/{settingId}";
+        var exportUrl = prefix + "/export";
+
+        table.render({
+            elem: '#dataTable'
+            ,url: listUrl
+            ,method: 'POST'
+            //,toolbar: '#toolbarHead'
+            ,height: 'full-100'
+            ,cellMinWidth: 100
+            ,page: {
+                curr:1
+            }
+            ,request: {
+                pageName: 'pageNum' //页码的参数名称，默认：page
+                ,limitName: 'pageSize' //每页数据量的参数名，默认：limit
+            }
+            ,limit: 10
+            ,cols: [[
+                // {type: 'checkbox'}
+                ,{field: 'settingId', title: '上数id', hide: true}
+                //,{toolbar: '#openTools', width: 80}
+                ,{field: 'deptName', title: '区域',width:120}
+                ,{field: 'spuNo', title: '商品编号', hide: true}
+                ,{field: 'spuName', title: '商品名称',width:180}
+                ,{field: 'quanintiy', title: '期末库存'}
+                //,{field: 'inQuanintiy', title: '在途数量'}
+                ,{field: 'readyQuanintiy', title: '到货数量'}
+                ,{field: 'specifications', title: '上数单位', width:120}
+                ,{field: 'selfQuanintiy', title: '上数调整量',width:140, edit: 'text',style: 'outline: 1px solid #e6e6e6;outline-offset: -5px;', templet:function (d) {
+                    if(d.orderQuanintiy > d.selfQuanintiy) {
+                        return d.orderQuanintiy
+                    } else {
+                        return d.selfQuanintiy
+                    }
+                }}
+                ,{field: 'settingQuanintiy', title: '上数总数', templet:function (d) {
+                    //var num = parseFloat(d.quanintiy + d.inQuanintiy + d.readyQuanintiy + d.selfQuanintiy - d.orderQuanintiy).toFixed(0)
+                    var num = parseFloat(d.quanintiy + d.readyQuanintiy + d.selfQuanintiy - d.orderQuanintiy).toFixed(0)
+                    return num > 0 ? num : 0;
+                }}
+                ,{field: 'orderQuanintiy', title: '订货数量'}
+                ,{field: 'createTime', title: '上数时间',width:160}
+                //,{field: 'lastModifyTime', title: '更新时间'}
+                //,{field: 'operate', title: '操作',  toolbar: '#toolbarRow', fixed: 'right'}
+            ]]
+            ,parseData: function(res){ //将原始数据解析成 table 组件所规定的数据
+                return {
+                    "code": res.code, //解析接口状态
+                    "msg": res.msg, //解析提示文本
+                    "count": res.total, //解析数据长度
+                    "data": res.rows //解析数据列表
+                };
+            }
+            ,done:function(res, curr, count){
+                $(".layui-table-main tr").each(function (index, val) {
+                    $($(".layui-table-fixed-l .layui-table-body tbody tr")[index]).height($(val).height());
+                    $($(".layui-table-fixed-r .layui-table-body tbody tr")[index]).height($(val).height());
+                })
+            }
+        });
+
+
+        //监听搜索
+        form.on('submit(searchBtn)', function (data) {
+            var field = data.field;
+            //执行重载
+            table.reload('dataTable', {
+                where: field
+                ,page:{curr:1}
+            });
+        });
+
+        //监听上数更新事件
+        form.on('submit(add)', function (data) {
+            $.modal.loading("数据更新中，请稍后...");
+            $.post(createUrl, function(result) {
+                $.modal.closeLoading();
+                //执行重载
+                table.reload('dataTable');
+                admin.success('操作成功！');
+            });
+
+            return false;
+        });
+
+        //监听上数更新事件
+        form.on('submit(download)', function (data) {
+            $.modal.loading("模板下载中，请稍后...");
+            $.post(exportUrl, $("#inputForm").serializeArray(), function(result) {
+                if (result.code == web_status.SUCCESS) {
+                    window.location.href = ctx + "common/download?fileName=" + encodeURI(result.msg) + "&delete=" + true;
+                } else if (result.code == web_status.WARNING) {
+                    $.modal.alertWarning(result.msg)
+                } else {
+                    $.modal.alertError(result.msg);
+                }
+                $.modal.closeLoading();
+            });
+            return false;
+        });
+
+        layui.upload.render({
+            elem: "#importData",//导入id
+            url: prefix + "/import",
+            accept: "file",
+            exts: 'xls|xlsx',
+            before: function(obj){//参数
+                $.modal.loading("文件导入中，请稍后...");
+            },
+            done: function (result) {
+                $.modal.closeLoading();
+                if (result.code == 0) {
+                    table.reload('dataTable');
+                    layer.msg(result.msg)
+                } else {
+                    layer.msg(result.msg)
+                }
+            }
+        });
+
+
+        //所属区域------------------------------------------------------------------------------------------------------
+        admin.req(ctx + "system/dept/getLoginUserDept", { }, function (result) {
+            var select= document.getElementById('deptId');
+            for (var i=0;i<result.data.length;i++) {
+                var data= result.data[i];
+                var option = document.createElement("option");
+                option.setAttribute("value", data.value);
+                option.innerText =data.name;
+                select.appendChild(option)
+            }
+            form.render('select');
+        },'get')
+
+        //行工具栏事件
+        table.on('tool(dataTable)', function (obj) {
+            var data = obj.data;
+            if (obj.event === 'add') {
+                var tr = $(obj.tr);
+                var trIndex = obj.data.settingId;
+
+                var tableId = 'tableOut_tableIn_' + trIndex;
+                if($('#'+tableId).length > 0){
+                    return;
+                }
+                var _html = [
+                    '<tr class="sale-item">',
+                    '<td colspan="' + tr.find('td').length + '" style="padding: 6px 12px;">',
+                    '<table id="' + tableId + '" lay-filter="'+tableId+'"></table>',
+                    '<div style="text-align: center">',
+                    '<button class="layui-btn layui-btn-sm icon-btn" id="btn_'+trIndex+'">保存</button>',
+                    '</div>',
+                    '</td>',
+                    '</tr>'
+                ];
+                $('.sale-item').remove();
+                tr.after(_html.join('\n'));
+
+                // 渲染table
+                table.render({
+                    elem: '#'+tableId
+                    //,width : 1000
+                    ,url: ctx + "shop/sale/quotationGoods"
+                    ,method: 'POST'
+                    ,cellMinWidth: 80
+                    ,page: false
+                    ,where:{spuNo: data.spuNo,deptId: data.deptId,createTime:data.createTime}
+                    ,request: {
+                        pageName: 'pageNum' //页码的参数名称，默认：page
+                        ,limitName: 'pageSize' //每页数据量的参数名，默认：limit
+                    }
+                    ,limit: 10
+                    ,cols: [[
+                        ,{field: 'goodsId', title: '控数详情id', hide: true}
+                        ,{field: 'quotationName', title: '所属报价单',width:180}
+                        ,{field: 'spuName', title: '商品SPU',width:200}
+                        ,{field: 'propertyName', title: '销售名称',width:200}
+
+                        ,{field: 'saleUnitName', width:100,title: '销售单位',templet: function (d) {
+                                return  d.unitPriceList[0].unitName;
+                        }}
+                        ,{field: 'inQuanintiy', width:100,title: '订货数量'}
+                        ,{field: 'salePercent', width:120,title: '上数比例(%)',edit: 'text',style: 'outline: 1px solid #e6e6e6;outline-offset: -5px;'}
+                        ,{field: 'saleNum', width:100,title: '上数数量'}
+                        ,{field: 'mainCaseSub', title: '换算比例',templet: function (d) {
+                            var txt = '1:' +  d.mainCaseSub;
+                            if(d.unitPriceList[0].unitId == d.subUnitId){
+                                txt = '1:1'
+                            }
+                            return txt;
+                        }}
+                    ]]
+                    ,parseData: function(res){ //将原始数据解析成 table 组件所规定的数据
+                        res.rows.forEach(e=>{
+                            // if(e.salePercent){
+                            //     e.settingQuanintiy = (parseFloat(e.salePercent) * 0.01 * settingQuanintiy).toFixed(2);
+                            // }
+                        })
+                        return {
+                            "code": res.code, //解析接口状态
+                            "msg": res.msg, //解析提示文本
+                            "count": res.total, //解析数据长度
+                            "data": res.rows //解析数据列表
+                        };
+                    }
+                    ,done:function(res, curr, count){
+                        $(".layui-table-main tr").each(function (index, val) {
+                            $($(".layui-table-fixed-l .layui-table-body tbody tr")[index]).height($(val).height());
+                            $($(".layui-table-fixed-r .layui-table-body tbody tr")[index]).height($(val).height());
+                        })
+                    }
+                });
+
+                $('#btn_'+trIndex).off("click").on('click', function() {
+                    const regular = /^[1-9][0-9]*$/
+                    var isError = false
+                    var totalPercent = 0.0;
+                    debugger
+                    layui.table.cache[tableId].forEach(e=>{
+                        if (!regular.test(e.salePercent)) {
+                            layer.msg('请填写大于0的数字');
+                            isError = true
+                            return false;
+                        }
+                        totalPercent += parseFloat(e.salePercent);
+                    });
+                    if (isError) {
+                        return;
+                    }
+                    if (totalPercent > 100) {
+                        layer.msg('所有商品的上数比率不能超过100%');
+                        $(this).val(oldVal);
+                        return;
+                    }
+                    var editUrl = ctx + "shop/sale/edit";
+                    var reqObj = {settingId: trIndex};
+                    var updateArr = []
+                    layui.table.cache[tableId].forEach(e => {
+                        updateArr.push({goodsId: e.goodsId, salePercent: e.salePercent, settingId: trIndex});
+                    });
+                    reqObj.goodsList = updateArr;
+                    $.ajax({
+                        url: editUrl,
+                        type: 'post',
+                        data: JSON.stringify(reqObj),
+                        contentType: "application/json",
+                        success: function (rsp) {
+                            // layer.msg('[ID: '+ data.goodsId +'] ' + field + ' 字段更改为：'+ value + '  原值:' + oldVal);
+                            if (rsp.code == 0) {
+                                table.reload(tableId)
+                                admin.success('操作成功！');
+                            } else
+                                admin.error(rsp.msg)
+                        }
+                    });
+                });
+
+                //监听单元格编辑
+                table.on('edit('+tableId+')', function(innerObj) {
+                    var editUrl = ctx + "shop/sale/edit";
+                    var value = innerObj.value //得到修改后的值
+                        ,innerData = innerObj.data //得到所在行所有键值
+                        ,field = innerObj.field; //得到字段
+                    if(field != 'salePercent') {
+                        return;
+                    }
+                    var oldVal = $(this).prev().text();
+                    const regular = /^[1-9][0-9]*$/
+                    if (!regular.test(value)) {
+                        layer.msg('请填写大于0的数字');
+                        $(this).val(oldVal);
+                        return;
+                    }
+                    var totalPercent = 0.0;
+                    var updateArr = []
+                    var reqObj = {settingId: data.settingId};
+                    layui.table.cache[tableId].forEach(e=>{
+                        totalPercent += parseFloat(e.salePercent);
+                        e.settingQuanintiy = (parseFloat(e.salePercent) * 0.01 * data.settingQuanintiy).toFixed(2);
+                    });
+                    if (totalPercent > 100) {
+                        layer.msg('所有商品的上数比率不能超过100%');
+                        $(this).val(oldVal);
+                        return;
+                    }
+                    // layui.table.cache[tableId].forEach(e=>{
+                    //     updateArr.push({goodsId : e.goodsId, salePercent: e.salePercent, settingId: data.settingId});
+                    // });
+                    // reqObj.goodsList = updateArr;
+                    // $.ajax({
+                    //     url:editUrl,
+                    //     type:'post',
+                    //     data:JSON.stringify(reqObj),
+                    //     contentType: "application/json",
+                    //     success:function(rsp){
+                    //         // layer.msg('[ID: '+ data.goodsId +'] ' + field + ' 字段更改为：'+ value + '  原值:' + oldVal);
+                    //         if(rsp.code == 0) {
+                    //             table.reload(tableId)
+                    //             admin.success('操作成功！');
+                    //         }
+                    //         else
+                    //             admin.error(rsp.msg)
+                    //     }
+                    //
+                    // });
+
+                });
+
+
+                //var editUrl = updateUrl.replace("{settingId}", data.settingId);
+                //parent.layui.admin.openUrl('上数详情设置', editUrl, '80%', '60%');
+
+
+            } else if (obj.event === 'subtraction') {
+                var trIndex = obj.data.settingId;
+                var tableId = 'tableOut_tableIn_' + trIndex;
+                if($('#'+tableId).length > 0){
+                    var tr = $(obj.tr);
+                    tr.next().remove()
+                }
+            }
+        });
+
+        //监听单元格编辑
+        table.on('edit(dataTable)', function(obj) {
+            var value = obj.value //得到修改后的值
+                ,data = obj.data //得到所在行所有键值
+                ,field = obj.field; //得到字段
+            var oldVal = $(this).prev().text();
+            if(field != 'selfQuanintiy') {
+                return;
+            }
+            if (isNaN(value)) {
+                layer.msg('请填写数字');
+                $(this).val(oldVal);
+                return false;
+            }
+            debugger
+            if(data.quanintiy + data.inQuanintiy + data.readyQuanintiy  + parseFloat(value) < 0){
+                layer.msg('上数总数需要大于0');
+                $(this).val(oldVal);
+                return false;
+            }
+            var reqObj = {settingId: obj.data.settingId, selfQuanintiy:value};
+            // layui.table.cache['dataTable'].forEach(e=>{
+            //     totalPercent += parseFloat(e.salePercent);
+            //     e.settingQuanintiy = (parseFloat(e.salePercent) * 0.01 * settingQuanintiy).toFixed(2);
+            // });
+            // if (totalPercent > 100) {
+            //     layer.msg('所有商品的上数比率不能超过100%');
+            //     return;
+            // }
+            // updateArr.push({goodsId : data.goodsId, salePercent: value, settingId: settingId});
+            // reqObj.goodsList = updateArr;
+            // $.ajax({
+            //     url:editUrl,
+            //     type:'post',
+            //     data:JSON.stringify(reqObj),
+            //     contentType: "application/json",
+            //     success:function(rsp){
+            //         // layer.msg('[ID: '+ data.goodsId +'] ' + field + ' 字段更改为：'+ value + '  原值:' + oldVal);
+            //         if(rsp.code == 0) {
+            //             table.reload('dataTable')
+            //             admin.success('操作成功！');
+            //         }
+            //         else
+            //             admin.error(rsp.msg)
+            //     }
+            //
+            // });
+            //所属区域------------------------------------------------------------------------------------------------------
+            admin.req(ctx + "shop/sale/updateSelfQuanintiy", reqObj, function (result) {
+                table.reload('dataTable')
+                admin.success('操作成功！')
+            },'post')
+        });
+
+
+    });
+</script>
+
+</body>
+</html>

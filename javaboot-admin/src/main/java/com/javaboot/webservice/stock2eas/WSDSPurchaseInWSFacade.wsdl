@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions targetNamespace="http://erp.xiangjiamuye.com:6892/ormrpc/services/WSDSPurchaseInWSFacade" xmlns:apachesoap="http://xml.apache.org/xml-soap" xmlns:impl="http://erp.xiangjiamuye.com:6892/ormrpc/services/WSDSPurchaseInWSFacade" xmlns:intf="http://erp.xiangjiamuye.com:6892/ormrpc/services/WSDSPurchaseInWSFacade" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:tns1="urn:client.dspurchaseinwsfacade" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:wsdlsoap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<!--WSDL created by Apache Axis version: 1.4.1-SNAPSHOT
+Built on Jun 15, 2017 (10:55:06 UTC)-->
+ <wsdl:types>
+  <schema targetNamespace="urn:client.dspurchaseinwsfacade" xmlns="http://www.w3.org/2001/XMLSchema">
+   <import namespace="http://schemas.xmlsoap.org/soap/encoding/"/>
+   <complexType name="WSInvokeException">
+    <sequence/>
+   </complexType>
+  </schema>
+ </wsdl:types>
+
+   <wsdl:message name="crtPurchaseInBillRequest">
+
+      <wsdl:part name="data" type="xsd:string">
+
+      </wsdl:part>
+
+   </wsdl:message>
+
+   <wsdl:message name="crtPurchaseInBillResponse">
+
+      <wsdl:part name="crtPurchaseInBillReturn" type="xsd:string">
+
+      </wsdl:part>
+
+   </wsdl:message>
+
+   <wsdl:message name="WSInvokeException">
+
+      <wsdl:part name="fault" type="tns1:WSInvokeException">
+
+      </wsdl:part>
+
+   </wsdl:message>
+
+   <wsdl:portType name="WSDSPurchaseInWSFacadeSrvProxy">
+
+      <wsdl:operation name="crtPurchaseInBill" parameterOrder="data">
+
+         <wsdl:input message="impl:crtPurchaseInBillRequest" name="crtPurchaseInBillRequest">
+
+       </wsdl:input>
+
+         <wsdl:output message="impl:crtPurchaseInBillResponse" name="crtPurchaseInBillResponse">
+
+       </wsdl:output>
+
+         <wsdl:fault message="impl:WSInvokeException" name="WSInvokeException">
+
+       </wsdl:fault>
+
+      </wsdl:operation>
+
+   </wsdl:portType>
+
+   <wsdl:binding name="WSDSPurchaseInWSFacadeSoapBinding" type="impl:WSDSPurchaseInWSFacadeSrvProxy">
+
+      <wsdlsoap:binding style="rpc" transport="http://schemas.xmlsoap.org/soap/http"/>
+
+      <wsdl:operation name="crtPurchaseInBill">
+
+         <wsdlsoap:operation soapAction=""/>
+
+         <wsdl:input name="crtPurchaseInBillRequest">
+
+            <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://webservice.cgrk.dianshang.webservice.eas.kingdee.com" use="encoded"/>
+
+         </wsdl:input>
+
+         <wsdl:output name="crtPurchaseInBillResponse">
+
+            <wsdlsoap:body encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" namespace="http://erp.xiangjiamuye.com:6892/ormrpc/services/WSDSPurchaseInWSFacade" use="encoded"/>
+
+         </wsdl:output>
+
+         <wsdl:fault name="WSInvokeException">
+
+            <wsdlsoap:fault encodingStyle="http://schemas.xmlsoap.org/soap/encoding/" name="WSInvokeException" namespace="http://erp.xiangjiamuye.com:6892/ormrpc/services/WSDSPurchaseInWSFacade" use="encoded"/>
+
+         </wsdl:fault>
+
+      </wsdl:operation>
+
+   </wsdl:binding>
+
+   <wsdl:service name="WSDSPurchaseInWSFacadeSrvProxyService">
+
+      <wsdl:port binding="impl:WSDSPurchaseInWSFacadeSoapBinding" name="WSDSPurchaseInWSFacade">
+
+         <wsdlsoap:address location="http://erp.xiangjiamuye.com:6892/ormrpc/services/WSDSPurchaseInWSFacade"/>
+
+      </wsdl:port>
+
+   </wsdl:service>
+
+</wsdl:definitions>

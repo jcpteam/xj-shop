@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>销售计划</title>
+    <link rel="stylesheet" href="../../../static/assets/libs/layui/css/layui.css"
+          th:href="@{/assets/libs/layui/css/layui.css}"/>
+    <link rel="stylesheet" href="../../../static/assets/module/admin.css?v=316" th:href="@{/assets/module/admin.css}"/>
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <style>
+
+        .project-list-item .project-list-item-body > h2 {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 12px;
+        }
+
+
+        /** // 项目列表样式结束 */
+
+        /** 应用列表样式 */
+        .application-list-item {
+            background-color: #fff;
+            border: 1px solid #e8e8e8;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all .2s;
+        }
+
+        .application-list-item:hover {
+            box-shadow: 0 2px 10px rgba(0, 0, 0, .15);
+        }
+
+        .application-list-item .application-list-item-header > h2 {
+            color: #333;
+            font-size: 18px;
+            display: inline-block;
+        }
+
+        .application-list-item .application-list-item-body .text-num-item small {
+            font-size: 16px;
+        }
+
+        .application-list-item .application-list-item-tool {
+            font-size: 0;
+            background-color: #FAFAFA;
+            border-top: 1px solid #e8e8e8;
+            padding: 10px 0 5px 0;
+            border-bottom-left-radius: 4px;
+            border-bottom-right-radius: 4px;
+        }
+
+        .application-list-item .application-list-item-tool .application-list-item-tool-item {
+            display: inline-block;
+            width: 25%;
+            font-size: 18px;
+            text-align: center;
+            color: #999;
+            border-right: 1px solid #e8e8e8;
+            box-sizing: border-box;
+            cursor: pointer;
+        }
+
+        .application-list-item .application-list-item-tool .application-list-item-tool-item:last-child {
+            border-right: none;
+        }
+
+        /** // 应用列表样式结束 */
+
+
+        .article-list-item > h2 {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 12px;
+        }
+
+        .article-list-item .article-list-item-desc > * {
+            vertical-align: middle;
+        }
+
+        .article-list-item .article-list-item-tool .article-list-item-tool-item > * {
+            vertical-align: middle;
+        }
+
+
+        /** // 文章列表样式结束 */
+        .data-card-body {
+            height: 230px;
+            overflow-y: auto;
+            overflow-x: hidden
+        }
+        .data-card-body::-webkit-scrollbar {/*滚动条整体样式*/
+            width: 2px;     /*高宽分别对应横竖滚动条的尺寸*/
+            height: 1px;
+
+        }
+
+        .data-card-body::-webkit-scrollbar-thumb {/*滚动条里面小方块*/
+            border-radius: 10px;
+            -webkit-box-shadow: inset 0 0 5px #fff;
+            background: #ddd;
+
+        }
+
+        .data-card-body::-webkit-scrollbar-track {/*滚动条里面轨道*/
+
+            -webkit-box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
+            border-radius: 10px;
+            background: #EDEDED;
+
+        }
+    </style>
+</head>
+<body>
+
+
+<!-- 正文开始 -->
+<div class="layui-fluid">
+    <div class="layui-row">
+        <!-- 右表 -->
+        <div class="layui-card">
+            <div class="layui-card-body" style="min-height: 535px;">
+
+                <!-- 搜索区 -->
+                <form class="layui-form toolbar" th:onsubmit="return false">
+                    <div class="layui-form-item">
+                        <div class="layui-inline">
+                            <label class="layui-form-label label-auto">所属区域：</label>
+                            <div class="layui-input-inline">
+                                <select name="deptId"  id="deptId"   >
+                                    <option  value="" th:checked="true">选择区域</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <label class="layui-form-label label-auto">日期</label>
+                            <div class="layui-input-block">
+                                <input id="optDate" type="text" placeholder="请选择控价日期"  class="layui-input date-icon" autocomplete="off" readonly="readonly"/>
+                                <input type="hidden" id="qryDate" name="qryDate">
+                                <input id="startDate" type="hidden" name="startDate">
+                                <input id="endDate" type="hidden" name="endDate">
+                            </div>
+                        </div>
+                        <div class="layui-inline" style="padding-left: 13px;">
+                            <button class="layui-btn layui-btn-sm icon-btn" lay-submit lay-filter="searchBtn"
+                                    id="searchBtn" >
+                                <i class="layui-icon layui-icon-search"></i>搜索
+                            </button>
+                            <button class="layui-btn layui-btn-sm icon-btn" type="reset">
+                                <i class="layui-icon layui-icon-refresh"></i>重置
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <div class="layui-tab-content">
+
+                    <div class="layui-tab-item layui-show" style="padding-top: 20px; width: 95%">
+                        <div class="layui-row layui-col-space30" id="demoCardList2"></div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- 应用模板 -->
+<script type="text/html" id="demoCardItem2">
+    <div class="layui-col-md4">
+        <div class="application-list-item" lay-event="toGoods">
+            <div class="application-list-item-tool" >
+                <div   style="padding-left: 24px;">
+                     <span  class="application-list-item-tool-item  "
+                           style="width: 350px;overflow: hidden;white-space: nowrap;text-overflow: ellipsis;display: inline-block;text-align: center;color:#000923">
+                  {{d.deptName}}
+                </span>
+                </div>
+            </div>
+            <div class="data-card-body">
+                <table class="layui-table">
+                    <thead>
+                        <tr>
+                            <th width="70"></th>
+                            <th width="150">今日销售</th>
+                            <th width="150">累计</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>销售额</td>
+                            <td>{{d.orderTotalPrice}}</td>
+                            <td>{{d.monthOrderTotalPrice}}</td>
+                        </tr>
+                        <tr>
+                            <td>毛利润</td>
+                            <td>{{d.grossProfit}}</td>
+                            <td>{{d.monthGrossProfit}}</td>
+                        </tr>
+                        <tr>
+                            <td>销售只数</td>
+                            <td>{{d.orderSubTotalQuantiy}}</td>
+                            <td>{{d.monthOrderSubTotalQuantiy}}</td>
+                        </tr>
+                        <tr>
+                            <td>盘存盈亏（KG）</td>
+                            <td>{{d.remainingQuantity}}</td>
+                            <td>{{d.monthRemainingQuantity}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </div>
+
+        </div>
+    </div>
+</script>
+
+
+<!-- js部分 -->
+<script type="text/javascript" src="../../../static/assets/libs/layui/layui.js"
+        th:src="@{/assets/libs/layui/layui.js}"></script>
+
+<script type="text/javascript" src="../../../static/assets/js/common.js?v=316"
+        th:src="@{/assets/js/common.js}"></script>
+
+<script th:inline="javascript">
+    var ctx = [[@{
+        /}]];
+</script>
+<script th:inline="none">
+    layui.use(['layer', 'form', 'dataGrid', 'element','admin','laydate'], function () {
+        var $ = layui.jquery;
+        var form = layui.form;
+        var laydate = layui.laydate;
+        var dataGrid = layui.dataGrid;
+        var prefix = ctx + "shop/detail/stat";
+        var admin = layui.admin;
+
+        //监听搜索
+        form.on('submit(searchBtn)', function (data) {
+           debugger
+            queryList(data.field)
+        });
+
+        function getRecentDay(day) {
+            var today = new Date();
+            var targetday_milliseconds = today.getTime() + 1000 * 60 * 60 * 24 * day;
+            today.setTime(targetday_milliseconds);
+            var tYear = today.getFullYear();
+            var tMonth = today.getMonth();
+            var tDate = today.getDate() - 1;
+            var tHours = today.getHours();
+            var tMinutes = today.getMinutes();
+            var tSeconds = today.getSeconds();
+            tMonth = doHandleMonth(tMonth + 1);
+            tDate = doHandleMonth(tDate);
+            // tHours = doHandleMonth(tHours);
+            // tMinutes = doHandleMonth(tMinutes);
+            // tSeconds = doHandleMonth(tSeconds);
+
+            return tYear + "-" + tMonth + "-" + tDate;
+        }
+
+        function doHandleMonth(month){
+            var m = month;
+            if(month.toString().length == 1){
+                m = "0" + month;
+            }
+            return m;
+        }
+
+        //$("#qryDate").val(getRecentDay(0));
+        var recentDay = getRecentDay(0);
+        laydate.render({
+            elem: '#optDate'
+            , range: '~'
+            , value:recentDay + ' ~ ' + recentDay
+            , done: function (value, date, endDate) {
+                if (value != null && value != '') {
+                    var b = $.trim(value.split('~')[0]);
+                    var e = $.trim(value.split('~')[1]);
+                    $("#startDate").val(b);
+                    $("#endDate").val(e);
+                }
+            }
+        });
+
+        queryList()
+        /** 应用 */
+
+        function queryList(field) {
+            var params={}
+            if(field!=null){
+                params=field;
+            }else {
+                params.qryDate = $("#qryDate").val()
+            }
+            dataGrid.render({
+                url: prefix + "/report2",
+                method: 'POST',
+                elem: '#demoCardList2',
+                templet: '#demoCardItem2',
+                request: {
+                    pageName: 'pageNum'
+                    ,limitName: 'pageSize'
+
+                },
+                where:params,
+                page: {limit: 6, limits: [6, 12, 18, 24, 30]}
+                , parseData: function (res) { //将原始数据解析成 table 组件所规定的数据
+                    // dataGrid的bug，无数据分页还存在
+                    if(res.total == 0) {
+                        $(".ew-datagrid-page").hide()
+                    }
+                    return {
+                        "code": res.code, //解析接口状态
+                        "msg": res.msg, //解析提示文本
+                        "count": res.total, //解析数据长度
+                        "data": res.rows //解析数据列表
+                    };
+
+                },
+            });
+        }
+
+        //所属区域------------------------------------------------------------------------------------------------------
+        admin.req(ctx + "system/dept/getLoginUserDept", { }, function (result) {
+            var select= document.getElementById('deptId');
+            for (var i=0;i<result.data.length;i++) {
+                var data= result.data[i];
+                var option = document.createElement("option");
+                option.setAttribute("value", data.value);
+                option.innerText =data.name;
+                select.appendChild(option)
+            }
+            form.render('select');
+        },'get')
+    });
+
+
+</script>
+</body>
+
+</html>

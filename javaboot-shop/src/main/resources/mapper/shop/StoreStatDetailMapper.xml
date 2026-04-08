@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaboot.shop.mapper.StoreStatDetailMapper">
+
+    <select id="selectSortMebersList" parameterType="com.javaboot.shop.dto.StoreStatDTO" resultType="com.javaboot.shop.domain.StoreMember">
+        SELECT
+            t3.dept_id customerArea, count(t1.user_id) totalAmount
+        FROM
+            sys_user t1,
+            sys_user_role_dept t2,
+            sys_dept t3
+        WHERE
+            t2.role_id = '10005'
+            AND t1.user_id = t2.user_id
+            AND t1.dept_id = t3.dept_id
+        GROUP BY t3.dept_id
+        ORDER BY t3.dept_id
+    </select>
+
+</mapper>

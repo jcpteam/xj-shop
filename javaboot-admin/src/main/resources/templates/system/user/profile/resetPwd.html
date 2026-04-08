@@ -1,0 +1,65 @@
+<!-- 修改密码表单 -->
+<form class="layui-form model-form" th:onsubmit="return false">
+	<input name="userId"  type="hidden"  th:value="${user.userId}" />
+	<div class="layui-form-item">
+		<label class="layui-form-label layui-form-required">登录名称:</label>
+		<div class="layui-input-block">
+			<input type="text" name="loginName" th:value="${user.loginName}" class="layui-input layui-disabled" disabled/>
+		</div>
+	</div>
+	<div class="layui-form-item">
+		<label class="layui-form-label layui-form-required">原始密码:</label>
+		<div class="layui-input-block">
+			<input type="password" name="oldPassword" placeholder="请输入原始密码" class="layui-input" lay-verType="tips" lay-verify="required" />
+		</div>
+	</div>
+	<div class="layui-form-item">
+		<label class="layui-form-label layui-form-required">新密码:</label>
+		<div class="layui-input-block">
+			<input type="password" name="newPassword" placeholder="请输入新密码" class="layui-input" lay-verType="tips" lay-verify="required|psw" />
+		</div>
+	</div>
+	<div class="layui-form-item">
+		<label class="layui-form-label layui-form-required">确认密码:</label>
+		<div class="layui-input-block">
+			<input type="password" name="confirm" placeholder="请再次输入新密码" class="layui-input" lay-verType="tips" lay-verify="required|equalTo" lay-equalTo="input[name=newPassword]"/>
+		</div>
+	</div>
+	<div class="layui-form-item">
+		<div class="layui-input-block text-right">
+			<button class="layui-btn layui-btn-primary" type="button" ew-event="closePageDialog">取消</button>
+			<button class="layui-btn" lay-filter="submit-psw" lay-submit>保存</button>
+		</div>
+	</div>
+</form>
+
+<script th:inline="javascript">
+	var ctx = [[@{/}]];
+
+</script>
+
+<!-- js部分 -->
+<script th:inline="none">
+	layui.use(['layer', 'form', 'admin', 'formX'], function () {
+		var $ = layui.jquery;
+		var layer = layui.layer;
+		var form = layui.form;
+		var admin = layui.admin;
+
+		var prefix = ctx + "system/user";
+
+		// 监听提交
+		form.on('submit(submit-psw)', function (data) {
+			admin.req(prefix + "/profile/resetPwd", data.field, function(res){
+				if(res.code == 0){
+					admin.success('密码修改成功!');
+				}else{
+					admin.error('密码修改失败!');
+				}
+			},'post')
+		});
+
+
+
+	});
+</script>

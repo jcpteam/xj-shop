@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('新增分拣绩效月份')" />
+</head>
+<body class="bg-white">
+<!-- 加载动画-->
+<!--<div class="page-loading">-->
+    <!--<div class="ball-loader">-->
+        <!--<span></span><span></span><span></span><span></span>-->
+    <!--</div>-->
+<!--</div>-->
+<!-- 正文开始 -->
+<form class="layui-form bg-white" id="inputForm" th:onsubmit="return false" th:action="@{/shop/performanceMonth/calculatePerformanceMonth}" th:object="${storeSortingPerformanceMonth}">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <div class="layui-row">
+                <input name="id" type="hidden">
+                <input name="deptId" type="hidden" id="treeId" th:value="${param.deptId}"/>
+                <div class="layui-form-item">
+                    <label class="layui-form-label layui-form-required">核算月份:</label>
+                    <div class="layui-input-inline">
+                        <input type="text" class="layui-input" id="sortingMonth" name="sortingMonth" placeholder="请选择月份" autocomplete="off">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label layui-form-required">所属区域:</label>
+                    <div class="layui-input-block">
+                        <input id="treeName" name="deptName" type="text" placeholder="请选择归属区域" class="layui-input icon-search" lay-verType="tips" lay-verify="required" autocomplete="off" required/>
+                    </div>
+                </div>
+                <div class="layui-form-item" style="margin-left: 80px; margin-top: 40px; color:red">
+                    注意：如果当前区域当前月份已经核算，则本次核算会覆盖原有核算
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-hide">
+        <button id="submitBtn" class="layui-btn" lay-filter="submitBtn" lay-submit>确认核算</button>
+        <button id="closeBtn" class="layui-btn layui-btn-primary" ew-event="closeDialog">取消核算</button>
+    </div>
+</form>
+
+<th:block th:include="include :: footer" />
+<script th:inline="javascript">
+    var ctx = [[@{/}]];
+    var prefix = ctx + "shop/performanceMonth";
+</script>
+<script th:inline="none">
+    layui.use(['index', 'form', 'formX', 'table', 'laydate', 'upload', 'ext'], function(){
+        var $ = layui.$;
+        var form = layui.form;
+        var formX = layui.formX;
+        var layer = layui.layer;
+        var table = layui.table;
+        var admin = layui.admin;
+        var upload = layui.upload;
+        var laydate = layui.laydate;
+
+        //年月选择器
+        laydate.render({
+            elem: '#sortingMonth'
+            ,type: 'month'
+        });
+
+        /*用户管理-新增-选择部门树*/
+        $("#treeName").click(function(){
+            var treeId = $("#treeId").val();
+            var deptId = $.common.isEmpty(treeId) ? "04" : $("#treeId").val();
+            var url = ctx + "system/dept/selectDeptTree/" + deptId;
+            var options = {
+                title: '选择部门',
+                width: "380",
+                url: url,
+                callBack: doSubmit
+            };
+            $.modal.openOptions(options);
+        })
+
+        function doSubmit(index, layero){
+            var tree = layero.find("iframe")[0].contentWindow.layui.$._tree;
+            if ($.tree.notAllowParents(tree)) {
+                var body = layer.getChildFrame('body', index);
+                $("#treeId").val(body.find('#treeId').val());
+                $("#treeName").val(body.find('#treeName').val());
+                console.log($("#treeId").val());
+                console.log($("#treeName").val());
+                layer.close(index);
+            }
+        }
+    })
+</script>
+</body>
+</html>

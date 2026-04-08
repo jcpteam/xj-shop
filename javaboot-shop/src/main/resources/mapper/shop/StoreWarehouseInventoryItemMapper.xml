@@ -1,0 +1,478 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaboot.shop.mapper.StoreWarehouseInventoryItemMapper">
+
+    <resultMap type="StoreWarehouseInventoryItem" id="StoreWarehouseInventoryItemResult">
+        <result property="itemId"    column="item_id"    />
+        <result property="inventoryId"    column="inventory_id"    />
+        <result property="spuNo"    column="spu_no"    />
+        <result property="changeType"    column="change_type"    />
+        <result property="unit"    column="unit"    />
+        <result property="stockLonelyQuantity"    column="stock_lonely_quantity"    />
+        <result property="stockQuantity"    column="stock_quantity"    />
+        <result property="inventoryQuantity"    column="inventory_quantity"    />
+        <result property="inventoryLonelyQuantity"    column="inventory_lonely_quantity"    />
+        <result property="initialInventoryCost"    column="initial_inventory_cost"    />
+        <result property="storageAmount"    column="storage_amount"    />
+        <result property="inventoryStatus"    column="inventory_status"    />
+        <result property="inventoryResult"    column="inventory_result"    />
+        <result property="salesQuantity"    column="sales_quantity"    />
+        <result property="salesLonelyQuantity"    column="sales_lonely_quantity"    />
+        <result property="salesAmount"    column="sales_amount"    />
+        <result property="remainingQuantity"    column="remaining_quantity"    />
+        <result property="status"    column="status"    />
+        <result property="price"    column="price"    />
+        <result property="comment"    column="comment"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="lastModifyTime"    column="last_modify_time"    />
+    </resultMap>
+
+    <sql id="selectStoreWarehouseInventoryItemVo">
+        select item_id,inventory_lonely_quantity,sales_amount, inventory_id, spu_no, change_type, unit, stock_lonely_quantity,
+        stock_quantity,inventory_quantity, initial_inventory_cost, storage_amount, inventory_status, inventory_result,comment,
+        sales_quantity, sales_lonely_quantity,remaining_quantity, status, price, create_time, last_modify_time from store_warehouse_inventory_item
+    </sql>
+
+    <select id="selectStoreWarehouseInventoryItemList" parameterType="StoreWarehouseInventoryItem" resultMap="StoreWarehouseInventoryItemResult">
+        <include refid="selectStoreWarehouseInventoryItemVo"/>
+        <where>
+            <if test="inventoryId != null "> and inventory_id = #{inventoryId}</if>
+            <if test="spuNo != null  and spuNo != ''"> and spu_no = #{spuNo}</if>
+            <if test="changeType != null  and changeType != ''"> and change_type = #{changeType}</if>
+            <if test="unit != null and unit!=''"> and unit = #{unit}</if>
+            <if test="stockLonelyQuantity != null "> and stock_lonely_quantity = #{stockLonelyQuantity}</if>
+            <if test="stockQuantity != null "> and stock_quantity = #{stockQuantity}</if>
+            <if test="inventoryQuantity != null "> and inventory_quantity = #{inventoryQuantity}</if>
+            <if test="inventoryLonelyQuantity != null "> and inventory_lonely_quantity = #{inventoryLonelyQuantity}</if>
+            <if test="initialInventoryCost != null "> and initial_inventory_cost = #{initialInventoryCost}</if>
+            <if test="storageAmount != null "> and storage_amount = #{storageAmount}</if>
+            <if test="inventoryStatus != null  and inventoryStatus != ''"> and inventory_status = #{inventoryStatus}</if>
+            <if test="inventoryResult != null "> and inventory_result = #{inventoryResult}</if>
+            <if test="salesQuantity != null "> and sales_quantity = #{salesQuantity}</if>
+            <if test="salesAmount != null "> and sales_amount = #{salesAmount}</if>
+            <if test="remainingQuantity != null "> and remaining_quantity = #{remainingQuantity}</if>
+            <if test="status != null  and status != ''"> and status = #{status}</if>
+            <if test="price != null  and price != ''"> and price = #{price}</if>
+            <if test="lastModifyTime != null "> and last_modify_time = #{lastModifyTime}</if>
+        </where>
+    </select>
+
+    <select id="selectStoreWarehouseInventoryItemById" parameterType="Long" resultMap="StoreWarehouseInventoryItemResult">
+        <include refid="selectStoreWarehouseInventoryItemVo"/>
+        where item_id = #{itemId}
+    </select>
+
+    <insert id="insertStoreWarehouseInventoryItem" parameterType="StoreWarehouseInventoryItem" useGeneratedKeys="true" keyProperty="itemId">
+        insert into store_warehouse_inventory_item
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="inventoryId != null ">inventory_id,</if>
+            <if test="spuNo != null  and spuNo != ''">spu_no,</if>
+            <if test="changeType != null  and changeType != ''">change_type,</if>
+            <if test="unit != null and unit!=''">unit,</if>
+            <if test="stockLonelyQuantity != null ">stock_lonely_quantity,</if>
+            <if test="stockQuantity != null ">stock_quantity,</if>
+            <if test="inventoryLonelyQuantity != null ">inventory_lonely_quantity,</if>
+            <if test="inventoryQuantity != null ">inventory_quantity,</if>
+            <if test="initialInventoryCost != null ">initial_inventory_cost,</if>
+            <if test="storageAmount != null ">storage_amount,</if>
+            <if test="inventoryStatus != null  and inventoryStatus != ''">inventory_status,</if>
+            <if test="inventoryResult != null ">inventory_result,</if>
+            <if test="salesQuantity != null ">sales_quantity,</if>
+            <if test="salesLonelyQuantity != null ">sales_lonely_quantity,</if>
+            <if test="salesAmount != null ">sales_amount,</if>
+            <if test="remainingQuantity != null ">remaining_quantity,</if>
+            <if test="status != null  and status != ''">status,</if>
+            <if test="price != null  and price != ''">price,</if>
+            <if test="comment != null  and comment != ''">comment,</if>
+            <if test="createTime != null ">create_time,</if>
+            <if test="lastModifyTime != null ">last_modify_time,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="inventoryId != null ">#{inventoryId},</if>
+            <if test="spuNo != null  and spuNo != ''">#{spuNo},</if>
+            <if test="changeType != null  and changeType != ''">#{changeType},</if>
+            <if test="unit != null and unit!=''">#{unit},</if>
+            <if test="stockLonelyQuantity != null ">#{stockLonelyQuantity},</if>
+            <if test="stockQuantity != null ">#{stockQuantity},</if>
+            <if test="inventoryLonelyQuantity != null ">#{inventoryLonelyQuantity},</if>
+            <if test="inventoryQuantity != null ">#{inventoryQuantity},</if>
+            <if test="initialInventoryCost != null ">#{initialInventoryCost},</if>
+            <if test="storageAmount != null ">#{storageAmount},</if>
+            <if test="inventoryStatus != null  and inventoryStatus != ''">#{inventoryStatus},</if>
+            <if test="inventoryResult != null ">#{inventoryResult},</if>
+            <if test="salesQuantity != null ">#{salesQuantity},</if>
+            <if test="salesLonelyQuantity != null ">#{salesLonelyQuantity},</if>
+            <if test="salesAmount != null ">#{salesAmount},</if>
+            <if test="remainingQuantity != null ">#{remainingQuantity},</if>
+            <if test="status != null  and status != ''">#{status},</if>
+            <if test="price != null  and price != ''">#{price},</if>
+            <if test="comment != null  and comment != ''">#{comment},</if>
+            <if test="createTime != null ">#{createTime},</if>
+            <if test="lastModifyTime != null ">#{lastModifyTime},</if>
+        </trim>
+    </insert>
+
+    <update id="updateStoreWarehouseInventoryItem" parameterType="StoreWarehouseInventoryItem">
+        update store_warehouse_inventory_item
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="inventoryId != null ">inventory_id = #{inventoryId},</if>
+            <if test="spuNo != null  and spuNo != ''">spu_no = #{spuNo},</if>
+            <if test="changeType != null  and changeType != ''">change_type = #{changeType},</if>
+            <if test="unit != null and unit!=''">unit = #{unit},</if>
+            <if test="stockLonelyQuantity != null ">stock_lonely_quantity = #{stockLonelyQuantity},</if>
+            <if test="stockQuantity != null ">stock_quantity = #{stockQuantity},</if>
+            <if test="inventoryQuantity != null ">inventory_quantity = #{inventoryQuantity},</if>
+            <if test="inventoryLonelyQuantity != null ">inventory_lonely_quantity = #{inventoryLonelyQuantity},</if>
+            <if test="initialInventoryCost != null ">initial_inventory_cost = #{initialInventoryCost},</if>
+            <if test="storageAmount != null ">storage_amount = #{storageAmount},</if>
+            <if test="inventoryStatus != null  and inventoryStatus != ''">inventory_status = #{inventoryStatus},</if>
+            <if test="inventoryResult != null ">inventory_result = #{inventoryResult},</if>
+            <if test="salesQuantity != null ">sales_quantity = #{salesQuantity},</if>
+            <if test="salesLonelyQuantity != null ">sales_lonely_quantity = #{salesLonelyQuantity},</if>
+            <if test="salesAmount != null ">sales_amount = #{salesAmount},</if>
+            <if test="remainingQuantity != null ">remaining_quantity = #{remainingQuantity},</if>
+            <if test="status != null  and status != ''">status = #{status},</if>
+            <if test="price != null  and price != ''">price = #{price},</if>
+            <if test="comment != null  and comment != ''">comment = #{comment},</if>
+            <if test="createTime != null ">create_time = #{createTime},</if>
+            <if test="lastModifyTime != null ">last_modify_time = #{lastModifyTime},</if>
+        </trim>
+        where item_id = #{itemId}
+    </update>
+
+    <update id="deleteStoreWarehouseInventoryItemById" parameterType="Long">
+        update store_warehouse_inventory_item set status=0,last_modify_time = now() where item_id = #{itemId}
+    </update>
+
+    <update id="deleteStoreWarehouseInventoryItemByIds" parameterType="String">
+        update store_warehouse_inventory_item set status=0,last_modify_time = now() where item_id in
+        <foreach item="itemId" collection="array" open="(" separator="," close=")">
+            #{itemId}
+        </foreach>
+    </update>
+
+    <update id="deleteStoreWarehouseInventoryItemByInventoryId" parameterType="Long">
+        update store_warehouse_inventory_item set status=0,last_modify_time = now() where inventory_id = #{inventoryId}
+    </update>
+
+    <select id="selectInventorySpus" parameterType="String" resultType="com.javaboot.shop.domain.StoreWarehouseInventoryItem">
+<!--        SELECT-->
+<!--            t3.spu_no spuNo, t1.unit_id unit, t4.name spuName, t5.name unitname-->
+<!--        FROM-->
+<!--            store_goods_quotation_unit_price t1,-->
+<!--            store_goods_quotation t2,-->
+<!--            store_goods_quotation_goods t3 ,-->
+<!--            store_goods_spu t4 ,-->
+<!--            store_goods_sales_unit t5-->
+<!--        WHERE-->
+<!--            t2.dept_id = #{deptId} AND t2.status = '1'  AND t3.status = '1'-->
+<!--            AND t1.goods_id = t3.goods_id AND t2.quotation_id = t3.quotation_id-->
+<!--            AND t3.spu_no = t4.spu_no AND t1.unit_id = t5.unit_id-->
+<!--            <if test="spuNo != null and spuNo != '' ">-->
+<!--                AND t3.spu_no = #{spuNo}-->
+<!--            </if>-->
+<!--        GROUP BY t3.spu_no, t1.unit_id-->
+        SELECT
+            t3.spu_no spuNo,
+            t4.NAME spuName
+        FROM
+            store_goods_quotation t2,
+            store_goods_quotation_goods t3,
+            store_goods_spu t4
+        WHERE
+            t2.dept_id = #{deptId}
+            AND t2.STATUS = '1' AND t3.STATUS IN('1', '2')  AND t2.quotation_id = t3.quotation_id
+            AND t3.spu_no = t4.spu_no
+            <if test="spuNo != null and spuNo != '' ">
+                AND t3.spu_no = #{spuNo}
+            </if>
+        GROUP BY
+            t3.spu_no
+    </select>
+
+    <select id="selectSpuOrderInventory" parameterType="com.javaboot.shop.dto.StoreWarehouseInventoryDTO" resultType="com.javaboot.shop.domain.StoreWarehouseInventoryItem">
+        SELECT
+            t2.spu_no spuno,
+            t3.sorting_quantity_unit unit,
+            sum( t3.sorting_quantity ) salesLonelyQuantity,
+            sum( t3.sorting_weight ) salesQuantity,
+            sum( t2.sorting_price) price,
+            avg( t2.sorting_price ) salesAmount
+        FROM
+            store_goods_order t1,
+            store_goods_order_item t2,
+            store_sorting_detail t3
+        WHERE
+            t1.order_id = t2.order_id
+            AND t3.status = '1'
+            <!-- 订单没有关联仓库id，默认用区域id，目前一个区域只有一个仓库 -->
+<!--            <if test="warehouseId != null and warehouseId != '' ">-->
+<!--                AND t1.warehouse_id = #{warehouseId}-->
+<!--            </if>-->
+            <if test="deptId != null  and deptId != '' ">
+                AND t1.dept_id = #{deptId}
+            </if>
+            <if test="spuNo != null and spuNo != '' ">
+                AND t2.spu_no = #{spuNo}
+            </if>
+            AND t1.STATUS IN ( '3', '4' )
+            AND t2.item_id = t3.order_item_id
+            <if test="startTime != null and startTime != '' ">
+                AND t1.create_time >= #{startTime}
+            </if>
+            <if test="endTime != null and endTime != '' ">
+                AND t1.create_time &lt; #{endTime}
+            </if>
+        GROUP BY
+            t2.spu_no,
+            t3.sorting_quantity_unit
+    </select>
+
+    <select id="selectSpuUnitConversion" parameterType="StoreWarehouseStockItem" resultType="com.javaboot.shop.vo.StoreGoodsSpuVO">
+        SELECT
+            t.spu_no spuNo, t.main_case_sub mainCaseSub, t.sub_case_main subCaseMain, t1.main_unit_id mainUnitId, t1.sub_unit_id subUnitId
+        FROM
+            store_goods_spu_unit_conversion t,
+            store_goods_spu_unit t1
+        WHERE
+            dept_id = '0' AND t.spu_no = t1.spu_no
+            <if test="spuNo != null and spuNo != '' ">
+                AND t.spu_no = #{spuNo}
+            </if>
+            AND NOT EXISTS ( SELECT spu_no FROM store_goods_spu_unit_conversion t2 WHERE t2.spu_no = t.spu_no AND dept_id = #{deptId} )
+        UNION ALL
+        SELECT
+            t.spu_no spuNo, t.main_case_sub mainCaseSub, t.sub_case_main subCaseMain, t1.main_unit_id mainUnitId, t1.sub_unit_id subUnitId
+        FROM
+            store_goods_spu_unit_conversion t,
+            store_goods_spu_unit t1
+        WHERE
+            dept_id = #{deptId} AND t.spu_no = t1.spu_no
+            <if test="spuNo != null and spuNo != '' ">
+                AND t.spu_no = #{spuNo}
+            </if>
+    </select>
+
+
+    <select id="selectWarehouseStockInventory" parameterType="StoreWarehouseStockItem" resultType="com.javaboot.shop.domain.StoreWarehouseInventoryItem">
+       SELECT
+          t2.spu_no spuno,
+          sum(t2.quantity) stockQuantity,
+          sum(t2.stocks_number) stockLonelyQuantity ,
+          sum(IFNULL(IFNULL(no_tax_price, total_price), 0.0)) price,
+          avg(amount) storageAmount
+       FROM
+          store_warehouse_stock t1,  store_warehouse_stock_item t2
+       WHERE t1.dept_id = #{deptId} AND t1.stock_id = t2.stock_id AND t2.status = '1' AND t1.status = '1'
+            <if test="startTime != null and startTime != '' ">
+                AND t1.create_time >= #{startTime}
+            </if>
+            <if test="endTime != null and endTime != '' ">
+                AND t1.create_time &lt; #{endTime}
+            </if>
+            <if test="warehouseId != null and warehouseId != '' ">
+                AND t1.warehouse_id = #{warehouseId}
+            </if>
+            <if test="spuNo != null and spuNo != '' ">
+                AND t2.spu_no = #{spuNo}
+            </if>
+            <if test="category != null and category != '' ">
+                AND t1.category != '6'
+            </if>
+       GROUP BY spu_no
+    </select>
+
+
+    <select id="selectWarehouseStockAdjust" parameterType="StoreWarehouseStockItem" resultType="com.javaboot.shop.domain.StoreWarehouseInventoryItem">
+        SELECT
+        t2.spu_no spuno,
+        sum(t2.quantity) stockQuantity,
+        sum(t2.stocks_number) stockLonelyQuantity ,
+        sum(IFNULL(IFNULL(no_tax_price, total_price), 0.0)) price,
+        avg(amount) storageAmount
+        FROM
+        store_warehouse_stock t1,  store_warehouse_stock_item t2
+        WHERE t1.dept_id = #{deptId} AND t1.stock_id = t2.stock_id AND t2.status = '1' AND t1.status = '1'
+        <if test="startTime != null and startTime != '' ">
+            AND t1.create_time >= #{startTime}
+        </if>
+        <if test="endTime != null and endTime != '' ">
+            AND t1.create_time &lt; #{endTime}
+        </if>
+        <if test="warehouseId != null and warehouseId != '' ">
+            AND t1.warehouse_id = #{warehouseId}
+        </if>
+        <if test="spuNo != null and spuNo != '' ">
+            AND t2.spu_no = #{spuNo}
+        </if>
+            AND t1.category = '6'
+        GROUP BY spu_no
+    </select>
+
+    <select id="selectWarehouseInventory" parameterType="StoreWarehouseStockItem" resultType="com.javaboot.shop.domain.StoreWarehouseInventoryItem">
+        SELECT
+        t2.spu_no spuno,
+        sum( t2.inventory_quantity ) inventoryquantity,
+        sum( t2.inventory_lonely_quantity ) inventorylonelyquantity,
+        sum( t2.inventory_result) inventoryresult
+        FROM
+        store_warehouse_inventory t1,
+        store_warehouse_inventory_item t2
+        WHERE t1.dept_id = #{deptId}  AND t1.inventory_id = t2.inventory_id AND t2.status = '1' AND t1.status = '1'
+        <if test="startTime != null and startTime != '' ">
+            AND t1.intentory_date >= #{startTime}
+        </if>
+        <if test="endTime != null and endTime != '' ">
+            AND t1.intentory_date &lt;= #{endTime}
+        </if>
+        <if test="warehouseId != null and warehouseId != '' ">
+            AND t1.warehouse_id = #{warehouseId}
+        </if>
+        <if test="spuNo != null and spuNo != '' ">
+            AND t2.spu_no = #{spuNo}
+        </if>
+        GROUP BY spu_no
+    </select>
+
+    <select id="selectAllInventorySpus" parameterType="com.javaboot.shop.dto.StoreWarehouseInventoryDTO" resultType="com.javaboot.shop.domain.StoreWarehouseInventoryItem">
+--         SELECT * FROM (
+--             SELECT
+--                 t1.spu_no spuNo, t2.name spuName, t1.main_unit_id unit,  t3.name unitname, '1' unittype
+--             FROM
+--                 store_goods_spu_unit t1,
+--                 store_goods_spu t2 ,
+--                 store_goods_sales_unit t3
+--             WHERE
+--                 t1.main_unit_id = t3.unit_id AND t1.spu_no = t2.spu_no
+--             UNION ALL
+--             SELECT
+--                 t1.spu_no spuNo, t2.name spuName, t1.sub_unit_id unit,  t3.name unitname, '2' unittype
+--             FROM
+--                 store_goods_spu_unit t1,
+--                 store_goods_spu t2 ,
+--                 store_goods_sales_unit t3
+--             WHERE
+--                 t1.sub_unit_id = t3.unit_id AND t1.spu_no = t2.spu_no
+--                 AND t1.main_unit_id != t1.sub_unit_id
+--         ) tb
+--         ORDER BY spuNo,unittype
+
+        SELECT
+            t1.spu_no spuNo,
+            t1.NAME spuName,
+            t1.taxrate,
+            t2.main_unit_id unit,
+            t3.NAME unitname,
+            t2.sub_unit_id subunit,
+            t4.NAME subunitname
+        FROM
+            store_goods_spu t1,
+            store_goods_spu_unit t2,
+            store_goods_sales_unit t3,
+            store_goods_sales_unit t4
+        WHERE
+            t2.main_unit_id = t3.unit_id
+            AND t2.sub_unit_id = t4.unit_id
+            AND t1.spu_no = t2.spu_no
+        ORDER BY t1.spu_no
+    </select>
+
+
+    <select id="selectSpuOrderLoss" parameterType="com.javaboot.shop.dto.StoreWarehouseInventoryDTO" resultType="com.javaboot.shop.domain.StoreWarehouseInventoryItem">
+        SELECT
+            t2.spu_no spuno,
+            IFNULL(sum(t2.src_sorting_weight - t2.old_sorting_weight), 0.0) salesQuantity
+        FROM
+            store_goods_order t1,
+            store_goods_order_item t2
+        WHERE
+            t1.order_id = t2.order_id
+        <if test="deptId != null  and deptId != '' ">
+            AND t1.dept_id = #{deptId}
+        </if>
+        <if test="spuNo != null and spuNo != '' ">
+            AND t2.spu_no = #{spuNo}
+        </if>
+        AND t1.STATUS IN ( '3', '4' )
+        <if test="startTime != null and startTime != '' ">
+            AND t1.create_time >= #{startTime}
+        </if>
+        <if test="endTime != null and endTime != '' ">
+            AND t1.create_time &lt; #{endTime}
+        </if>
+        GROUP BY
+            t2.spu_no
+    </select>
+
+    <select id="selectWarehouseStockLoss" parameterType="StoreWarehouseStockItem" resultType="com.javaboot.shop.domain.StoreWarehouseInventoryItem">
+        SELECT
+            t2.spu_no spuno,
+            IFNULL(sum(t2.quantity - t2.real_quantity), 0.0) stockQuantity
+        FROM
+            store_warehouse_stock t1,  store_warehouse_stock_item t2
+        WHERE t1.dept_id = #{deptId} AND t1.stock_id = t2.stock_id AND t2.status = '1' AND t1.status = '1'
+        <if test="startTime != null and startTime != '' ">
+            AND t1.create_time >= #{startTime}
+        </if>
+        <if test="endTime != null and endTime != '' ">
+            AND t1.create_time &lt; #{endTime}
+        </if>
+        <if test="warehouseId != null and warehouseId != '' ">
+            AND t1.warehouse_id = #{warehouseId}
+        </if>
+        <if test="spuNo != null and spuNo != '' ">
+            AND t2.spu_no = #{spuNo}
+        </if>
+        <if test="category != null and category != '' ">
+            AND t1.category != '6'
+        </if>
+        GROUP BY spu_no
+    </select>
+
+
+    <select id="selectExportInventoryItemList" parameterType="com.javaboot.shop.dto.StoreWarehouseInventoryDTO" resultType="com.javaboot.shop.dto.StoreWarehouseInventoryExportDTO">
+        SELECT
+            t1.inventory_no inventoryno,
+            t1.warehouse_id warehouseid,
+            t4.store_name warehouseName,
+            t1.dept_id deptid,
+            t5.dept_name deptname,
+            t2.spu_no spuno,
+            t3.NAME spuname,
+            t2.stock_quantity,
+            t2.stock_lonely_quantity stocklonelyquantity,
+            t2.inventory_quantity inventoryquantity,
+            t2.inventory_lonely_quantity inventorylonelyquantity,
+            t2.inventory_result inventoryresult,
+            t1.quantity totalQuantity,
+            t1.create_time createtime,
+            t1.intentory_date intentoryDate,
+            t2.comment
+        FROM
+            store_warehouse_inventory t1,
+            store_warehouse_inventory_item t2,
+            store_goods_spu t3,
+            store_house t4,
+            sys_dept t5
+        WHERE
+            t1.STATUS = '1'
+            AND t1.inventory_id = t2.inventory_id
+            AND t2.STATUS = '1'
+            AND t5.dept_id = t1.dept_id
+            AND t2.spu_no = t3.spu_no
+            AND t4.store_id = t1.warehouse_id
+            <if test="deptId!=null and deptId!=''">
+                AND  t1.dept_id = #{deptId}
+            </if>
+            <if test="startTime != null and startTime!='' and endTime != null and endTime!='' ">
+                and t1.intentory_date  BETWEEN
+                DATE_FORMAT(#{startTime},'%Y-%m-%d %H:%i:%s')
+                AND DATE_FORMAT(#{endTime},'%Y-%m-%d %H:%i:%s')
+            </if>
+            order by t1.intentory_date desc
+            LIMIT 10000
+    </select>
+
+</mapper>

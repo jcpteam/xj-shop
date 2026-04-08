@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('商品入库列表')" />
+</head>
+<body>
+
+
+
+<!-- 正文开始 -->
+<div class="layui-fluid">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-card">
+            <!-- 搜索区 -->
+            <form class="layui-form toolbar" th:onsubmit="return false" lay-filter="inputForm" id="inputForm">
+                <div class="layui-form-item">
+                    <div class="layui-inline" >
+                        <label class="layui-form-label label-auto">创建时间：</label>
+                        <div class="layui-input-inline" >
+                            <input  id="updateTime" type="text" placeholder="请选择开始和结束日期" class="layui-input date-icon" autocomplete="off"/>
+                            <input id="beginDate" type="hidden" name="beginDate">
+                            <input id="endDate" type="hidden" name="endDate">
+                        </div>
+                    </div>
+                    <div class="layui-inline" >
+                        <label class="layui-form-label label-auto">所属区域：</label>
+                        <div class="layui-input-inline">
+                            <select name="deptId"   id="deptId"   >
+                                <option  value="" th:checked="true">选择区域</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-inline" >
+                        <label class="layui-form-label label-auto">同步状态：</label>
+                        <div class="layui-input-inline">
+                            <select name="synStatus"   id="synStatus"   >
+                                <option  value="" th:checked="true">全部</option>
+                                <option  value="0">未同步</option>
+                                <option  value="1">已同步</option>
+                                <option  value="2">同步失败</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="layui-inline">
+                        <label class="layui-form-label label-auto">采购日期:</label>
+                        <div class="layui-input-inline">
+                            <input id="purchaseDate" type="text" placeholder="请选择入库日期" class="layui-input date-icon"
+                                   autocomplete="off"  />
+                            <input id="purchaseBeginDate" type="hidden" name="purchaseBeginDate">
+                            <input id="purchaseEndDate" type="hidden" name="purchaseEndDate">
+                        </div>
+                    </div>
+
+                    <div class="layui-inline">
+                        <label class="layui-form-label label-auto">入库日期:</label>
+                        <div class="layui-input-inline">
+                            <input id="createDate" type="text" placeholder="请选择入库日期" class="layui-input date-icon"
+                                   autocomplete="off"  />
+                            <input id="stockBeginDate" type="hidden" name="stockBeginDate">
+                            <input id="stockEndDate" type="hidden" name="stockEndDate">
+                        </div>
+                    </div>
+
+                    <div class="layui-inline">
+                        <label class="layui-form-label label-auto">供应商:</label>
+                        <div class="layui-input-inline">
+                            <select th:with="type=${@dict.getType('store_stock_supplier')}" name="supplierId" id="supplierId" lay-filter="supplierId" lay-search lay-verType="tips"
+                            >
+                                <option   value="">请选择供应商</option>
+                                <option th:each="dict : ${type}" th:text="${dict.dictLabel}" th:value="${dict.dictValue}"></option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="layui-inline" style="padding-left: 13px;">
+                        <button class="layui-btn layui-btn-sm icon-btn" lay-submit lay-filter="searchBtn" id="searchBtn">
+                            <i class="layui-icon layui-icon-search"></i>搜索
+                        </button>
+                        <button class="layui-btn layui-btn-sm icon-btn" type="reset" id="restBtn">
+                            <i class="layui-icon layui-icon-refresh"></i>重置
+                        </button>
+                        <a class="layui-btn layui-btn-primary form-search-expand layui-hide" data-expand="true">
+                            展开 <i class="layui-icon layui-icon-down"></i>
+                        </a>
+                    </div>
+                </div>
+            </form>
+
+            <table class="layui-table" id="dataTable" lay-filter="dataTable"></table>
+        </div>
+
+    </div>
+</div>
+
+<!-- 头工具栏 -->
+<script type="text/html" id="toolbarHead">
+    <div class="layui-btn-container">
+<!--        <button class="layui-btn layui-btn-normal layui-btn-sm" lay-event="add" shiro:hasPermission="shop:stock:add"><i class="layui-icon layui-icon-addition"></i>新增</button>-->
+<!--        <button class="layui-btn layui-btn-warm layui-btn-sm" lay-event="edit" shiro:hasPermission="shop:stock:edit"><i class="layui-icon layui-icon-edit"></i>修改</button>-->
+<!--        <button class="layui-btn layui-btn-danger layui-btn-sm" lay-event="batchdel" shiro:hasPermission="shop:stock:remove"><i class="layui-icon layui-icon-delete"></i>删除</button>-->
+        <button class="layui-btn layui-btn-sm" lay-event="batchAduit" shiro:hasPermission="shop:stock:edit"><i class="layui-icon layui-icon-auz"></i>修改同步状态</button>
+<!--        <button class="layui-btn layui-btn-sm" lay-event="batchFinanceAduit" shiro:hasPermission="shop:stock:edit"><i class="layui-icon layui-icon-auz"></i>财务审核</button>-->
+<!--        <button class="layui-btn layui-btn-normal layui-btn-sm" lay-event="import" shiro:hasPermission="shop:stock:import"><i class="layui-icon layui-icon-upload"></i>导入</button>-->
+<!--        <button class="layui-btn layui-btn-normal layui-btn-sm" lay-event="export" shiro:hasPermission="shop:stock:export"><i class="layui-icon layui-icon-export"></i>导出</button>-->
+    </div>
+</script>
+
+<!-- 行工具栏 -->
+<script type="text/html" id="toolbarRow">
+<!--    <a class="layui-btn layui-btn-xs layui-btn-normal" lay-event="print" shiro:hasPermission="shop:stock:print">打印</a>-->
+    <a class="layui-btn layui-btn-xs" lay-event="view" shiro:hasPermission="shop:stock:edit">查看</a>
+
+    <a class="layui-btn layui-btn-xs" lay-event="edit" shiro:hasPermission="shop:stock:edit">修改</a>
+
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del" shiro:hasPermission="shop:stock:remove">删除</a>
+
+</script>
+
+<!-- js部分 -->
+<th:block th:include="include :: footer" />
+<script type="text/javascript" th:inline="javascript">
+    var ctx = [[@{/}]];
+    var supplierDictData = [[${@dict.getType('store_stock_supplier')}]];
+</script>
+<script type="text/javascript" th:inline="none">
+    layui.use(['index', 'layer', 'form', 'table', 'util', 'ext','laydate','printer'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        var table = layui.table;
+        var laydate = layui.laydate;
+        var admin = layui.admin;
+        var printer = layui.printer;
+        var prefix = ctx + "shop/stock";
+        var listUrl = prefix + "/list";
+        var createUrl = prefix + "/add";
+        var updateUrl = prefix + "/edit/{id}";
+        var removeUrl = prefix + "/remove";
+        var exportUrl = prefix + "/export";
+        var auditUrl = prefix + "/audit/stock";
+        queryList()
+        function queryList(field) {
+            var params = {}
+            if (field != null) {
+                params = field;
+            }
+            params.orderByColumn = 'last_modify_time';
+            params.isAsc = 'desc'
+            table.render({
+                elem: '#dataTable'
+                , url: listUrl
+                , method: 'POST'
+                , defaultToolbar:[{title:'导出',layEvent: 'export',icon: 'layui-icon-export'}]
+                , toolbar: '#toolbarHead'
+                , height: 'full-100'
+                , cellMinWidth: 80
+                , page: true
+                , request: {
+                    pageName: 'pageNum' //页码的参数名称，默认：page
+                    , limitName: 'pageSize' //每页数据量的参数名，默认：limit
+                }
+                ,where:params
+                , limit: 10
+                , cols: [[
+                    {type: 'checkbox'}
+                    , {field: 'stockId', title: '入库id', hide: true}
+                    , {field: 'stockNo', title: '入库单编号'}
+                    , {field: 'warehouseName', title: '所属仓库'}
+                    , {field: 'deptName', title: '仓库所属区域'}
+                    ,{field: 'supplierId', title: '供应商', templet:function (d) {
+                            return $.table.selectDictLabel(supplierDictData, d.supplierId);
+                     }}
+                    //, {field: 'stockTypeName', title: '仓库类别'}
+                    , {field: 'categoryName', title: '入库类别'}
+                    , {field: 'synStatus', title: '同步状态',templet:function (d) {
+                            if(d.synStatus  === '0') {
+                                return '未同步';
+                            } else if(d.synStatus  === '1'){
+                                return '已同步';
+                            } else {
+                                return '同步失败';
+                            }
+                    }}
+                    , {field: 'createTime', title: '入库日期',templet:function (d) {
+                        return layui.util.toDateString(d.createTime, 'yyyy-MM-dd');
+                       }}
+                    , {field: 'purchaseDate', title: '采购调拨日期',templet:function (d) {
+                            return d.purchaseDate ? layui.util.toDateString(d.purchaseDate, 'yyyy-MM-dd') : '';
+                    }}
+                    , {field: 'insertTime', title: '创建时间'}
+                    , {field: 'operate', title: '操作', minWidth: 200, toolbar: '#toolbarRow', fixed: 'right'}
+                ]]
+                , parseData: function (res) { //将原始数据解析成 table 组件所规定的数据
+                    return {
+                        "code": res.code, //解析接口状态
+                        "msg": res.msg, //解析提示文本
+                        "count": res.total, //解析数据长度
+                        "data": res.rows //解析数据列表
+                    };
+                }
+            });
+        }
+        //日期范围
+        laydate.render({
+            elem: '#updateTime'
+            ,type: 'datetime'
+            , range: '~'
+            , done: function (value, date, endDate) {
+                if (value != null && value != '') {
+                    var b = $.trim(value.split('~')[0]);
+                    var e = $.trim(value.split('~')[1]);
+                    $("#beginDate").val(b);
+                    $("#endDate").val(e);
+                }
+            }
+        });
+
+        //日期范围
+        laydate.render({
+            elem: '#purchaseDate'
+            ,type: 'date'
+            , range: '~'
+            , done: function (value, date, endDate) {
+                if (value != null && value != '') {
+                    var b = $.trim(value.split('~')[0]);
+                    var e = $.trim(value.split('~')[1]);
+                    $("#purchaseBeginDate").val(b);
+                    $("#purchaseEndDate").val(e);
+                }
+            }
+        });
+
+
+        //日期范围
+        laydate.render({
+            elem: '#createDate'
+            ,type: 'date'
+            , range: '~'
+            , done: function (value, date, endDate) {
+                if (value != null && value != '') {
+                    var b = $.trim(value.split('~')[0]);
+                    var e = $.trim(value.split('~')[1]);
+                    $("#stockBeginDate").val(b);
+                    $("#stockEndDate").val(e);
+                }
+            }
+        });
+
+        $("#restBtn").click(function () {
+            $("input[type='hidden']").val("")
+        })
+
+        //监听搜索
+        form.on('submit(searchBtn)', function (data) {
+            var field = data.field;
+            //执行重载
+            table.reload('dataTable', {
+                where: field
+                ,page:{curr:1}
+            });
+        });
+
+        admin.req(ctx + "system/dept/getLoginUserDept", { }, function (result) {
+            var select= document.getElementById('deptId');
+            deptList= result.data;
+            for (var i=0;i<result.data.length;i++) {
+                var data= result.data[i];
+                var option = document.createElement("option");
+                option.setAttribute("value", data.value);
+                option.innerText =data.name;
+                if(select){
+                    select.appendChild(option)
+                }
+            }
+            form.render('select');
+        },'get',{async: false})
+
+        //头工具栏事件
+        table.on('toolbar(dataTable)', function(obj){
+            switch(obj.event){
+                case 'add':
+                    active.add();
+                    break;
+                case 'edit':
+                    var checkStatus = table.checkStatus('dataTable')
+                            , checkData = checkStatus.data; //得到选中的数据
+                    var id = null;
+                    if (id == null) {
+                        if (checkData.length === 0) {
+                            return admin.info('请选择一条数据');
+                        } else if (checkData.length > 1) {
+                            return admin.info('只能选择一条数据编辑');
+                        } else {
+                            id = checkData[0].stockId;
+                        }
+                    }
+                    active.edit(id);
+                    break;
+                case 'batchdel':
+                    active.batchdel();
+                    break;
+                case 'export':
+                    $.modal.loading("正在导出数据，请稍后...");
+                    $.post(exportUrl, $("#inputForm").serializeArray(), function(result) {
+                        if (result.code == web_status.SUCCESS) {
+                            window.location.href = ctx + "common/download?fileName=" + encodeURI(result.msg) + "&delete=" + true;
+                        } else if (result.code == web_status.WARNING) {
+                            $.modal.alertWarning(result.msg)
+                        } else {
+                            $.modal.alertError(result.msg);
+                        }
+                        $.modal.closeLoading();
+                    });
+                    break;
+                case 'batchAduit':
+                    active.batchAduit(1);
+                    break;
+                case 'batchFinanceAduit':
+                    active.batchAduit(2);
+                    break;
+            };
+        });
+
+        //行工具栏事件
+        table.on('tool(dataTable)', function (obj) {
+            var data = obj.data;
+            debugger
+            if (obj.event === 'view') {
+                active.view(data.stockId);
+            } else if(obj.event === 'edit'){
+                active.edit(data.stockId);
+            } else if (obj.event === 'del') {
+                active.del(data.stockId);
+            } else if (obj.event === 'print') {
+                active.print(data.stockId);
+            } else if(obj.event = 'batchAduit') {
+                active.batchAduit()
+            }
+        });
+
+        //事件
+        var active = {
+            batchdel: function () {
+                var checkStatus = table.checkStatus('dataTable')
+                        , checkData = checkStatus.data; //得到选中的数据
+
+                if (checkData.length === 0) {
+                    return admin.info('请选择数据');
+                }
+
+                var ids = [];
+                layui.each(checkData, function (index, item) {
+                    ids.push(item.stockId);
+                });
+
+                admin.confirm('确定删除吗？', function () {
+                    admin.req(removeUrl, {ids: ids.join(',')}, function (result) {
+                        if (result.code == 0) {
+                            table.reload('dataTable');
+                            admin.success('删除成功!');
+                        } else {
+                            admin.error(result.msg);
+                        }
+                    },'post')
+                });
+            }
+            ,view: function (id) {
+                var editUrl = updateUrl.replace("{id}", id);
+                parent.layui.admin.openUrl('查看商品入库', editUrl,'100%', '100%',function () {
+                    //执行重载
+                    //queryList(getFormData())
+                });
+            }
+            ,add: function () {
+                parent.layui.admin.openUrl('新增商品入库', createUrl, '100%', '100%',function () {
+                    //执行重载
+                    queryList(getFormData())
+                });
+            }
+            ,edit: function (id) {
+                var editUrl = updateUrl.replace("{id}", id);
+                parent.layui.admin.openUrl('修改商品入库', editUrl, '100%', '100%',function () {
+                    //执行重载
+                    //queryList(getFormData())
+                    table.reload('dataTable');
+                });
+            }
+            ,del: function(id){
+                admin.confirm('确定删除吗?',function(){
+                    admin.req(removeUrl, {ids: id}, function (data) {
+                        if (data.code == 0) {
+                            table.reload('dataTable');
+                            admin.success('删除成功!');
+                        } else {
+                            admin.error(data.msg);
+                        }
+                    },'post')
+                });
+            },print: function(id){
+                 var data={spuNo:'050401010001',classifyName:'冰鲜鸡鸭冰鲜鸡',unit:'公斤',price:20.1,amount:100,remark:'备注'}
+                 var groupHtml=[];
+
+                var topHtml="<div style=\"text-align: center\"><h2>入库单</h2></div>" +
+                    "<div style='float: left'>单据日期：2021-01-06</div><div style='float: right'>单据编号：66666</div>" +
+                    "<div>往来单位：8888</div>"+
+                    "<div>单据备注：8888</div>";
+
+                var table="<table class=\"print-table\">\n" +
+                    "        <tr>\n" +
+                    "            <td align=\"center\"  width='120px'>批次号</td>\n" +
+                    "            <td align=\"center\" width='200px'>商品编号</td>\n" +
+                    "            <td align=\"center\" width='300px'>商品分类</td>\n" +
+                    "            <td align=\"center\" width='100px'>单位</td>\n" +
+                    "            <td align=\"center\" width='250px'>入库单价(基本单位)</td>\n" +
+                    "            <td align=\"center\" width='200px'>入库金额</td>\n" +
+                    "            <td align=\"center\" width='200px'>商品备注</td>\n" +
+                    "        </tr>\n";
+
+
+                groupHtml[0]=topHtml+table
+                var tdHtml=""
+                var length=50,groupNum=30,groupNum2=35;
+                for (var i = 0; i < length; i++) {
+                    tdHtml+="<tr>"
+                    tdHtml+=" <td align=\"center\"  width='120px'>"+(i+1)+"</td>"
+                    tdHtml+=" <td align=\"center\"  width='200px'>"+data.spuNo+"</td>"
+                    tdHtml+=" <td align=\"center\"  width='300px'>"+data.classifyName+"</td>"
+                    tdHtml+=" <td align=\"center\"  width='100px'>"+data.unit+"</td>"
+                    tdHtml+=" <td align=\"center\"  width='250px'>"+data.price+"</td>"
+                    tdHtml+=" <td align=\"center\"  width='100px'>"+data.amount+"</td>"
+                    tdHtml+=" <td align=\"center\"  width='200px'>"+data.remark+"</td>"
+                    tdHtml+="</tr>";
+                    if(length<groupNum&&i==length-1){
+                        tdHtml+="</table>"
+                        groupHtml[0]+=tdHtml
+                    }else if(i!=0&&(i%groupNum==0||i==length-1)&&i!=groupNum2){
+                            tdHtml+="</table>"
+                            if(i==groupNum&&i!=groupNum2){
+                                groupHtml[0]+=tdHtml
+                                groupNum=groupNum2
+                            }else if(i>groupNum){
+                                groupHtml.push(tdHtml)
+                            }
+                            tdHtml="<table class=\"print-table\">\n";
+                    }
+
+                }
+                var bottomHtml="<div style=\"width:1200px;padding-top:20px;padding-bottom:20px\">" +
+                    "<div  style=\"width:400px; float:left;  \">整单金额：8888</div>"+
+                    "<div style=\"width:400px; float:right; \">折让金额：8888</div>"+
+                    "<div  style=\" overflow:hidden; background-color: #EFEFEF;\">商品金额：8888</div>"+
+                    "</div>"+
+                    "<div style= \"float:left; bottom: 50px\">仓库签名：</div>"+
+                    "<div style= \"float:right; bottom:  50px\">供应商签名：&emsp;&emsp;&emsp;&emsp;</div>";
+                ;
+                if(groupHtml.length==1){
+                    groupHtml[0]=groupHtml[0]+bottomHtml
+                }else {
+                    groupHtml[groupHtml.length-1]+=  bottomHtml;
+                }
+                console.log(groupHtml)
+                printer.printPage({
+                    htmls: groupHtml,
+                    // ,blank: true
+                    // ,horizontal: true
+                });
+            },
+            batchAduit: function(auditStatus){
+                var checkStatus = table.checkStatus('dataTable')
+                    , checkData = checkStatus.data; //得到选中的数据
+
+                if (checkData.length === 0) {
+                    return admin.info('请选择数据');
+                }
+
+                var ids = [];
+                var codes=[]
+                layui.each(checkData, function (index, item) {
+                    if(item.status!=1){
+                        codes.push(item.code)
+                    }else {
+                        ids.push(item.stockId);
+                    }
+
+                });
+                if(codes.length>0){
+                    return admin.info('入库单编号【'+codes.join(',')+'】不属于待审核订单，请重新选择');
+                }
+                admin.confirm('共'+ids.length+'条入库单,确定修改吗？', function () {
+                    admin.req(auditUrl, {ids: ids.join(','),auditStatus:auditStatus}, function (result) {
+                        if (result.code == 0) {
+                            table.reload('dataTable');
+                            admin.success('成功!');
+                        } else {
+                            admin.error(result.msg);
+                        }
+                    },'post')
+                });
+            }
+        }
+
+        function getFormData(){
+            var d = {
+                beginDate:$("#beginDate").val(),
+                endDate:$("#endDate").val(),
+            }
+            return d;
+        }
+    });
+</script>
+
+</body>
+</html>

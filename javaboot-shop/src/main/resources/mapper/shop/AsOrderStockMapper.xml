@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaboot.shop.mapper.AsOrderStockMapper">
+    
+    <resultMap type="AsOrderStock" id="AsOrderStockResult">
+        <result property="spuNo"    column="spu_no"    />
+        <result property="deptId"    column="dept_id"    />
+        <result property="orderMainTotalQuantiy"    column="order_main_total_quantiy"    />
+        <result property="orderSubTotalQuantiy"    column="order_sub_total_quantiy"    />
+        <result property="orderTotalPrice"    column="order_total_price"    />
+        <result property="orderAvgPrice"    column="order_avg_price"    />
+        <result property="stockMainTotalQuanity"    column="stock_main_total_quanity"    />
+        <result property="stockSubTotalQuanity"    column="stock_sub_total_quanity"    />
+        <result property="stockTotalPrice"    column="stock_total_price"    />
+        <result property="stockAvgPrice"    column="stock_avg_price"    />
+        <result property="statDate"    column="stat_date"    />
+        <result property="costPrice"    column="cost_price"    />
+        <result property="inventoryTodayPrice"    column="inventory_today_price"    />
+    </resultMap>
+
+    <resultMap type="com.javaboot.shop.dto.AsOrderStockDTO" id="AsOrderStockDTOResult">
+        <result property="spuNo"    column="spu_no"    />
+        <result property="deptId"    column="dept_id"    />
+        <result property="orderMainTotalQuantiy"    column="order_main_total_quantiy"    />
+        <result property="orderSubTotalQuantiy"    column="order_sub_total_quantiy"    />
+        <result property="orderTotalPrice"    column="order_total_price"    />
+        <result property="orderAvgPrice"    column="order_avg_price"    />
+        <result property="stockMainTotalQuanity"    column="stock_main_total_quanity"    />
+        <result property="stockSubTotalQuanity"    column="stock_sub_total_quanity"    />
+        <result property="stockTotalPrice"    column="stock_total_price"    />
+        <result property="stockAvgPrice"    column="stock_avg_price"    />
+        <result property="statDate"    column="stat_date"    />
+        <result property="costPrice"    column="cost_price"    />
+        <result property="inventoryTodayPrice"    column="inventory_today_price"    />
+    </resultMap>
+
+    <sql id="selectAsOrderStockVo">
+        select * from as_order_stock
+    </sql>
+
+    <select id="selectAsOrderStockList" parameterType="AsOrderStock" resultMap="AsOrderStockDTOResult">
+        <include refid="selectAsOrderStockVo"/>
+        <where>
+            <if test="orderMainTotalQuantiy != null "> and order_main_total_quantiy = #{orderMainTotalQuantiy}</if>
+            <if test="orderSubTotalQuantiy != null "> and order_sub_total_quantiy = #{orderSubTotalQuantiy}</if>
+            <if test="orderTotalPrice != null "> and order_total_price = #{orderTotalPrice}</if>
+            <if test="orderAvgPrice != null "> and order_avg_price = #{orderAvgPrice}</if>
+            <if test="stockMainTotalQuanity != null "> and stock_main_total_quanity = #{stockMainTotalQuanity}</if>
+            <if test="stockSubTotalQuanity != null "> and stock_sub_total_quanity = #{stockSubTotalQuanity}</if>
+            <if test="stockTotalPrice != null "> and stock_total_price = #{stockTotalPrice}</if>
+            <if test="stockAvgPrice != null "> and stock_avg_price = #{stockAvgPrice}</if>
+            <if test="statDate != null "> and stat_date = #{statDate}</if>
+            <if test="deliveryDate != null "> and delivery_date = #{deliveryDate}</if>
+            <if test="deptId != null and deptId != '' "> and dept_id = #{deptId}</if>
+            <if test="spuNo != null and spuNo != '' "> and spu_no = #{spuNo}</if>
+            <if test="spuNos != null  and spuNos != ''">
+                AND spu_no in
+                <foreach item="spuNo" collection="spuNos" open="(" separator="," close=")">
+                    #{spuNo}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="selectDeptDaySale" parameterType="com.javaboot.shop.dto.AsOrderStockDTO" resultType="com.javaboot.shop.dto.AsOrderStockDTO">
+        SELECT
+            dept_id deptid,
+            sum( IFNULL( order_main_total_quantiy, 0 ) ) ordermaintotalquantiy,
+            sum( IFNULL( order_sub_total_quantiy, 0 ) ) ordersubtotalquantiy,
+            sum( IFNULL( stock_main_total_quanity, 0 ) ) stockmaintotalquanity,
+            sum( IFNULL( stock_sub_total_quanity, 0 ) ) stocksubtotalquanity,
+            sum( IFNULL( order_total_price, 0 ) ) ordertotalprice,
+            sum( IFNULL( stock_total_price, 0 ) ) stocktotalprice,
+            stat_date statdate
+        FROM
+            as_order_stock
+          <where>
+              <if test="startDate != null  and startDate != ''">AND stat_date >= #{startDate}</if>
+              <if test="endDate != null  and endDate != ''">AND stat_date &lt;= #{endDate}</if>
+              <if test="qryDate != null  and qryDate != ''">AND stat_date = #{qryDate}</if>
+              <if test="deptId != null  and deptId != ''">AND dept_id = #{deptId}</if>
+          </where>
+        GROUP BY
+            dept_id,stat_date
+    </select>
+
+    <select id="selectDeptMonthSale" parameterType="com.javaboot.shop.dto.AsOrderStockDTO" resultType="com.javaboot.shop.dto.AsOrderStockDTO">
+        SELECT
+            dept_id deptid,
+            sum( IFNULL( order_main_total_quantiy, 0 ) ) monthordermaintotalquantiy,
+            sum( IFNULL( order_sub_total_quantiy, 0 ) ) monthordersubtotalquantiy,
+            sum( IFNULL( stock_main_total_quanity, 0 ) ) monthstockmaintotalquanity,
+            sum( IFNULL( stock_sub_total_quanity, 0 ) ) monthstocksubtotalquanity,
+            sum( IFNULL( order_total_price, 0 ) ) monthordertotalprice,
+            sum( IFNULL( stock_total_price, 0 ) ) monthstocktotalprice
+        FROM
+            as_order_stock
+        <where>
+            <if test="startDate != null  and startDate != ''">AND stat_date >= #{startDate}</if>
+            <if test="endDate != null  and endDate != ''">AND stat_date &lt;=  #{endDate}</if>
+            <if test="deptId != null  and deptId != ''">AND dept_id = #{deptId}</if>
+        </where>
+        GROUP BY
+            dept_id
+    </select>
+
+    <select id="selectDeptMonthGoodsSale" parameterType="com.javaboot.shop.dto.AsOrderStockDTO" resultType="com.javaboot.shop.dto.AsOrderStockDTO">
+        SELECT
+        dept_id deptid,
+        spu_no spuno,
+        sum( IFNULL( order_main_total_quantiy, 0 ) ) monthordermaintotalquantiy,
+        sum( IFNULL( order_sub_total_quantiy, 0 ) ) monthordersubtotalquantiy,
+        sum( IFNULL( stock_main_total_quanity, 0 ) ) monthstockmaintotalquanity,
+        sum( IFNULL( stock_sub_total_quanity, 0 ) ) monthstocksubtotalquanity,
+        sum( IFNULL( order_total_price, 0 ) ) monthordertotalprice,
+        sum( IFNULL( stock_total_price, 0 ) ) monthstocktotalprice
+        FROM
+        as_order_stock
+        <where>
+            <if test="startDate != null  and startDate != ''">AND stat_date >= #{startDate}</if>
+            <if test="endDate != null  and endDate != ''">AND stat_date &lt;=  #{endDate}</if>
+            <if test="deptId != null  and deptId != ''">AND dept_id = #{deptId}</if>
+        </where>
+        GROUP BY
+            dept_id,spu_no
+    </select>
+
+    <select id="selectTableHeader" parameterType="com.javaboot.shop.dto.AsOrderStockDTO" resultType="com.javaboot.shop.dto.AsOrderStockDTO">
+        SELECT
+            t1.dept_id deptid,
+            t2.dept_name deptname
+        FROM
+            as_order_stock t1,
+            sys_dept t2
+        <where>
+            t1.dept_id = t2.dept_id
+            <if test="qryDate != null  and qryDate != ''">AND stat_date = #{qryDate}</if>
+            <if test="startDate != null  and startDate != ''">AND stat_date >= #{startDate}</if>
+            <if test="endDate != null  and endDate != ''">AND stat_date &lt;= #{endDate}</if>
+            <if test="deptId != null  and deptId != ''">AND dept_id = #{deptId}</if>
+        </where>
+        GROUP BY
+            t1.dept_id
+    </select>
+
+    <select id="selectSpuDaySale" parameterType="com.javaboot.shop.dto.AsOrderStockDTO" resultType="com.javaboot.shop.dto.AsOrderStockDTO">
+        SELECT
+            dept_id deptid,
+            spu_no spuno,
+            sum( IFNULL( order_main_total_quantiy, 0 ) ) ordermaintotalquantiy,
+            sum( IFNULL( order_sub_total_quantiy, 0 ) ) ordersubtotalquantiy,
+            sum( IFNULL( stock_main_total_quanity, 0 ) ) stockmaintotalquanity,
+            sum( IFNULL( stock_sub_total_quanity, 0 ) ) stocksubtotalquanity,
+            sum( IFNULL( order_total_price, 0 ) ) ordertotalprice,
+            sum( IFNULL( stock_total_price, 0 ) ) stocktotalprice
+        FROM
+            as_order_stock
+        <where>
+            <if test="qryDate != null  and qryDate != ''">AND stat_date = #{qryDate}</if>
+            <if test="startDate != null  and startDate != ''">AND stat_date >= #{startDate}</if>
+            <if test="endDate != null  and endDate != ''">AND stat_date &lt;= #{endDate}</if>
+            <if test="deptId != null  and deptId != ''">AND dept_id = #{deptId}</if>
+        </where>
+        GROUP BY
+            spu_no,dept_id
+    </select>
+
+    <select id="selectAsGoodsQuotation" parameterType="com.javaboot.shop.dto.AsOrderStockDTO" resultType="com.javaboot.shop.domain.AsGoodsQuotation">
+        SELECT
+            count( DISTINCT t1.quotation_id ) qnum,
+            count( t2.goods_id ) goodsnum,
+            sum( CASE WHEN t2.STATUS = '2' THEN 0 ELSE 1 END ) normalnum,
+            spu_no,
+            dept_id
+        FROM
+            store_goods_quotation t1,
+            store_goods_quotation_goods t2
+        WHERE
+            t1.quotation_id = t2.quotation_id AND t1.status = '1' AND t2.status != '0'
+            <if test="deptId != null  and deptId != ''">AND t1.dept_id = #{deptId}</if>
+        GROUP BY
+            spu_no,
+            dept_id;
+    </select>
+
+    <select id="selectOrderPayStat" parameterType="com.javaboot.shop.dto.AsOrderStockDTO" resultType="com.javaboot.shop.domain.AsGoodsQuotation">
+        SELECT
+            sum( CASE WHEN pay_status = '0' THEN sorting_price ELSE 0 END ) nopayamount,
+            sum( CASE WHEN pay_status = '1' THEN sorting_price ELSE 0 END ) payamount
+        FROM
+            store_goods_order t1
+        WHERE
+            t1.status IN ('3','4')
+        <if test="startDate != null  and startDate != ''">AND t1.create_time >= #{startDate}</if>
+        <if test="endDate != null  and endDate != ''">AND t1.create_time &lt;= #{endDate}</if>
+        <if test="deptId != null  and deptId != ''">AND t1.dept_id = #{deptId}</if>
+    </select>
+
+    <select id="selectOrderStatusStat" parameterType="com.javaboot.shop.dto.AsOrderStockDTO" resultType="com.javaboot.shop.domain.AsGoodsQuotation">
+        SELECT
+            sum( CASE WHEN status = '2' THEN 1 ELSE 0 END ) normalNum,
+            sum( CASE WHEN status = '3' THEN 1 ELSE 0 END ) goodsNum,
+            sum( CASE WHEN status = '4' THEN 1 ELSE 0 END ) finishNum,
+            sum( CASE WHEN status = '5' THEN 1 ELSE 0 END ) qnum
+        FROM
+            store_goods_order t1
+        WHERE
+            t1.status IN ('2','3','4','5')
+            <if test="startDate != null  and startDate != ''">AND t1.create_time >= #{startDate}</if>
+            <if test="endDate != null  and endDate != ''">AND t1.create_time &lt;= #{endDate}</if>
+            <if test="deptId != null  and deptId != ''">AND t1.dept_id = #{deptId}</if>
+    </select>
+
+    <select id="selectMechantOrderStat" parameterType="com.javaboot.shop.dto.AsOrderStockDTO" resultType="com.javaboot.shop.dto.AsOrderStockDTO">
+        SELECT
+            merchant_id,
+            spu_no,
+            sum(t2.sorting_price) orderTotalPrice
+        FROM
+            store_goods_order t1,
+            store_goods_order_item t2
+        WHERE
+            t1.order_id = t2.order_id
+            AND t1.STATUS IN ('3','4')
+            AND merchant_id = #{merchantId}
+            <if test="startDate != null  and startDate != ''">AND t1.create_time >= #{startDate}</if>
+            <if test="endDate != null  and endDate != ''">AND t1.create_time &lt;= #{endDate}</if>
+        GROUP BY
+            t2.spu_no,
+            t1.merchant_id
+    </select>
+
+</mapper>

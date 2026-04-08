@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaboot.shop.mapper.StoreGoodsQuotationMapper">
+    
+    <resultMap type="com.javaboot.shop.domain.StoreGoodsQuotation" id="StoreGoodsQuotationResult">
+        <result property="quotationId"    column="quotation_id"    />
+        <result property="deptId"    column="dept_id"    />
+        <result property="quotationName"    column="quotation_name"    />
+        <result property="quotationAbbreviation"    column="quotation_abbreviation"    />
+        <result property="startTime"    column="start_time"    />
+        <result property="endTime"    column="end_time"    />
+        <result property="description"    column="description"    />
+        <result property="status"    column="status"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="operateStartTime"    column="operate_start_time"    />
+        <result property="operateEndTime"    column="operate_end_time"    />
+        <result property="lastModifyTime"    column="last_modify_time"    />
+    </resultMap>
+
+    <sql id="selectStoreGoodsQuotationVo">
+        select * from store_goods_quotation
+    </sql>
+
+    <select id="selectStoreGoodsQuotationList" parameterType="com.javaboot.shop.dto.StoreGoodsQuotationQueryDTO" resultMap="StoreGoodsQuotationResult">
+        <include refid="selectStoreGoodsQuotationVo"/>
+        <where>
+            and status != 0
+            <if test="deptId != null and deptId!=''"> and dept_id = #{deptId}</if>
+            <if test="quotationId != null "> and quotation_id = #{quotationId}</if>
+            <if test="quotationName != null  and quotationName != ''"> and quotation_name like concat('%', #{quotationName}, '%')</if>
+            <if test="startTime != null "> and start_time = #{startTime}</if>
+            <if test="endTime != null "> and end_time = #{endTime}</if>
+            <if test="description != null  and description != ''"> and description = #{description}</if>
+            <if test="status != null  and status != ''"> and status = #{status}</if>
+            <if test="createTime != null "> and create_time = #{createTime}</if>
+            <if test="lastModifyTime != null "> and last_modify_time = #{lastModifyTime}</if>
+
+            <if test="loginUserDeptId != null  and loginUserDeptId !='' and (deptId==null or deptId=='') ">
+                AND  dept_id IN (
+                SELECT
+                dept_id
+                FROM
+                sys_dept
+                WHERE
+                find_in_set( #{loginUserDeptId}, ancestors )  or dept_id=#{loginUserDeptId}
+                )
+            </if>
+            <if test="quotationIdList != null and quotationIdList.size()>0">
+                AND quotation_id in
+                <foreach collection="quotationIdList" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    
+    <select id="selectStoreGoodsQuotationById" parameterType="Long" resultMap="StoreGoodsQuotationResult">
+        <include refid="selectStoreGoodsQuotationVo"/>
+        where quotation_id = #{quotationId}
+    </select>
+        
+    <insert id="insertStoreGoodsQuotation" parameterType="com.javaboot.shop.domain.StoreGoodsQuotation" useGeneratedKeys="true" keyProperty="quotationId">
+        insert into store_goods_quotation
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="deptId != null ">dept_id,</if>
+            <if test="quotationName != null  and quotationName != ''">quotation_name,</if>
+            <if test="startTime != null ">start_time,</if>
+            <if test="endTime != null ">end_time,</if>
+            <if test="description != null  and description != ''">description,</if>
+            <if test="status != null  and status != ''">status,</if>
+            <if test="operateStartTime != null ">operate_start_time,</if>
+            <if test="operateEndTime != null ">operate_end_time,</if>
+            <if test="quotationAbbreviation != null ">quotation_abbreviation,</if>
+            create_time,
+            last_modify_time
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="deptId != null ">#{deptId},</if>
+            <if test="quotationName != null  and quotationName != ''">#{quotationName},</if>
+            <if test="startTime != null ">#{startTime},</if>
+            <if test="endTime != null ">#{endTime},</if>
+            <if test="description != null  and description != ''">#{description},</if>
+            <if test="status != null  and status != ''">#{status},</if>
+            <if test="operateStartTime != null ">#{operateStartTime},</if>
+            <if test="operateEndTime != null ">#{operateEndTime},</if>
+            <if test="quotationAbbreviation != null ">#{quotationAbbreviation},</if>
+            now(), now()
+         </trim>
+    </insert>
+
+    <update id="updateStoreGoodsQuotation" parameterType="com.javaboot.shop.domain.StoreGoodsQuotation">
+        update store_goods_quotation
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="deptId != null ">dept_id = #{deptId},</if>
+            <if test="quotationName != null  and quotationName != ''">quotation_name = #{quotationName},</if>
+            <if test="startTime != null ">start_time = #{startTime},</if>
+            <if test="endTime != null ">end_time = #{endTime},</if>
+            <if test="description != null  and description != ''">description = #{description},</if>
+            <if test="status != null  and status != ''">status = #{status},</if>
+            <if test="createTime != null ">create_time = #{createTime},</if>
+            <if test="operateStartTime != null ">operate_start_time = #{operateStartTime},</if>
+            <if test="operateEndTime != null ">operate_end_time = #{operateEndTime},</if>
+            <if test="quotationAbbreviation != null ">quotation_abbreviation = #{quotationAbbreviation},</if>
+            last_modify_time =  now()
+        </trim>
+        where quotation_id = #{quotationId}
+    </update>
+
+    <delete id="deleteStoreGoodsQuotationById" parameterType="Long">
+        delete from store_goods_quotation where quotation_id = #{quotationId}
+    </delete>
+
+    <delete id="deleteStoreGoodsQuotationByIds" parameterType="String">
+        delete from store_goods_quotation where quotation_id in
+        <foreach item="quotationId" collection="array" open="(" separator="," close=")">
+            #{quotationId}
+        </foreach>
+    </delete>
+    <update id="removeStoreGoodsQuotationByIds" parameterType="String">
+        update   store_goods_quotation set status=0,last_modify_time=now() where quotation_id in
+        <foreach item="quotationId" collection="array" open="(" separator="," close=")">
+            #{quotationId}
+        </foreach>
+    </update>
+</mapper>

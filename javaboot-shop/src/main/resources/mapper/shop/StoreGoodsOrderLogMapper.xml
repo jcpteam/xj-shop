@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaboot.shop.mapper.StoreGoodsOrderLogMapper">
+    
+    <resultMap type="com.javaboot.shop.vo.StoreGoodsOrderLogVO" id="StoreGoodsOrderLogResult">
+        <result property="logId"    column="log_id"    />
+        <result property="code" column="code"/>
+        <result property="orderId"    column="order_id"    />
+        <result property="itemId"    column="item_id"    />
+        <result property="goodId"    column="good_id"    />
+        <result property="spuNo"    column="spu_no"    />
+        <result property="quantity"    column="quantity"    />
+        <result property="amount"    column="amount"    />
+        <result property="type"    column="type"    />
+        <result property="operateUserId"    column="operate_user_id"    />
+        <result property="operationLog"    column="operation_log"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="lastModifyTime"    column="last_modify_time"    />
+    </resultMap>
+
+    <sql id="selectStoreGoodsOrderLogVo">
+        select  * from store_goods_order_log
+    </sql>
+
+    <select id="selectStoreGoodsOrderLogList" parameterType="com.javaboot.shop.dto.StoreGoodsOrderLogQueryDTO" resultMap="StoreGoodsOrderLogResult">
+        <include refid="selectStoreGoodsOrderLogVo"/>
+        <where>  
+            <if test="orderId != null "> and order_id = #{orderId}</if>
+            <if test="itemId != null "> and item_id = #{itemId}</if>
+            <if test="goodId != null "> and good_id = #{goodId}</if>
+            <if test="spuNo != null  and spuNo != ''"> and spu_no = #{spuNo}</if>
+            <if test="quantity != null "> and quantity = #{quantity}</if>
+            <if test="amount != null "> and amount = #{amount}</if>
+            <if test="type != null  and type != ''"> and type = #{type}</if>
+            <if test="operateUserId != null  and operateUserId != ''"> and operate_user_id = #{operateUserId}</if>
+            <if test="lastModifyTime != null "> and last_modify_time = #{lastModifyTime}</if>
+            <if test="code != null  and code != ''">and code = #{code}</if>
+            <if test="beginDate != null and beginDate!='' and endDate != null and endDate!='' ">
+                and create_time  BETWEEN
+                DATE_FORMAT(#{createBeginDate},'%Y-%m-%d %H:%i:%s')
+                AND DATE_FORMAT(#{createEndDate},'%Y-%m-%d %H:%i:%s')
+            </if>
+        </where>
+    </select>
+    
+    <select id="selectStoreGoodsOrderLogById" parameterType="Long" resultMap="StoreGoodsOrderLogResult">
+        <include refid="selectStoreGoodsOrderLogVo"/>
+        where log_id = #{logId}
+    </select>
+        
+    <insert id="insertStoreGoodsOrderLog" parameterType="com.javaboot.shop.domain.StoreGoodsOrderLog" useGeneratedKeys="true" keyProperty="logId">
+        insert into store_goods_order_log
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="orderId != null ">order_id,</if>
+            <if test="itemId != null ">item_id,</if>
+            <if test="goodId != null ">good_id,</if>
+            <if test="spuNo != null  and spuNo != ''">spu_no,</if>
+            <if test="quantity != null ">quantity,</if>
+            <if test="amount != null ">amount,</if>
+            <if test="type != null  and type != ''">type,</if>
+            <if test="operateUserId != null  and operateUserId != ''">operate_user_id,</if>
+            <if test="code != null  and code != ''">code,</if>
+            <if test="operationLog != null  and operationLog != ''">operation_log,</if>
+             create_time, last_modify_time
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="orderId != null ">#{orderId},</if>
+            <if test="itemId != null ">#{itemId},</if>
+            <if test="goodId != null ">#{goodId},</if>
+            <if test="spuNo != null  and spuNo != ''">#{spuNo},</if>
+            <if test="quantity != null ">#{quantity},</if>
+            <if test="amount != null ">#{amount},</if>
+            <if test="type != null  and type != ''">#{type},</if>
+            <if test="operateUserId != null  and operateUserId != ''">#{operateUserId},</if>
+            <if test="code != null  and code != ''">#{code},</if>
+            <if test="operationLog != null  and operationLog != ''">#{operationLog},</if>
+            now(), now()
+         </trim>
+    </insert>
+
+    <update id="updateStoreGoodsOrderLog" parameterType="com.javaboot.shop.domain.StoreGoodsOrderLog">
+        update store_goods_order_log
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="orderId != null ">order_id = #{orderId},</if>
+            <if test="itemId != null ">item_id = #{itemId},</if>
+            <if test="goodId != null ">good_id = #{goodId},</if>
+            <if test="spuNo != null  and spuNo != ''">spu_no = #{spuNo},</if>
+            <if test="quantity != null ">quantity = #{quantity},</if>
+            <if test="amount != null ">amount = #{amount},</if>
+            <if test="type != null  and type != ''">type = #{type},</if>
+            <if test="operateUserId != null  and operateUserId != ''">operate_user_id = #{operateUserId},</if>
+            <if test="createTime != null ">create_time = #{createTime},</if>
+            <if test="code != null  and code != ''">code = #{code},</if>
+            <if test="operationLog != null  and operationLog != ''">operation_log=#{operationLog},</if>
+
+            last_modify_time =  now()
+        </trim>
+        where log_id = #{logId}
+    </update>
+
+    <delete id="deleteStoreGoodsOrderLogById" parameterType="Long">
+        delete from store_goods_order_log where log_id = #{logId}
+    </delete>
+
+    <delete id="deleteStoreGoodsOrderLogByIds" parameterType="String">
+        delete from store_goods_order_log where log_id in 
+        <foreach item="logId" collection="array" open="(" separator="," close=")">
+            #{logId}
+        </foreach>
+    </delete>
+    
+</mapper>

@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+	<head>
+		<meta charset="utf-8">
+		<title>修改菜单</title>
+		<meta name="renderer" content="webkit">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+		<link rel="stylesheet" href="../../../static/assets/libs/layui/css/layui.css" th:href="@{/assets/libs/layui/css/layui.css}"/>
+		<link rel="stylesheet" href="../../../static/assets/module/admin.css" th:href="@{/assets/module/admin.css}"/>
+		<style>
+			.layui-form-item {
+				margin-bottom: 0;
+				margin-top: 20px;
+			}
+
+			.layui-form-item .layui-inline {
+				margin-bottom: 10px;
+				margin-right: 0;
+			}
+
+			.form-group-bottom {
+				position: fixed;
+				bottom: 0;
+				left: 0;
+				right: 0;
+				background-color: #fff;
+				padding: 10px 20px;
+				box-shadow: 0 -1px 2px 0 rgba(0, 0, 0, .05);
+			}
+		</style>
+	</head>
+	<body>
+
+		<!-- 正文开始 -->
+		<form class="layui-form" id="inputForm" th:onsubmit="return false" th:action="@{/system/menu/edit}" th:object="${menu}">
+			<div class="layui-fluid" style="padding-bottom: 30px;">
+				<div class="layui-card">
+					<div class="layui-card-body">
+						<input name="menuId" type="hidden" th:field="*{menuId}"/>
+						<div class="layui-form-item layui-row">
+							<div class="layui-inline layui-col-md4 layui-col-sm6">
+								<label class="layui-form-label">上级菜单:</label>
+								<div class="layui-input-block">
+									<input id="treeId" name="parentId" type="hidden" th:field="*{parentId}" />
+									<input id="treeName" th:value="${menu.parentName == null ? '无' : menu.parentName}" type="text" class="layui-input icon-search"/>
+								</div>
+							</div>
+							<div class="layui-inline layui-col-md4 layui-col-sm6">
+								<label class="layui-form-label layui-form-required">菜单类型:</label>
+								<div class="layui-input-block">
+									<input type="radio" name="menuType" th:field="*{menuType}" value="M" title="目录" lay-filter="menuType"/>
+									<input type="radio" name="menuType" th:field="*{menuType}" value="C" title="菜单" lay-filter="menuType">
+									<input type="radio" name="menuType" th:field="*{menuType}" value="F" title="按钮" lay-filter="menuType"/>
+								</div>
+							</div>
+							<div class="layui-inline layui-col-md4 layui-col-sm6">
+								<label class="layui-form-label layui-form-required">菜单名称:</label>
+								<div class="layui-input-block">
+									<input id="menuName" name="menuName" th:field="*{menuName}" type="text" class="layui-input" lay-verType="tips" lay-verify="required"/>
+								</div>
+							</div>
+							<div class="layui-inline layui-col-md4 layui-col-sm6">
+								<label class="layui-form-label">菜单图标:</label>
+								<div class="layui-input-block">
+									<button id="iconClear" class="layui-inline layui-btn layui-btn-primary">清除</button>
+									<input id="icon" name="icon" th:field="*{icon}" type="text" class="layui-input"/>
+								</div>
+							</div>
+							<div class="layui-inline layui-col-md4 layui-col-sm6">
+								<label class="layui-form-label">请求地址:</label>
+								<div class="layui-input-block">
+									<input id="url" name="url" th:field="*{url}" type="text" class="layui-input"/>
+								</div>
+							</div>
+							<div class="layui-inline layui-col-md4 layui-col-sm6">
+								<label class="layui-form-label">打开方式:</label>
+								<div class="layui-input-block">
+									<select id="target" name="target" class="layui-select">
+										<option value="menuItem" th:field="*{target}">页签</option>
+										<option value="menuBlank" th:selected="*{target == 'menuBlank'}">新窗口</option>
+									</select>
+								</div>
+							</div>
+							<div class="layui-inline layui-col-md4 layui-col-sm6">
+								<label class="layui-form-label">权限标识:</label>
+								<div class="layui-input-block">
+									<input id="perms" name="perms" th:field="*{perms}" type="text" class="layui-input"/>
+								</div>
+							</div>
+							<div class="layui-inline layui-col-md4 layui-col-sm6">
+								<label class="layui-form-label">显示排序:</label>
+								<div class="layui-input-block">
+									<input name="orderNum" type="number" th:field="*{orderNum}" class="layui-input" lay-verType="tips" lay-verify="number"/>
+								</div>
+							</div>
+							<div class="layui-inline layui-col-md4 layui-col-sm6">
+								<label class="layui-form-label">菜单状态:</label>
+								<div class="layui-input-block" th:with="type=${@dict.getType('sys_show_hide')}">
+									<input th:each="dict,dictStat:${type}" type="radio" name="status" th:title="${dict.dictLabel}" th:value="${dict.dictValue}" th:field="*{visible}">
+								</div>
+							</div>
+						</div>
+
+					</div>
+				</div>
+			</div>
+
+			<div class="form-group-bottom text-right">
+				<button id="resetBtn" type="reset" class="layui-btn layui-btn-primary layui-hide">重置</button>
+				<button id="submitBtn" class="layui-btn layui-hide" lay-filter="submitBtn" lay-submit>保存</button>
+				<button id="closeBtn" class="layui-btn layui-btn-danger layui-hide">关闭</button>
+			</div>
+
+		</form>
+
+		<script th:inline="javascript">
+			var ctx = [[@{/}]];
+			var prefix = ctx + "system/menu";
+		</script>
+		<script type="text/javascript" src="../../../static/assets/libs/layui/layui.js" th:src="@{/assets/libs/layui/layui.js}"></script>
+		<script type="text/javascript" src="../../../static/assets/js/common.js" th:src="@{/assets/js/common.js}"></script>
+		<script th:inline="javascript">
+			layui.use(['index', 'form', 'formX', 'zTree', 'iconPicker', 'ext'], function(){
+				var $ = layui.$;
+				var form = layui.form;
+				var admin = layui.admin;
+				var layer = layui.layer;
+				var iconPicker = layui.iconPicker;
+
+				iconPicker.render({
+					// 选择器，推荐使用input
+					elem: '#icon',
+					// 数据类型：fontClass/unicode，推荐使用fontClass
+					type: 'fontClass',
+					// 是否开启搜索：true/false
+					search: true,
+					// 是否开启分页
+					page: true,
+					// 每页显示数量，默认12
+					limit: 12,
+					// 点击回调
+					click: function (data) {
+						var icon = "layui-icon " + data.icon;
+						// console.log(icon);
+						$("#icon").val(icon);
+					},
+					// 渲染成功后的回调
+					success: function(d) {
+						//console.log(d);
+					}
+				});
+
+				$("#iconClear").click(function(){
+					$("#icon").val('#');
+					admin.success('图标清除成功!');
+				})
+
+				$(function() {
+					var menuType = $('input[name="menuType"]:checked').val();
+					menuVisible(menuType);
+				});
+
+				form.on('radio(menuType)', function(data){
+					var menuType = data.value;
+					menuVisible(menuType);
+				});
+
+				function menuVisible(menuType){
+					if (menuType == "M") {
+						$("#url").parents(".layui-inline").hide();
+						$("#perms").parents(".layui-inline").hide();
+						$("#icon").parents(".layui-inline").show();
+						$("#target").parents(".layui-inline").hide();
+						$("input[name='visible']").parents(".layui-inline").show();
+					} else if (menuType == "C") {
+						$("#url").parents(".layui-inline").show();
+						$("#perms").parents(".layui-inline").show();
+						$("#icon").parents(".layui-inline").show();
+						$("#target").parents(".layui-inline").show();
+						$("input[name='visible']").parents(".layui-inline").show();
+					} else if (menuType == "F") {
+						$("#url").parents(".layui-inline").hide();
+						$("#perms").parents(".layui-inline").show();
+						$("#icon").parents(".layui-inline").hide();
+						$("#target").parents(".layui-inline").hide();
+						$("input[name='visible']").parents(".layui-inline").hide();
+					}
+				}
+
+				/*用户管理-新增-选择部门树*/
+				$("#treeName").click(function(){
+					var treeId = $("#treeId").val();
+					var menuId = treeId > 0 ? treeId : 1;
+					var url = prefix + "/selectMenuTree/" + menuId;
+					var options = {
+						title: '菜单选择',
+						width: "380",
+						url: url,
+						callBack: doSubmit
+					};
+					$.modal.openOptions(options);
+				})
+
+				function doSubmit(index, layero){
+					// var tree = layero.find("iframe")[0].contentWindow.layui.$._tree;
+					// if ($.tree.notAllowParents(tree)) {
+					var body = layer.getChildFrame('body', index);
+					$("#treeId").val(body.find('#treeId').val());
+					$("#treeName").val(body.find('#treeName').val());
+					console.log($("#treeId").val());
+					console.log($("#treeName").val());
+					layer.close(index);
+					// }
+				}
+
+			})
+		</script>
+	</body>
+</html>

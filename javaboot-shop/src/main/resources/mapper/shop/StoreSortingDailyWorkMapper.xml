@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaboot.shop.mapper.StoreSortingDailyWorkMapper">
+    
+    <resultMap type="StoreSortingDailyWork" id="StoreSortingDailyWorkResult">
+        <result property="id"    column="id"    />
+        <result property="workDay"    column="work_day"    />
+        <result property="deptId"    column="dept_id"    />
+        <result property="deptName"    column="dept_name"    />
+        <result property="sortingUserCount"    column="sorting_user_count"    />
+        <result property="status"    column="status"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="lastModifyTime"    column="last_modify_time"    />
+    </resultMap>
+
+    <sql id="selectStoreSortingDailyWorkVo">
+--         select id, work_day, dept_id, status, create_time, last_modify_time from store_sorting_daily_work
+        select s.id, s.work_day, s.dept_id, s.status, s.create_time, s.last_modify_time,d.dept_name,
+              count(sdu.user_id) as sorting_user_count
+        from store_sorting_daily_work s
+        left join sys_dept d on s.dept_id = d.dept_id
+        left join store_sorting_daily_user sdu on s.id = sdu.work_id
+    </sql>
+
+    <select id="selectStoreSortingDailyWorkList" parameterType="StoreSortingDailyWork" resultMap="StoreSortingDailyWorkResult">
+        <include refid="selectStoreSortingDailyWorkVo"/>
+        <where>  
+            <if test="workDay != null  and workDay != ''"> and s.work_day = #{workDay}</if>
+            <if test="deptId != null  and deptId != ''"> and s.dept_id = #{deptId}</if>
+            <if test="workDayList != null  and workDayList != ''">
+                AND s.work_day in
+                <foreach item="workDay" collection="workDayList" open="(" separator="," close=")">
+                    #{workDay}
+                </foreach>
+             </if>
+            <if test="loginUserDeptId != null  and loginUserDeptId !=''">
+                AND s.dept_id IN (
+                SELECT
+                dept_id
+                FROM
+                sys_dept
+                WHERE
+                find_in_set( #{loginUserDeptId}, ancestors )  or dept_id=#{loginUserDeptId}
+                )
+            </if>
+        </where>
+        group by s.id
+        order by s.work_day desc
+    </select>
+    
+    <select id="selectStoreSortingDailyWorkById" parameterType="Long" resultMap="StoreSortingDailyWorkResult">
+        <include refid="selectStoreSortingDailyWorkVo"/>
+        where s.id = #{id}
+    </select>
+        
+    <insert id="insertStoreSortingDailyWork" parameterType="StoreSortingDailyWork" useGeneratedKeys="true" keyProperty="id">
+        insert into store_sorting_daily_work
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="workDay != null  and workDay != ''">work_day,</if>
+            <if test="deptId != null  and deptId != ''">dept_id,</if>
+            <if test="status != null  and status != ''">status,</if>
+            <if test="createTime != null ">create_time,</if>
+            <if test="lastModifyTime != null ">last_modify_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="workDay != null  and workDay != ''">#{workDay},</if>
+            <if test="deptId != null  and deptId != ''">#{deptId},</if>
+            <if test="status != null  and status != ''">#{status},</if>
+            <if test="createTime != null ">#{createTime},</if>
+            <if test="lastModifyTime != null ">#{lastModifyTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateStoreSortingDailyWork" parameterType="StoreSortingDailyWork">
+        update store_sorting_daily_work
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="workDay != null  and workDay != ''">work_day = #{workDay},</if>
+            <if test="deptId != null  and deptId != ''">dept_id = #{deptId},</if>
+            <if test="status != null  and status != ''">status = #{status},</if>
+            <if test="createTime != null ">create_time = #{createTime},</if>
+            <if test="lastModifyTime != null ">last_modify_time = #{lastModifyTime},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteStoreSortingDailyWorkById" parameterType="Long">
+        delete from store_sorting_daily_work where id = #{id}
+    </delete>
+
+    <delete id="deleteStoreSortingDailyWorkByIds" parameterType="String">
+        delete from store_sorting_daily_work where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <select id="selectStoreSortingDailyWorkUserList" parameterType="StoreSortingDailyWork" resultMap="StoreSortingDailyWorkResult">
+        SELECT ssdw.work_day,ssdu.user_id as sortingUserId FROM store_sorting_daily_work ssdw
+        join store_sorting_daily_user ssdu on ssdw.id = ssdu.work_id
+        where 1=1
+          and ssdw.status = '1'
+         <if test="deptId != null  and deptId != ''">
+            and ssdw.dept_id = #{deptId}
+         </if>
+         <if test="workDayStartDate != null  and workDayStartDate != '' and workDayEndDate != null  and workDayEndDate != ''">
+            and ssdw.work_day BETWEEN #{workDayStartDate} and #{workDayEndDate}
+         </if>
+    </select>
+    
+</mapper>

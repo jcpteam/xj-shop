@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('新增商品列表')"/>
+</head>
+<body class="bg-white">
+<!-- 加载动画-->
+
+<!-- 正文开始 -->
+<form class="layui-form bg-white" id="inputForm" lay-filter="inputForm" th:onsubmit="return false" th:action="@{/shop/quotationGoods/add}">
+    <!-- 正文开始 -->
+    <div class="layui-fluid">
+        <div class="layui-form" style="padding-bottom:  70px;">
+            <div class="layui-row layui-col-space15">
+                <div class="layui-col-md6">
+                    <div class="layui-card">
+                        <div class="layui-card-header">基础信息</div>
+                        <div class="layui-card-body">
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">所属分类</label>
+                                <div class="layui-input-block">
+
+                                    <div style="float:left;width: 40%">
+                                        <input id="classifyId" name="classifyId" placeholder="请选择" class="layui-hide"/>
+
+                                    </div>
+                                    <div style="float:right;width: 40%">
+                                        <select name="spuNo" lay-filter="spuNo" lay-verify="required"  xm-select="roleid" id="spuNo" lay-search >
+                                        </select>
+                                    </div>
+
+                                </div>
+
+                            </div>
+<!--                            <div class="layui-form-item">-->
+<!--                                <label class="layui-form-label">商品图片</label>-->
+<!--                                <div class="layui-input-block">-->
+<!--                                    <input name="url" id="url" type="hidden">-->
+<!--                                    <div class="layui-upload-drag" id="adImgUpload">-->
+<!--                                        <i class="layui-icon"></i>-->
+<!--                                        <p>点击上传，或将图片拖拽到此处</p>-->
+<!--                                        <div class="layui-hide"   name="goodsImg" id="goodsImg">-->
+
+<!--                                            <hr>-->
+<!--                                            <img src="" alt="上传成功后渲染" style="max-width: 250px">-->
+<!--                                        </div>-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                            </div>-->
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">商品副标题</label>
+                                <div class="layui-input-block">
+                                    <input class="layui-input" placeholder="商品副标题"
+                                            max="100" name="goodsSubtitle"/>
+                                </div>
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label ">商品介绍</label>
+                                <div class="layui-input-block">
+                                    <textarea name="goodsIntroduce" width="100%" placeholder="请输入内容"
+                                              class="layui-textarea" maxlength="1000" rows="3" lay-verType="tips"
+                                             ></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-col-md6">
+                    <div class="layui-card">
+                        <div class="layui-card-header">销售信息
+                        </div>
+                        <div class="layui-card-body">
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">报价单</label>
+                                <div class="layui-input-block">
+                                    <select name="quotationId" lay-filter="quotationId"  lay-verType="tips" lay-verify="required" xm-select="roleid" id="quotationId" >
+                                        <input  placeholder="请选择" class="layui-hide"  />
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">商品分类</label>
+                                <div class="layui-input-block">
+                                    <input class="layui-input" lay-verType="tips" lay-verify="required" disabled id="classifyName"/>
+                                </div>
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">销售名称</label>
+                                <div class="layui-input-block">
+                                    <input class="layui-input" placeholder="属性名称" max="50"
+                                           lay-verType="tips" lay-verify="required" name="propertyName" id="propertyName"/>
+                                </div>
+                            </div>
+
+                            <div class="layui-form-item price-div">
+                                <label class="layui-form-label">单价</label>
+                                <div class="layui-input-block">
+                                    <input class="layui-input layui-input-number price" seq="0" min="0" max="999999" oninput="value=moneyInput(value)" step="1" data-prec="2" lay-verType="tips"  lay-verify="required" name="price"  placeholder="请设置单价">
+                                </div>
+                            </div>
+
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">销售规格</label>
+                                <div class="layui-input-block"  id="saleUnit">
+                                </div>
+                            </div>
+                            <div class="layui-form-item price-div" style="display: none">
+                                <label class="layui-form-label">单价</label>
+                                <div class="layui-input-block">
+                                    <span seq="1"></span>
+                                    <input type="hidden" class="layui-input layui-input-number price" min="0" seq="1" max="999999" step="1" data-prec="2" lay-verType="tips"  lay-verify="" oninput="value=moneyInput(value)" name="price1"  placeholder="请设置单价">
+                                </div>
+                            </div>
+                            <div style="text-align: center">
+                                <button id="submitBtn" class="layui-btn" lay-filter="submitBtn" lay-submit>确定</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <table class="layui-table" id="dataTable" lay-filter="dataTable"></table>
+            </div>
+        </div>
+    </div>
+
+</form>
+<!-- 行工具栏 -->
+<script type="text/html" id="toolbarRow">
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del" shiro:hasPermission="shop:goods:remove">删除</a>
+</script>
+<th:block th:include="include :: footer"/>
+<script th:inline="javascript">
+    var ctx = [[@{/}]];
+    var prefix = ctx + "shop/goods";
+    var quotationId = [[${quotationId}]];
+    var conversion = 1.0
+</script>
+<script th:inline="none">
+
+    /*商品价格仅能输入数字和小数点*/
+    function moneyInput(value) {
+        //修复第一个字符是小数点 的情况.
+        let fa = '';
+        if (value !== '' && value.substr(0, 1) === '.') {
+            value = "";
+        }
+        value = value.replace(/^0*(0\.|[1-9])/, '$1');//解决 粘贴不生效
+        value = value.replace(/[^\d.]/g, "");  //清除“数字”和“.”以外的字符
+        value = value.replace(/\.{2,}/g, "."); //只保留第一个. 清除多余的
+        value = value.replace(".", "$#$").replace(/\./g, "").replace("$#$", ".");
+        value = value.replace(/^(\-)*(\d+)\.(\d\d).*$/, '$1$2.$3'); //只能输入两个小数
+        if (value.indexOf(".") < 0 && value !== "") { //以上已经过滤，此处控制的是如果没有小数点，首位不能为类似于 01、02的金额
+            if (value.substr(0, 1) === '0' && value.length === 2) {
+                value = value.substr(1, value.length);
+            }
+        }
+        value = fa + value;
+        return value;
+    }
+
+    layui.use(['index', 'form', 'formX', 'table', 'laydate',  'cascader','upload'], function () {
+        var $ = layui.$;
+        var form = layui.form;
+        var table = layui.table;
+        var admin = layui.admin;
+        var prefix = ctx + "shop/quotationGoods";
+        var listUrl = prefix + "/list";
+        var cascader = layui.cascader;
+        var removeUrl = prefix + "/remove";
+        var upload = layui.upload;
+        // var numinp = layui.numinput;
+        var unitPrice = {};
+        // numinp.init({
+        //     // 123：123键置顶, 789：789键置顶
+        //     topBtns: 123,
+        //     // 右侧功能按钮
+        //     rightBtns: true,
+        //     // 监听键盘事件
+        //     listening: true,
+        //     // 批量配置默认小数精确度
+        //     defaultPrec: ''
+        // });
+
+
+        //自定义表单验证------------------------------------------------------------------------------------------------
+        form.verify({
+            fuxuan:function () {
+                var checkedList=document.getElementsByName("unitIds");
+                var checked=false
+                for (var i = 0; i <checkedList.length ; i++) {
+                    var check=checkedList[i];
+                    if(checkedList[i].checked==true){
+                        checked=true;
+                    }
+                }
+                if(!checked){
+                    return  '请至少选择一个销售规格';
+                }
+            }
+        });
+        // 列表查询参数-------------------------------------------------------------------------------------------------
+        function getQueryParams() {
+            return {quotationId:$('#quotationId').val(),spuNo:$('#spuNo').val()};
+        }
+        // 分类级联-----------------------------------------------------------------------------------------------------
+        var  classifyTree=null,selectText='';
+        admin.req(ctx + "shop/classify/queryClassifyTree", {}, function (result) {
+            classifyTree=result.rows
+            cascader.render({
+                elem: '#classifyId',
+                data: result.rows,
+                onChange: function (values, data) {
+                    selectText='';
+                    $("#classifyName").attr("value",'');
+                    $("#propertyName").attr("value",'');
+                    selectText=findClassifyName(values)
+                    getSpuList(data.value)
+
+                }
+            });
+        }, 'post')
+        function tableInit(){
+            //列表----------------------------------------------------------------------------------------------------------
+            table.render({
+                elem: '#dataTable'
+                , url: listUrl
+                , method: 'POST'
+                , height: 'full-100'
+                , cellMinWidth: 80
+                , page: true
+                , request: {
+                    pageName: 'pageNum' //页码的参数名称，默认：page
+                    , limitName: 'pageSize' //每页数据量的参数名，默认：limit
+                }
+                ,where:getQueryParams()
+                , limit: 10
+                , cols: [[
+                    {type: 'checkbox'}
+                    , {field: 'goodsId', title: '商品id', hide: true}
+                    , {field: 'propertyName', title: '商品名称'}
+                    , {field: 'classifyName', title: '分类名称'}
+                    , {field: 'price', width: 120,  title: '销售价格'}
+                    , {field: 'quotationName', title: '所属报价单'}
+                    , {field: 'propertyName', title: '销售单位', templet: function (d) {
+                            var str='';
+                            if(d.storeGoodsSalesUnitList){
+                                for (var i = 0; i <d.storeGoodsSalesUnitList.length ; i++) {
+                                    var txet=d.storeGoodsSalesUnitList[i].name;
+                                    str += ('<span class="layui-badge-rim">' + txet + '</span>&nbsp;');
+                                    if (i != d.storeGoodsSalesUnitList.length - 1) {
+                                        str += '<span class="layui-badge-rim layui-hide">，</span>';
+                                    }
+                                }
+                            }
+                            return str;
+                        }}
+                    , {field: 'operate', title: '操作',  width: 80,  toolbar: '#toolbarRow', fixed: 'right'}
+                ]]
+                , parseData: function (res) { //将原始数据解析成 table 组件所规定的数据
+                    return {
+                        "code": res.code, //解析接口状态
+                        "msg": res.msg, //解析提示文本
+                        "count": res.total, //解析数据长度
+                        "data": res.rows //解析数据列表
+                    };
+                }
+            });
+        }
+
+        //查询spu选择监听-----------------------------------------------------------------------------------------------
+        form.on('select(spuNo)', function (data) {
+            var src=$(data.elem).find("option:selected").attr("data-url");
+
+            layui.$('#goodsImg').removeClass('layui-hide').find('img').attr('src', src);
+            $("#classifyName").attr("value",selectText);
+            $("#propertyName").attr("value",$(data.elem).find("option:selected").attr("data-name"));
+            $(".price-div").hide();
+            $(".price-div").find("input").val("");
+            conversion = 1.0
+            getSpuUnit(data.value)
+            tableInit()
+            getConversion(data.value);
+        });
+        //获取主副单位换算关系---------------------------------------------------------------------------------------------------
+        function getConversion(spuNo) {
+            layui.admin.req(prefix + "/unit/conversion", {spuNo:spuNo,deptId:$("#quotationId option[value="+$("#quotationId").val()+"]").attr("deptId")}, function (result) {
+                conversion = result;
+            },'post')
+        }
+        //查询spu商品---------------------------------------------------------------------------------------------------
+        function getSpuList(value) {
+            admin.req(ctx + "shop/spu/list", {isQueryAll:true,status: 1, classifyId: value}, function (result) {
+                var select = document.getElementById('spuNo');
+                select.innerHTML=""
+                layui.$('#goodsImg').addClass('layui-hide').find('img').attr('src','');
+                $('#url').val('')
+                if (result.rows && result.rows.length) {
+                    var option0 = document.createElement("option");
+                    option0.setAttribute("value", '');
+                    option0.innerText = '请选择';
+                    select.appendChild(option0)
+                    for (var i = 0; i < result.rows.length; i++) {
+                        var data = result.rows[i];
+                        var option = document.createElement("option");
+                        option.setAttribute("value", data.spuNo);
+                        option.setAttribute("data-url", data.image);
+                        option.setAttribute("data-name", data.name);
+                        option.innerText = data.name;
+                        select.appendChild(option)
+                        if(i==0&&data){
+                            layui.$('#goodsImg').removeClass('layui-hide').find('img').attr('src', data.image);
+                            $('#url').val(data.image)
+                            $("#classifyName").attr("value",selectText);
+                            $("#propertyName").attr("value",data.name);
+                            getSpuUnit(data.spuNo)
+                            getConversion(data.value)
+                        }
+                    }
+                }
+
+                form.render('select');
+                tableInit()
+            }, 'post')
+        }
+
+        //查询报价单----------------------------------------------------------------------------------------------------
+        admin.req(ctx + "shop/quotation/selectStoreGoodsQuotationListOfUserOrQuotation", {quotationId:quotationId}, function (result) {
+            var select = document.getElementById('quotationId');
+            select.innerHTML=""
+            if (result.rows && result.rows.length) {
+                for (var i = 0; i < result.rows.length; i++) {
+                    var data = result.rows[i];
+                    var option = document.createElement("option");
+                    option.setAttribute("value", data.quotationId);
+                    option.setAttribute("deptId", data.deptId);
+                    option.innerText = data.quotationName;
+                    select.appendChild(option)
+                }
+            }
+            if(quotationId) {
+                $("#quotationId").attr("disabled","disabled")
+            }
+            form.render('select');
+            tableInit()
+            // table.reload('dataTable', {
+            //     where: getQueryParams()
+            // });
+        }, 'post')
+        //查询选择监听--------------------------------------------------------------------------------------------------
+        form.on('select(quotationId)', function (data) {
+            tableInit()
+        });
+        //新增商品------------------------------------------------------------------------------------------------------
+        layui.form.on('submit(submitBtn)', function (data) {
+            var field = data.field; //获取提交的字段
+            //多选框只能自己遍历才有多个值
+            var checkboxValue="";
+
+            if($("input:checkbox[name='unitIds']:checked").length > 1){
+                return admin.info('只能选中一个销售单位！');
+            }
+            $("input:checkbox[name='unitIds']:checked").each(function() {
+                if(checkboxValue==0){
+                    checkboxValue = $(this).val();
+                    return true;
+                }
+                checkboxValue += ',' + $(this).val();
+            });
+            if(checkboxValue==""||checkboxValue==null){
+                return admin.info('请选择销售单位！');
+            }
+            field.unitList = [];
+            debugger
+            checkboxValue.split(",").forEach(ele=>{
+                var tempPrice = $(".price-div[unitVal="+ele+"]").find('input').val();
+                field.unitList.push({unitId:ele, price:parseFloat(tempPrice).toFixed(2)});
+            });
+            field.unitIds=checkboxValue
+            field.status=1
+            field.deptId = $("#quotationId option[value="+$("#quotationId").val()+"]").attr("deptId");
+            field.unitJson = JSON.stringify(field.unitList)
+            field.url=$('#url').val()
+            var tempQuotationId = field.quotationId;
+            admin.req(prefix+'/add', field, function(data){
+                if (data.code == 0) {
+                    admin.success('保存成功!');
+                    $(".price-div").hide();
+                    $(".price-div").find("input").attr("lay-verify","")
+                    clearForm()
+
+                } else {
+                    admin.error(data.msg);
+                }
+                layui.form.render();
+                $("#quotationId").val(tempQuotationId);
+                tableInit()
+            }, 'post');
+        });
+        function clearForm(){
+            $("#inputForm")[0].reset();
+            layui.$('#goodsImg').addClass('layui-hide').find('img').attr('src', '');
+            $('#url').val('')
+            $("#classifyName").attr("value",'');
+            $("#propertyName").attr("value",'');
+            $("#spuNo").val('')
+            $("#spuNo").find("option").remove()
+        }
+        //行工具栏事件--------------------------------------------------------------------------------------------------
+        table.on('tool(dataTable)', function (obj) {
+            var data = obj.data;
+            if (obj.event === 'del') {
+                active.del(data.goodsId);
+            }
+        });
+        //事件----------------------------------------------------------------------------------------------------------
+        var active = {
+            del: function(id){
+                admin.confirm('确定删除吗?',function(){
+                    admin.req(removeUrl, {ids: id}, function (data) {
+                        if (data.code == 0) {
+                            tableInit()
+                            admin.success('删除成功!');
+                        } else {
+                            admin.error(data.msg);
+                        }
+                    },'post')
+                });
+            }
+        }
+        //查询分类名称--------------------------------------------------------------------------------------------------
+        function findClassifyName(values) {
+            var text=''
+            if (classifyTree!=null && classifyTree.length>0) {
+                layui.each(classifyTree, function(index, p){
+                    if(p.value==values[0]){
+                        text+=p.label;
+                        if(p.children){
+                            layui.each(p.children, function(index1, c){
+                                if(c.value==values[1]){
+                                    text+=c.label;
+                                }
+                            })
+                        }
+                     }
+                });
+            }
+            return text;
+        }
+
+        function getSpuUnit(spuNo) {
+            admin.req(ctx + "shop/unit/getSpuUnit", {spuNo: spuNo}, function (result) {
+                var select = document.getElementById('saleUnit');
+                select.innerHTML=""
+                if (result.rows && result.rows.length) {
+                    for (var i = 0; i < result.rows.length; i++) {
+                        var data = result.rows[i];
+                        var input = document.createElement("input");
+                        input.setAttribute("type", "checkbox");
+                        input.setAttribute("name", "unitIds");
+                        input.setAttribute("title", data.name);
+                        input.setAttribute("value", data.unitId);
+                        input.setAttribute("lay-verType", "tips");
+                        input.setAttribute("lay-verify", "fuxuan");
+                        input.setAttribute("lay-filter", "unitcheck");
+                        input.innerText = data.name;
+                        if(i == 0) {
+                            // input.checked = true;
+                            // input.disabled = true;
+                            // $(input).addClass('layui-form-checked')
+                            $(".price-div label").text('单价('+data.name+')');
+                            $(".price-div").eq(0).show();
+                            input.removeAttribute("lay-filter");
+                        }
+
+                        select.appendChild(input)
+                        $(".price-div").eq(i).attr("unitVal", data.unitId);
+                    }
+                }else{
+                    select.innerHTML="未设置单位"
+                }
+                form.render('checkbox');
+                setTimeout(function () {
+                    $(".layui-form-checked").removeClass("layui-checkbox-disbaled layui-disabled");
+                }, 100)
+            }, 'post')
+        }
+
+        //单位选择监听
+        form.on('checkbox(unitcheck)', function (data) {
+            var priceDiv = $(".price-div[unitVal="+data.value+"]");
+            if(this.checked) {
+                priceDiv.show();
+                priceDiv.find("input").attr("lay-verify","number");
+                $(".price-div[unitVal="+data.value+"] > label").text('单价('+this.title+')');
+                $("span[seq='1']").text('主副单位换算关系1:' + conversion)
+            } else {
+                priceDiv.hide();
+                priceDiv.find("input").attr("lay-verify","")
+                $("span[seq='1']").text('主副单位换算关系1:' + conversion)
+            }
+            if( $("input[seq='0']").val()) {
+                $("span[seq='1']").text('主副单位换算关系1:' + conversion + '≈' + ($("input[seq='0']").val() * conversion).toFixed(2))
+            }
+        });
+
+        //输入框的值改变时触发
+        $("input[seq='0']").on("input",function(e){
+            $("span[seq='1']").text('主副单位换算关系1:' + conversion + '≈' + (e.delegateTarget.value * conversion).toFixed(2))
+            $("input[seq='1']").val(e.delegateTarget.value * conversion)
+        });
+
+
+
+        //拖拽上传
+        upload.render({
+            elem: '#adImgUpload'
+            ,url: ctx + "common/upload" //改成您自己的上传接口
+            ,done: function(res){
+                if(res && res.code == 0){
+                    $("#url").val(res.fileName);
+                    layer.msg('上传成功');
+                    layui.$('#goodsImg').removeClass('layui-hide').find('img').attr('src', res.url);
+                }else{
+                    layer.msg('上传失败');
+                }
+            }
+        });
+
+        function getLocationUrl() {
+            //获取当前网址，如： http://localhost:8083/uimcardprj/share/meun.jsp
+            var curWwwPath = window.document.location.href;
+            //获取主机地址之后的目录，如： uimcardprj/share/meun.jsp
+            var pathName = window.document.location.pathname;
+            var pos = curWwwPath.indexOf(pathName);
+            //获取主机地址，如： http://localhost:8083
+            var localhostPaht = curWwwPath.substring(0, pos);
+            //获取带"/"的项目名，如：/uimcardprj
+            var projectName = pathName.substring(0, pathName.substr(1).indexOf('/') + 1);
+            return localhostPaht;
+        }
+    })
+</script>
+
+</body>
+</html>

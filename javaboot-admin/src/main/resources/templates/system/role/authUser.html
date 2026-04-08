@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+	<meta charset="utf-8"/>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<title>角色用户分配</title>
+	<link rel="stylesheet" href="../../../static/assets/libs/layui/css/layui.css" th:href="@{/assets/libs/layui/css/layui.css}"/>
+	<link rel="stylesheet" href="../../../static/assets/module/admin.css?v=316" th:href="@{/assets/module/admin.css?v=316}"/>
+	<!--[if lt IE 9]>
+	<script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+	<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+	<![endif]-->
+</head>
+<body>
+
+
+
+<!-- 正文开始 -->
+<div class="layui-fluid">
+	<div class="layui-row layui-col-space15">
+		<div class="layui-card">
+			<!-- 搜索区 -->
+			<form class="layui-form toolbar" th:onsubmit="return false" lay-filter="inputForm" id="inputForm">
+				<input type="hidden" id="roleId" name="roleId" th:value="${role.roleId}">
+				<div class="layui-form-item">
+					<div class="layui-inline">
+						<label class="layui-form-label label-auto">登录名称：</label>
+						<div class="layui-input-inline">
+							<input class="layui-input" name="loginName" type="text" placeholder="输入登录名称"/>
+						</div>
+					</div>
+					<div class="layui-inline">
+						<label class="layui-form-label label-auto">手机号码：</label>
+						<div class="layui-input-inline">
+							<input class="layui-input" name="phonenumber" type="text" placeholder="输入手机号码"/>
+						</div>
+					</div>
+					<div class="layui-inline" style="padding-left: 13px;">
+						<button class="layui-btn layui-btn-sm icon-btn" lay-submit lay-filter="searchBtn" id="searchBtn">
+							<i class="layui-icon layui-icon-search"></i>搜索
+						</button>
+						<button class="layui-btn layui-btn-sm icon-btn" type="reset">
+							<i class="layui-icon layui-icon-refresh"></i>重置
+						</button>
+					</div>
+				</div>
+			</form>
+
+			<table class="layui-table" id="dataTable" lay-filter="dataTable"></table>
+		</div>
+
+	</div>
+</div>
+
+<!-- 头工具栏 -->
+<script type="text/html" id="toolbarHead">
+	<div class="layui-btn-container">
+		<button class="layui-btn layui-btn-normal layui-btn-sm" lay-event="selectUser" shiro:hasPermission="system:role:add"><i class="layui-icon layui-icon-addition"></i>添加用户</button>
+		<button class="layui-btn layui-btn-warm layui-btn-sm" lay-event="cancelAuthUserAll" shiro:hasPermission="system:role:remove"><i class="layui-icon layui-icon-edit"></i>批量取消授权</button>
+		<button class="layui-btn layui-btn-danger layui-btn-sm" ew-event="closeDialog"><i class="layui-icon layui-icon-close"></i>关闭</button>
+	</div>
+</script>
+
+<!-- 行工具栏 -->
+<script type="text/html" id="toolbarRow">
+	<a class="layui-btn layui-btn-xs" lay-event="cancelAuthUser" shiro:hasPermission="system:role:remove">取消授权</a>
+</script>
+
+<!-- js部分 -->
+<script type="text/javascript" src="../../../static/assets/libs/layui/layui.js" th:src="@{/assets/libs/layui/layui.js}"></script>
+<script type="text/javascript" src="../../../static/assets/js/common.js?v=316" th:src="@{/assets/js/common.js}"></script>
+
+<script type="text/javascript" th:inline="javascript">
+	var ctx = [[@{/}]];
+	var datas = [[${@dict.getType('sys_normal_disable')}]];
+</script>
+<script type="text/javascript" th:inline="none">
+	layui.use(['index', 'layer', 'form', 'table', 'util', 'ext'], function () {
+		var $ = layui.jquery;
+		var layer = layui.layer;
+		var form = layui.form;
+		var table = layui.table;
+		var util = layui.util;
+		var laydate = layui.laydate;
+		var ext = layui.ext;
+		var admin = layui.admin;
+		var index = layui.index;
+
+		var prefix = ctx + "system/role/authUser";
+		var listUrl = prefix + "/allocatedList";
+		var createUrl = prefix + "/add";
+		var updateUrl = prefix + "/edit/{id}";
+		var removeUrl = prefix + "/remove";
+		var importUrl = prefix + "/importData";
+		var exportUrl = prefix + "/export";
+		var importTemplateUrl = prefix + "/importTemplate";
+
+		table.render({
+			elem: '#dataTable'
+			,url: listUrl
+			,method: 'POST'
+			,toolbar: '#toolbarHead'
+			,height: 'full-100'
+			,cellMinWidth: 80
+			,page: true
+			,request: {
+				pageName: 'pageNum' //页码的参数名称，默认：page
+				,limitName: 'pageSize' //每页数据量的参数名，默认：limit
+			}
+			,limit: 10
+			,cols: [[
+				{type: 'checkbox'}
+				,{field: 'loginName', title: '登录名称', width: 150}
+				,{field: 'userName', title: '用户名称', width: 150}
+				,{field: 'email', title: '邮箱', width: 150}
+				,{field: 'phonenumber', title: '手机', width: 150}
+				,{field: 'status', title: '用户状态', width: 100, templet:function (res) {
+						return $.table.selectDictLabel(datas, res.status);
+				}}
+				,{field: 'createTime', title: '创建时间', width: 200}
+				,{field: 'operate', title: '操作', minWidth: 50, toolbar: '#toolbarRow', fixed: 'right'}
+			]]
+			,parseData: function(res){ //将原始数据解析成 table 组件所规定的数据
+				return {
+					"code": res.code, //解析接口状态
+					"msg": res.msg, //解析提示文本
+					"count": res.total, //解析数据长度
+					"data": res.rows //解析数据列表
+				};
+			}
+		});
+
+		//监听搜索
+		form.on('submit(searchBtn)', function (data) {
+			var field = data.field;
+			console.log(JSON.stringify(field));
+			//执行重载
+			table.reload('dataTable', {
+				where: field
+			});
+		});
+		//初始化时自动点击搜索
+		$("#searchBtn").trigger('click');
+
+		//头工具栏事件
+		table.on('toolbar(dataTable)', function(obj){
+			switch(obj.event){
+				case 'selectUser':
+					active.selectUser();
+					break;
+				case 'cancelAuthUserAll':
+					active.cancelAuthUserAll();
+					break;
+			};
+		});
+
+		//行工具栏事件
+		table.on('tool(dataTable)', function (obj) {
+			var data = obj.data;
+			if (obj.event === 'cancelAuthUser') {
+				active.cancelAuthUser(data.userId);
+			}
+		});
+
+		//事件
+		var active = {
+			selectUser: function () {
+				var url = prefix + '/selectUser/' + $("#roleId").val();
+				admin.openDialog('选择用户', url, '900px', '500px');
+			},
+			cancelAuthUserAll: function () {
+				var checkStatus = table.checkStatus('dataTable')
+						, checkData = checkStatus.data; //得到选中的数据
+
+				if (checkData.length === 0) {
+					return admin.info('请至少选择一条记录');
+				}
+
+				var ids = [];
+				layui.each(checkData, function (index, item) {
+					ids.push(item.roleId);
+				});
+
+				admin.confirm('确定取消授权吗？', function () {
+					admin.req(prefix + "/cancelAll", {
+						"roleId": $("#roleId").val(),
+						"userIds": ids
+					}, function (result) {
+						if (result.code == 0) {
+							table.reload('dataTable');
+							admin.success('取消授权成功!');
+						} else {
+							admin.error(result.msg);
+						}
+					},'post')
+				});
+			}
+			,cancelAuthUser: function (id) {
+				admin.confirm('确认要取消该用户角色吗？', function () {
+					admin.req(prefix + "/cancel", {
+						"roleId": $("#roleId").val(),
+						"userId": id
+					}, function (result) {
+						if (result.code == 0) {
+							table.reload('dataTable');
+							admin.success('取消授权成功!');
+						} else {
+							admin.error(result.msg);
+						}
+					},'post')
+				});
+			}
+		}
+	});
+</script>
+</body>
+
+</html>

@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>报价单主列表</title>
+    <link rel="stylesheet" href="../../../static/assets/libs/layui/css/layui.css"
+          th:href="@{/assets/libs/layui/css/layui.css}"/>
+    <link rel="stylesheet" href="../../../static/assets/module/admin.css?v=316" th:href="@{/assets/module/admin.css}"/>
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <style>
+        #treeTbTree {
+            height: 535px;
+            overflow: auto;
+        }
+
+        @media screen and (max-width: 768px) {
+            #treeTbTree {
+                height: auto;
+            }
+        }
+
+        /** dtree选中颜色重写 */
+        .dtree-theme-item-this {
+            background-color: #eeeeee !important;
+        }
+
+        .box-title {
+            font-size: 16px;
+            margin-bottom: 13px;
+            float: left;
+        }
+
+        .box-tools {
+            position: relative;
+            top: 0px;
+            right: 0;
+        }
+
+        .pull-right {
+            float: right;
+        }
+
+
+    </style>
+    <style>
+        /** 项目列表样式 */
+        .project-list-item {
+            background-color: #fff;
+            border: 1px solid #e8e8e8;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all .2s;
+        }
+
+        .project-list-item:hover {
+            box-shadow: 0 2px 10px rgba(0, 0, 0, .15);
+        }
+
+        .project-list-item .project-list-item-cover {
+            width: 100%;
+            height: 220px;
+            display: block;
+            border-top-left-radius: 4px;
+            border-top-right-radius: 4px;
+        }
+
+        .project-list-item-body {
+            padding: 20px;
+        }
+
+        .project-list-item .project-list-item-body > h2 {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 12px;
+        }
+
+        .project-list-item .project-list-item-text {
+            height: 44px;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+
+        .project-list-item .project-list-item-desc {
+            position: relative;
+        }
+
+        .project-list-item .project-list-item-desc .time {
+            color: #999;
+            font-size: 12px;
+        }
+
+        .project-list-item .project-list-item-desc .ew-head-list {
+            position: absolute;
+            right: 0;
+            top: 0;
+        }
+
+        .ew-head-list .ew-head-list-item {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 1px solid #fff;
+            margin-left: -10px;
+        }
+
+        .ew-head-list .ew-head-list-item:first-child {
+            margin-left: 0;
+        }
+
+        /** // 项目列表样式结束 */
+
+        /** 应用列表样式 */
+        .application-list-item {
+            background-color: #fff;
+            border: 1px solid #e8e8e8;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all .2s;
+        }
+
+        .application-list-item:hover {
+            box-shadow: 0 2px 10px rgba(0, 0, 0, .15);
+        }
+
+        .application-list-item .application-list-item-header {
+            padding: 16px 12px 0 12px;
+        }
+
+        .application-list-item .application-list-item-header .head {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .application-list-item .application-list-item-header > h2 {
+            color: #333;
+            font-size: 18px;
+            display: inline-block;
+        }
+
+        .application-list-item .application-list-item-body {
+            padding: 12px 12px 12px 50px;
+            font-size: 0;
+        }
+
+        .application-list-item .application-list-item-body .text-num-item {
+            display: inline-block;
+            width: 50%;
+            font-size: 26px;
+            color: #666;
+        }
+
+        .application-list-item .application-list-item-body .text-num-item .text-num-item-title {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 10px;
+        }
+
+        .application-list-item .application-list-item-body .text-num-item small {
+            font-size: 16px;
+        }
+
+        .application-list-item .application-list-item-tool {
+            font-size: 0;
+            background-color: #FAFAFA;
+            border-top: 1px solid #e8e8e8;
+            padding: 10px 0 5px 0;
+            border-bottom-left-radius: 4px;
+            border-bottom-right-radius: 4px;
+        }
+
+        .application-list-item .application-list-item-tool .application-list-item-tool-item {
+            display: inline-block;
+            width: 25%;
+            font-size: 18px;
+            text-align: center;
+            color: #999;
+            border-right: 1px solid #e8e8e8;
+            box-sizing: border-box;
+            cursor: pointer;
+        }
+
+        .application-list-item .application-list-item-tool .application-list-item-tool-item:last-child {
+            border-right: none;
+        }
+
+        /** // 应用列表样式结束 */
+
+        /** 文章列表样式 */
+        .article-list-item {
+            border-bottom: 1px solid #e8e8e8;
+            margin-top: 16px;
+            position: relative;
+        }
+
+        .article-list-item > h2 {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 12px;
+        }
+
+        .article-list-item > .layui-badge-rim {
+            position: absolute;
+            right: 0;
+            top: 0;
+        }
+
+        .article-list-item .layui-badge-list .layui-badge {
+            padding-top: 0;
+            padding-bottom: 0;
+        }
+
+        .article-list-item .article-list-item-text {
+            margin-bottom: 12px;
+        }
+
+        .article-list-item .article-list-item-desc {
+            margin-bottom: 12px;
+        }
+
+        .article-list-item .article-list-item-desc .head {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+        }
+
+        .article-list-item .article-list-item-desc > * {
+            vertical-align: middle;
+        }
+
+        .article-list-item .article-list-item-tool {
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .article-list-item .article-list-item-tool .article-list-item-tool-item {
+            border-right: 1px solid #e8e8e8;
+            padding: 0 15px;
+            cursor: pointer;
+        }
+
+        .article-list-item .article-list-item-tool .article-list-item-tool-item:first-child {
+            padding-left: 0;
+        }
+
+        .article-list-item .article-list-item-tool .article-list-item-tool-item:last-child {
+            border-right: none;
+            padding-right: 0;
+        }
+
+        .article-list-item .article-list-item-tool .article-list-item-tool-item > * {
+            vertical-align: middle;
+        }
+
+        .article-list-item .article-list-item-tool .article-list-item-tool-item.star-active {
+            color: #01AAED;
+        }
+
+        .article-list-item .article-list-item-tool .article-list-item-tool-item.star-active .layui-icon-rate:before {
+            content: "\e67a";
+        }
+
+        /** // 文章列表样式结束 */
+        .color-black{
+            color:#000923
+        }
+        .data-card-body {
+            height: 350px;
+            overflow-y: auto;
+            overflow-x: hidden
+        }
+        .data-card-body::-webkit-scrollbar {/*滚动条整体样式*/
+            width: 2px;     /*高宽分别对应横竖滚动条的尺寸*/
+            height: 1px;
+
+        }
+
+        .data-card-body::-webkit-scrollbar-thumb {/*滚动条里面小方块*/
+            border-radius: 10px;
+            -webkit-box-shadow: inset 0 0 5px #fff;
+            background: #ddd;
+
+        }
+
+        .data-card-body::-webkit-scrollbar-track {/*滚动条里面轨道*/
+
+            -webkit-box-shadow: inset 0 0 5px rgba(0,0,0,0.2);
+            border-radius: 10px;
+            background: #EDEDED;
+
+        }
+    </style>
+</head>
+<body>
+
+
+<!-- 正文开始 -->
+<div class="layui-fluid">
+    <div class="layui-row">
+        <!-- 右表 -->
+        <div class="layui-card">
+            <div class="layui-card-body" style="min-height: 535px;">
+
+                <!-- 搜索区 -->
+                <form class="layui-form toolbar" th:onsubmit="return false">
+                    <div class="layui-form-item">
+                        <div class="layui-inline">
+                            <label class="layui-form-label label-auto">输入搜索：</label>
+                            <div class="layui-input-inline">
+                                <input class="layui-input" name="quotationName" type="text" placeholder="报价单名称"/>
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <label class="layui-form-label label-auto">所属区域：</label>
+                            <div class="layui-input-inline">
+                                <select name="deptId"  id="deptId"   >
+                                    <option  value="" th:checked="true">选择区域</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="layui-inline">
+                            <label class="layui-form-label label-auto">激活状态：</label>
+                            <div class="layui-input-block">
+                                <input type="checkbox" name="status" checked="true"  lay-filter="switchTest" lay-skin="switch" lay-text="激活|不激活" >
+                            </div>
+                        </div>
+                        <div class="layui-inline" style="padding-left: 13px;">
+                            <button class="layui-btn layui-btn-sm icon-btn" lay-submit lay-filter="searchBtn"
+                                    id="searchBtn" shiro:hasPermission="shop:quotation:list">
+                                <i class="layui-icon layui-icon-search"></i>搜索
+                            </button>
+                            <button class="layui-btn layui-btn-sm icon-btn" type="reset">
+                                <i class="layui-icon layui-icon-refresh"></i>重置
+                            </button>
+                            <button class="layui-btn layui-btn-normal layui-btn-sm" lay-event="add"
+                                    shiro:hasPermission="shop:quotation:add" id="add"><i
+                                    class="layui-icon layui-icon-addition"></i>创建报价单
+                            </button>
+
+                        </div>
+                    </div>
+                </form>
+
+                <div class="layui-tab-content">
+
+                    <div class="layui-tab-item layui-show" style="padding-top: 20px; width: 95%">
+                        <div class="layui-row layui-col-space30" id="demoCardList2"></div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- 应用模板 -->
+<script type="text/html" id="demoCardItem2">
+    <div class="layui-col-md4">
+        <div class="application-list-item" lay-event="toGoods">
+            <div class="application-list-item-tool" >
+
+
+
+                <span class="application-list-item-tool-item"  >
+
+                    {{d.status=='1'?'已激活':'未激活'}}
+              </span>
+
+                <span class="application-list-item-tool-item"  >
+
+                </span>
+                <span class="application-list-item-tool-item"  >
+
+                </span>
+                <span class="application-list-item-tool-item" lay-event="more">
+                    <div class="dropdown-menu dropdown-hover">
+                        <i class="layui-icon layui-icon-more"></i>
+                        <ul class="dropdown-menu-nav dropdown-bottom-center">
+                            <div class="dropdown-anchor"></div>
+<!--                            <li><a lay-event="share" shiro:hasPermission="shop:quotation:share">分享</a></li>-->
+<!--                            <li><a lay-event="print" shiro:hasPermission="shop:quotation:print">打印</a></li>-->
+<!--                            <li><a lay-event="img" shiro:hasPermission="shop:quotation:img">图片</a></li>-->
+                             <li><a lay-event="copy" shiro:hasPermission="shop:quotation:edit">复制</a></li>
+                            <li><a lay-event="edit" shiro:hasPermission="shop:quotation:edit">设置</a></li>
+                            <li><a lay-event="remove" shiro:hasPermission="shop:quotation:remove">删除</a></li>
+                        </ul>
+                    </div>
+                </span>
+                <div   style="padding-left: 24px;">
+                     <span  class="application-list-item-tool-item  "
+                           style="width: 350px;overflow: hidden;white-space: nowrap;text-overflow: ellipsis;display: inline-block;text-align: left;color:#000923">
+                  {{d.quotationName}}
+                </span>
+                </div>
+            </div>
+            <div class="data-card-body">
+<!--                <div class="application-list-item-header">-->
+<!--                    <div class="text-num-item-title color-black">报价单ID：{{d.quotationId}}</div>-->
+<!--                </div>-->
+                <div class="application-list-item-header">
+                    <div class="text-num-item-title color-black">报价单简称（对外）：{{d.quotationAbbreviation}}</div>
+                </div>
+                <div class="application-list-item-header">
+                    <div class="text-num-item-title color-black">在售商品数：{{d.goodsNum==null?0:d.goodsNum}}</div>
+                </div>
+                <div class="application-list-item-header">
+                    <div class="text-num-item-title color-black">商户数量：{{d.meberNum==null?0:d.meberNum}}</div>
+                </div>
+
+                <div class="application-list-item-header">
+                    <div class="text-num-item-title color-black">运营时间设置：{{d.operateStartTime}}~{{d.operateEndTime}}
+                    </div>
+                </div>
+
+                <div class="application-list-item-header">
+                    <div class="text-num-item-title color-black">定价周期：{{d.startTime}}~{{d.endTime}}
+                    </div>
+                </div>
+                <div class="application-list-item-header">
+                    <div class="text-num-item-title color-black "  style="width: 350px;overflow: hidden;white-space: nowrap;text-overflow: ellipsis;display: inline-block;text-align: left;">描述：{{d.description==null?'-':d.description}}</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</script>
+
+
+<!-- js部分 -->
+<script type="text/javascript" src="../../../static/assets/libs/layui/layui.js"
+        th:src="@{/assets/libs/layui/layui.js}"></script>
+
+<script type="text/javascript" src="../../../static/assets/js/common.js?v=316"
+        th:src="@{/assets/js/common.js}"></script>
+
+<script th:inline="javascript">
+    var ctx = [[@{
+        /}]];
+</script>
+<script th:inline="none">
+    layui.use(['layer', 'form', 'dataGrid', 'element', 'dropdown','admin'], function () {
+        var $ = layui.jquery;
+        var form = layui.form;
+        var dataGrid = layui.dataGrid;
+        var prefix = ctx + "shop/quotation";
+        var createUrl = prefix + "/add";
+        var updateUrl = prefix + "/edit/{quotationId}";
+        var copyUrl = prefix + "/copy";
+        var removeUrl = prefix + "/remove";
+        var admin = layui.admin;
+        //监听搜索
+        form.on('submit(searchBtn)', function (data) {
+            data.field.status = $("input[name=status]")[0].checked ? '1' : '2'
+            queryList(data.field)
+        });
+
+        form.on('switch(switchTest)', function(data){
+            data.field = {}
+            data.field.status = $("input[name=status]")[0].checked ? '1' : '2'
+            data.field.deptId = $("#deptId").val()
+            data.field.quotationName = $("input[name=quotationName]").val()
+            queryList(data.field)
+        })
+        $("#add").click(function () {
+            parent.layui.admin.openDialog('创建报价单', createUrl, '100%', '100%','dataGrid', 'submitBtn',function (res) {
+                admin.success('创建成功!');
+                queryList()
+            });
+        });
+
+        queryList()
+        /** 应用 */
+
+
+        dataGrid.on('tool(demoCardList2)', function (obj) {
+            if (obj.event === 'edit') {
+                var editUrl = updateUrl.replace("{quotationId}", obj.data.quotationId);
+
+                parent.layui.admin.openDialog('更改报价单', editUrl, '100%', '100%', 'dataGrid', 'submitBtn',function (res) {
+                    admin.success('更改成功!');
+                    queryList()
+                });
+            } else if (obj.event === 'copy') {
+                admin.confirm('确定复制吗?',function(){
+                    admin.req(copyUrl, {quotationId:  obj.data.quotationId}, function (data) {
+                        if (data.code == 0) {
+                            queryList();
+                            admin.success('复制成功!');
+                        } else {
+                            admin.error(data.msg);
+                        }
+                    },'post')
+                });
+            } else if (obj.event === 'toGoods') {
+                parent.layui.admin.openUrl(obj.data.quotationName, ctx + "shop/quotationGoods/?quotationId="+obj.data.quotationId, '100%', '100%',function (res) {
+
+                });
+            } else if (obj.event === 'remove') {
+                admin.confirm('确定删除吗?',function(){
+                    admin.req(removeUrl, {ids:  obj.data.quotationId}, function (data) {
+                        if (data.code == 0) {
+                            queryList();
+                            admin.success('删除成功!');
+                        } else {
+                            admin.error(data.msg);
+                        }
+                    },'post')
+                });
+            }
+        });
+
+        function queryList(field) {
+            var params={}
+            debugger
+            if(field!=null){
+                params=field;
+            }else {
+                params.status = '1'
+            }
+            params.orderByColumn='end_time';
+            params.isAsc='asc'
+            dataGrid.render({
+                url: prefix + "/list",
+                method: 'POST',
+                elem: '#demoCardList2',
+                templet: '#demoCardItem2',
+                request: {
+                    pageName: 'pageNum'
+                    ,limitName: 'pageSize'
+
+                },
+                where:params,
+                page: {limit: 6, limits: [6, 12, 18, 24, 30]}
+                , parseData: function (res) { //将原始数据解析成 table 组件所规定的数据
+                    // dataGrid的bug，无数据分页还存在
+                    if(res.total == 0) {
+                        $(".ew-datagrid-page").hide()
+                    }
+                    return {
+                        "code": res.code, //解析接口状态
+                        "msg": res.msg, //解析提示文本
+                        "count": res.total, //解析数据长度
+                        "data": res.rows //解析数据列表
+                    };
+
+                },
+            });
+        }
+
+        //所属区域------------------------------------------------------------------------------------------------------
+        admin.req(ctx + "system/dept/getLoginUserDept", { }, function (result) {
+            var select= document.getElementById('deptId');
+            for (var i=0;i<result.data.length;i++) {
+                var data= result.data[i];
+                var option = document.createElement("option");
+                option.setAttribute("value", data.value);
+                option.innerText =data.name;
+                select.appendChild(option)
+            }
+            form.render('select');
+        },'get')
+    });
+
+
+</script>
+</body>
+
+</html>

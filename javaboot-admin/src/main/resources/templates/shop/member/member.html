@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('客户列表')" />
+</head>
+<body>
+
+
+
+<!-- 正文开始 -->
+<div class="layui-fluid">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-card">
+            <!-- 搜索区 -->
+            <form class="layui-form toolbar" th:onsubmit="return false" lay-filter="inputForm" id="inputForm">
+                <div class="layui-form-item">
+<!--                    <div class="layui-inline">-->
+<!--                        <label class="layui-form-label">客户账号：</label>-->
+<!--                        <div class="layui-input-inline">-->
+<!--                            <input class="layui-input" name="phone" type="text" placeholder="输入手机号"/>-->
+<!--                        </div>-->
+<!--                    </div>-->
+                    <div class="layui-inline">
+                        <label class="layui-form-label">客户名称：</label>
+                        <div class="layui-input-inline">
+                            <input class="layui-input" name="nickname" type="text" placeholder="输入会员昵称"/>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label">结算单位：</label>
+                        <div class="layui-input-inline">
+                            <input class="layui-input" name="settlementName" type="text" placeholder="输入结算单位"/>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label label-auto">所属区域：</label>
+                        <div class="layui-input-inline">
+                            <select name="customerArea"  id="customerArea"  lay-search >
+                                <option  value="" th:checked="true">请选择区域</option>
+                                <option  value="-99" th:checked="true">客户无区域</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label label-auto">报价单：</label>
+                        <div class="layui-input-inline">
+                            <select name="quotationId"  id="quotationId" lay-search  >
+                                <option  value="" th:checked="true">请选择报价单</option>
+                                <option  value="-99" th:checked="true">客户无报价单</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label label-auto">配送类型：</label>
+                        <div class="layui-input-inline">
+                            <select name="deliveryType"  id="deliveryType" lay-search  >
+                                <option  value="" th:checked="true">请选择配送类型</option>
+                                <option  value="1">配送</option>
+                                <option  value="2">自提</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-inline" style="padding-left: 13px;">
+                        <button class="layui-btn layui-btn-sm icon-btn" lay-submit lay-filter="searchBtn" id="searchBtn">
+                            <i class="layui-icon layui-icon-search"></i>搜索
+                        </button>
+                        <button class="layui-btn layui-btn-sm icon-btn" type="reset">
+                            <i class="layui-icon layui-icon-refresh"></i>重置
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <table class="layui-table" id="dataTable" lay-filter="dataTable"></table>
+        </div>
+
+    </div>
+</div>
+
+<!-- 添加排课表单弹窗 -->
+<script type="text/html" id="setCustomerDialog">
+    <form id="setCustomerForm" lay-filter="setCustomerForm" class="layui-form model-form layui-row">
+        <div class="layui-row">
+            <div class="layui-col-md6">
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <label class="layui-form-label ">业务员:</label>
+                        <div class="layui-input-block">
+                            <select name="opmanagerId"  id="opmanagerId" lay-filter="opmanagerId" >
+                                <option value="">请选择业务员</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item text-right">
+            <button class="layui-btn" lay-filter="setCustomerSubmit" lay-submit>确定</button>
+            <button class="layui-btn layui-btn-primary" type="button" ew-event="closeDialog">取消</button>
+        </div>
+    </form>
+</script>
+
+<!-- 头工具栏 -->
+<script type="text/html" id="toolbarHead">
+    <div class="layui-btn-container">
+<!--        <button class="layui-btn layui-btn-normal layui-btn-sm" lay-event="add" shiro:hasPermission="shop:member:add"><i class="layui-icon layui-icon-edit"></i>新增</button> -->
+        <button class="layui-btn layui-btn-warm layui-btn-sm" lay-event="edit" shiro:hasPermission="shop:member:edit"><i class="layui-icon layui-icon-edit"></i>修改</button>
+        <button class="layui-btn layui-btn-danger layui-btn-sm" lay-event="batchdel" shiro:hasPermission="shop:member:remove"><i class="layui-icon layui-icon-delete"></i>删除</button>
+<!--        <button class="layui-btn layui-btn-normal layui-btn-sm" lay-event="export" shiro:hasPermission="shop:member:export"><i class="layui-icon layui-icon-export"></i>导出</button>-->
+        <button class="layui-btn layui-btn-normal layui-btn-sm" lay-event="adjustPrice" shiro:hasPermission="shop:member:quotation" id="adjustPriceBtn"><i class="layui-icon layui-icon-export"></i>关联报价单</button>
+        <button class="layui-btn layui-btn-normal layui-btn-sm" lay-event="setCustomer" id="setCustomerBtn"><i class="layui-icon layui-icon-export"></i>设置业务员</button>
+    </div>
+</script>
+
+<!-- 行工具栏 -->
+<script type="text/html" id="toolbarRow">
+    <a class="layui-btn layui-btn-xs" lay-event="edit" shiro:hasPermission="shop:member:edit">编辑</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del" shiro:hasPermission="shop:member:remove">删除</a>
+    <a class="layui-btn layui-btn-xs" lay-event="subList" shiro:hasPermission="shop:member:sub">子账号</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="delAdjustPrice" shiro:hasPermission="shop:member:quotation">删除调价</a>
+</script>
+
+<!-- js部分 -->
+<th:block th:include="include :: footer" />
+<!--<script type="text/javascript" src="../../../static/assets/libs/layui/layui.js" th:src="@{/assets/libs/layui/layui.js}"></script>-->
+<!--<script type="text/javascript" src="../../../static/assets/js/common.js?v=316" th:src="@{/assets/js/common.js}"></script>-->
+<script type="text/javascript" src="../../../static/assets/module/tableSelect/quotationSelect.js?v=316" th:src="@{/assets/module/tableSelect/quotationSelect.js}"></script>
+
+<script type="text/javascript" th:inline="javascript">
+    var ctx = [[@{/}]];
+    var settlementDictData = [[${@dict.getType('settlement_type')}]];
+    var customerDictData = [[${@dict.getType('store_member_type')}]];
+</script>
+<script type="text/javascript" th:inline="none">
+    layui.use(['index', 'layer', 'form', 'table', 'util', 'ext'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        var table = layui.table;
+        var util = layui.util;
+        var tableSelect = layui.quotationSelect;
+        var ext = layui.ext;
+        var admin = layui.admin;
+        var index = layui.index;
+
+        var prefix = ctx + "shop/member";
+        var listUrl = prefix + "/list";
+        var createUrl = prefix + "/add";
+        var updateUrl = prefix + "/edit/{id}";
+        var subMemberUrl = prefix + "/sub/list/{id}";
+        var removeUrl = prefix + "/remove";
+        var exportUrl = prefix + "/export";
+        var quotationUrl = ctx + "shop/quotation/list";
+        var updateQuotationUrl = prefix + "/update/quotation";
+
+        table.render({
+            elem: '#dataTable'
+            ,defaultToolbar: []
+            ,url: listUrl
+            ,method: 'POST'
+            ,toolbar: '#toolbarHead'
+            ,height: 'full-100'
+            ,cellMinWidth: 80
+            ,page: {
+                curr:1
+            }
+            ,request: {
+                pageName: 'pageNum' //页码的参数名称，默认：page
+                ,limitName: 'pageSize' //每页数据量的参数名，默认：limit
+            }
+            ,limit: 10
+            ,cols: [[
+                {type: 'checkbox'}
+                , {field: 'id', title: '客户id', hide: true}
+                ,{field: 'customerNo', title: '客户账号', width: 100}
+                ,{field: 'nickname', title: '客户名称', width: 220}
+                ,{field: 'address', title: '客户地址', width: 200}
+                ,{field: 'settlementName', title: '结算客户', width: 150}
+                // ,{field: 'nickname', title: '是否连锁', width: 100}
+                ,{field: 'deptName', title: '所属区域', width: 100}
+                ,{field: 'quotationName', title: '所属报价单', width: 120}
+                ,{field: 'customerType', title: '客户级别', width: 100, templet:function (d) {
+                        return $.table.selectDictLabel(customerDictData, d.customerType);
+                }}
+                ,{field: 'settlementType', title: '结算类型', width: 100,templet:function (d) {
+                        return $.table.selectDictLabel(settlementDictData, d.settlementType);
+                }}
+                ,{title: '打印模板', width: 90,templet:function(res){
+                        return '默认模板'
+                 }}
+                // ,{field: 'phone', title: '联系人', width: 120}
+                ,{field: 'status', title: '状态', width: 100, templet:function(res){
+                        if(res.status == 0){
+                            return '待审核';
+                        }else if(res.status == 1){
+                            return '已审核';
+                        }else {
+                            return '已拒绝'
+                        }
+                 }}
+                ,{field: 'createAt', title: '创建时间', width: 200}
+                ,{field: 'operate', title: '操作', width: 245, toolbar: '#toolbarRow', fixed: 'right'}
+            ]]
+            ,parseData: function(res){ //将原始数据解析成 table 组件所规定的数据
+                return {
+                    "code": res.code, //解析接口状态
+                    "msg": res.msg, //解析提示文本
+                    "count": res.total, //解析数据长度
+                    "data": res.rows //解析数据列表
+                };
+            }
+        });
+
+        //所属区域------------------------------------------------------------------------------------------------------
+        admin.req(ctx + "system/dept/getLoginUserDept", { }, function (result) {
+            var select= document.getElementById('customerArea');
+            for (var i=0;i<result.data.length;i++) {
+                var data= result.data[i];
+                var option = document.createElement("option");
+                option.setAttribute("value", data.value);
+                option.innerText =data.name;
+                select.appendChild(option)
+            }
+            form.render('select');
+        },'get')
+
+        //所属报价单------------------------------------------------------------------------------------------------------
+        admin.req(quotationUrl, {queryAll:true }, function (result) {
+            var select= document.getElementById('quotationId');
+            for (var i=0;i<result.rows.length;i++) {
+                var data= result.rows[i];
+                var option = document.createElement("option");
+                option.setAttribute("value", data.quotationId);
+                option.innerText =data.quotationName;
+                select.appendChild(option)
+            }
+            form.render('select');
+        },'post')
+
+        //监听搜索
+        form.on('submit(searchBtn)', function (data) {
+            var field = data.field;
+            console.log(JSON.stringify(field));
+            //执行重载
+            table.reload('dataTable', {
+                where: field
+                ,page:{curr:1}
+            });
+            initTableSelect();
+        });
+
+        //头工具栏事件
+        table.on('toolbar(dataTable)', function(obj){
+            switch(obj.event){
+                case 'add':
+                    active.add();
+                    break;
+                case 'edit':
+                    var checkStatus = table.checkStatus('dataTable')
+                        , checkData = checkStatus.data; //得到选中的数据
+                    var id = null;
+                    if (id == null) {
+                        if (checkData.length === 0) {
+                            return admin.info('请选择一条数据');
+                        } else if (checkData.length > 1) {
+                            return admin.info('只能选择一条数据编辑');
+                        } else {
+                            id = checkData[0].id;
+                        }
+                    }
+                    active.edit(id);
+                    break;
+                case 'setCustomer':
+                    var checkStatus = table.checkStatus('dataTable')
+                        , checkData = checkStatus.data; //得到选中的数据
+                    if (checkData.length === 0) {
+                        return admin.info('请选择一条数据');
+                    } else if (checkData.length > 1) {
+                        //如果大于一条数据，则判断是否有多个区域
+                        var tempArr = [];
+                        var memberIds = '';
+                        for (var i=0;i<checkData.length;i++){
+                            if(checkData[i].customerArea){
+                                memberIds += checkData[i].id + ','
+                                if(tempArr.indexOf(checkData[i].customerArea) == -1){
+                                    tempArr.push(checkData[i].customerArea);
+                                }
+                                if(tempArr.length >= 2){
+                                    return admin.info('请选择相同区域的客户');
+                                }
+                            }else{
+                                return admin.info('请先设置客户所属区域');
+                            }
+                        }
+                        if(tempArr){
+                            showSetCustomerDialog(tempArr[0],memberIds);
+                        }
+                    } else if (checkData.length === 1){
+                        if(checkData[0].customerArea){
+                            showSetCustomerDialog(checkData[0].customerArea,checkData[0].id + '' );
+                        }else{
+                            return admin.info('请先设置客户所属区域');
+                        }
+                    }
+                    break;
+                case 'batchdel':
+                    active.batchdel();
+                    break;
+                case 'subList':
+                    active.subList();
+                    break;
+                case 'adjustPrice':
+                    active.adjustPrice();
+                    break;
+                case 'import':
+                    break;
+                case 'export':
+                    $.modal.loading("正在导出数据，请稍后...");
+                    $.post(exportUrl, $("#inputForm").serializeArray(), function(result) {
+                        if (result.code == web_status.SUCCESS) {
+                            window.location.href = ctx + "common/download?fileName=" + encodeURI(result.msg) + "&delete=" + true;
+                        } else if (result.code == web_status.WARNING) {
+                            $.modal.alertWarning(result.msg)
+                        } else {
+                            $.modal.alertError(result.msg);
+                        }
+                        $.modal.closeLoading();
+                    });
+                    break;
+            };
+        });
+
+        function showSetCustomerDialog(customerArea,ids) {
+            var deptId = customerArea;
+            if(!deptId){
+                deptId=''
+            }
+            //请求业务员数据
+            admin.req(ctx + "system/user/getOpmanagerList", {deptId: deptId}, function (result) {
+                admin.open({
+                    type: 1,
+                    title: '设置业务员',
+                    area: '600px',
+                    content: $('#setCustomerDialog').html(),
+                    success: function (layero, dIndex) {
+                        //渲染业务员select
+                        $("#opmanagerId").html($('<option value="">请选择业务员</option>'));
+                        for (var i=0;i<result.length;i++) {
+                            var data= result[i];
+                            var option = $('<option></option>');
+                            option.attr("value", data.userId);
+                            option.text(data.userName);
+                            $("#opmanagerId").append(option)
+                        }
+                        form.render('select');
+
+                        $(layero).children('.layui-layer-content').css('overflow', 'visible');
+                        // 表单提交事件
+                        form.on('submit(setCustomerSubmit)', function (data) {
+                            console.log('test viv --->submit.....',data.field)
+                            if(data && data.field && data.field.opmanagerId){
+                                admin.req(ctx + "shop/member/batchSaveOpmanagerId", {memberIds: ids,opmanagerId:data.field.opmanagerId}, function (result) {
+                                    return true;
+                                },'post');
+                            }else{
+                                admin.info('请先选择业务员');
+                                return false;
+                            }
+                        });
+                    }
+                });
+
+            },'post')
+        }
+
+        //行工具栏事件
+        table.on('tool(dataTable)', function (obj) {
+            var data = obj.data;
+            if (obj.event === 'edit') {
+                active.edit(data.id);
+            } else if (obj.event === 'del') {
+                active.del(data.id);
+            } else if (obj.event === 'subList') {
+                active.subList(data.id);
+            } else if (obj.event === 'delAdjustPrice') {
+                active.delAdjustPrice(data.id);
+            }
+        });
+
+        function tableReload(){
+            table.reload('dataTable');
+            initTableSelect();
+        }
+
+        initTableSelect();
+        function initTableSelect(){
+            tableSelect.render({
+                elem: '#adjustPriceBtn',	//定义输入框input对象
+                checkedKey: 'quotationId', //表格的唯一建值，非常重要，影响到选中状态 必填
+                searchKey: 'quotationName',	//搜索输入框的name值 默认keyword
+                searchPlaceholder: '报价单名称',	//搜索输入框的提示文字 默认关键词搜索
+                table: {	//定义表格参数，与LAYUI的TABLE模块一致，只是无需再定义表格elem
+                    url: quotationUrl
+                    , method: 'POST'
+                    , height: 'full-100'
+                    , cellMinWidth: 80
+                    , page: true
+                    , request: {
+                        pageName: 'pageNum' //页码的参数名称，默认：page
+                        , limitName: 'pageSize' //每页数据量的参数名，默认：limit
+                    }
+                    , limits: [10, 20, 30, 40, 50, 60, 70, 80, 90, 99999]
+                    , cols: [[
+                        {type: 'radio'}
+                        , {field: 'quotationId', title: '报价单ID', hide: true}
+                        , {field: 'quotationId', title: '报价单ID', width: 200}
+                        , {field: 'quotationName', title: '报价单名称', width: 250}
+                        , {field: 'quotationAbbreviation', title: '报价单简称', width: 250}
+                    ]]
+                    , parseData: function (res) { //将原始数据解析成 table 组件所规定的数据
+                        return {
+                            "code": res.code, //解析接口状态
+                            "msg": res.msg, //解析提示文本
+                            "count": res.total, //解析数据长度
+                            "data": res.rows //解析数据列表
+                        };
+                    }
+                },
+                done: function (elem, data) {
+                    //设置选择得值
+                    var req = {};
+                    var ids = [];
+                    var checkStatus = table.checkStatus('dataTable').data;
+                    layui.each(checkStatus, function (index, item) {
+                        ids.push(item.id)
+                    });
+                    req.quotationId = data.data[0].quotationId
+                    req.memberIds = ids.join(",");
+
+                    admin.req(updateQuotationUrl, JSON.stringify(req), function (res) {
+                        if (res.code == 0) {
+                            tableReload();
+                            admin.success(' 设置报价单成功!');
+                        } else {
+                            admin.error(res.msg);
+                        }
+                    },'post')
+                },
+                before:function(elem, data){
+                    var checkStatus = table.checkStatus('dataTable')
+                        , checkData = checkStatus.data; //得到选中的数据
+
+                    if (checkData.length === 0) {
+                        admin.info('请选择数据');
+                        return false;
+                    }
+                    var isSame = true;
+                    layui.each(checkData, function (index, item) {
+                        layui.each(checkData, function (index1, item1) {
+                            if(item.customerArea != item1.customerArea) {
+                                isSame = false;
+                            }
+                        });
+                    });
+
+                    if (!isSame) {
+                        admin.info('请相同区域下的商户进行设置！');
+                        return false;
+                    }
+                    return true;
+                }
+            })
+        }
+
+        //事件
+        var active = {
+            batchdel: function () {
+                var checkStatus = table.checkStatus('dataTable')
+                    , checkData = checkStatus.data; //得到选中的数据
+
+                if (checkData.length === 0) {
+                    return admin.info('请选择数据');
+                }
+
+                var ids = [];
+                layui.each(checkData, function (index, item) {
+                    ids.push(item.id);
+                });
+
+                admin.confirm('确定删除客户吗？', function () {
+                    admin.req(removeUrl, {ids: ids.join(',')}, function (res) {
+                        if (res.code == 0) {
+                            tableReload();
+                            admin.success('客户已删除!');
+                        } else {
+                            admin.error(res.msg);
+                        }
+                    },'post')
+                });
+            }
+            ,add: function () {
+                admin.openDialog('添加会员', createUrl, '800px', '480px');
+            }
+            ,edit: function (id) {
+                var editUrl = updateUrl.replace("{id}", id);
+                parent.layui.admin.openUrl('修改客户信息', editUrl, '100%', '100%',function () {
+                    tableReload();
+                });
+            }
+            ,del: function(id){
+                admin.confirm('确定删除客户吗?',function(){
+                    admin.req(removeUrl, {ids: id}, function (res) {
+                        if (res.code == 0) {
+                            tableReload();
+                            admin.success('客户已删除!');
+                        } else {
+                            admin.error(res.msg);
+                        }
+                    },'post')
+                });
+            }
+            ,subList: function(id) {
+                var reqUrl = subMemberUrl.replace("{id}", id);
+                var exsitDeptId = false;
+                layui.each(table.cache.dataTable,function(index, item){
+                    if(item.id == id && item.customerArea) {
+                        exsitDeptId = true;
+                    }
+                });
+                if(!exsitDeptId) {
+                    return admin.info('请先设置商户对应的区域！');;
+                }
+                parent.layui.admin.openUrl('子账号列表', reqUrl, '100%', '100%');
+            }
+            ,adjustPrice: function() {
+            }
+            ,delAdjustPrice: function(id) {
+
+                var req = {}
+                req.quotationId = ''
+                req.memberIds = id;
+                admin.req(updateQuotationUrl, JSON.stringify(req), function (res) {
+                    if (res.code == 0) {
+                        tableReload();
+                        admin.success(' 设置报价单成功!');
+                    } else {
+                        admin.error(res.msg);
+                    }
+                },'post')
+            }
+        }
+    });
+</script>
+</body>
+
+</html>

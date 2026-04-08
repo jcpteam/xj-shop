@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaboot.shop.mapper.StoreStatMapper">
+
+    <sql id="numCondition">
+        t1.create_time >= #{startTime}
+        AND t1.create_time &lt; #{endTime}
+        <if test="deptId != null  and deptId != ''"> AND t1.dept_id = #{deptId}</if>
+        AND t1.STATUS IN ( '1', '2', '3', '4' )
+    </sql>
+
+    <select id="selectOrderTotalNum" parameterType="com.javaboot.shop.dto.StoreStatDTO" resultType="Integer">
+        SELECT
+            count(*) num
+        FROM
+            store_goods_order t1
+        WHERE
+        <include refid="numCondition"/>
+    </select>
+
+    <select id="selectMerchantTotalNum" parameterType="com.javaboot.shop.dto.StoreStatDTO" resultType="Integer">
+        SELECT
+            count(DISTINCT merchant_id) num
+        FROM
+            store_goods_order t1
+        WHERE
+        <include refid="numCondition"/>
+    </select>
+
+    <select id="selectGoodsTotalNum" parameterType="com.javaboot.shop.dto.StoreStatDTO" resultType="Integer">
+        SELECT
+            count( DISTINCT goods_id ) num
+        FROM
+            store_goods_order t1,
+            store_goods_order_item t2
+        WHERE
+            <include refid="numCondition"/>
+            AND t1.order_id = t2.order_id
+    </select>
+
+    <select id="selectSpuTotalNum" parameterType="com.javaboot.shop.dto.StoreStatDTO" resultType="Integer">
+        SELECT
+            count( DISTINCT spu_no ) num
+        FROM
+            store_goods_order t1,
+            store_goods_order_item t2
+        WHERE
+            <include refid="numCondition"/>
+            AND t1.order_id = t2.order_id
+    </select>
+
+    <select id="selectTodayOrderList" parameterType="com.javaboot.shop.dto.StoreStatDTO" resultType="com.javaboot.shop.domain.StoreGoodsOrderItem">
+        SELECT
+            sum(IFNULL(sorting_quantity,quantity)) quantity,
+            spu_no spuno
+        FROM
+        (
+            SELECT
+            t2.spu_no,
+            t2.goods_id,
+            t2.unit_id,
+            t2.quantity old_quantity,
+            t3.main_unit_id,
+            t4.sub_unit_id,
+            t5.main_case_sub,
+            t5.sub_case_main,
+            (CASE WHEN t2.unit_id = t3.main_unit_id
+            AND t4.sub_unit_id != t3.main_unit_id
+            AND t5.sub_case_main IS NOT NULL THEN
+            ROUND(t2.quantity / t5.sub_case_main, 2) ELSE t2.quantity
+            END) quantity,
+            t6.sorting_quantity
+            FROM
+            store_goods_order t1
+            JOIN store_goods_order_item t2 ON t1.order_id = t2.order_id
+            LEFT JOIN store_sorting_detail t6 ON t2.item_id = t6.order_item_id AND t6.status = '1'
+            JOIN store_goods_spu_unit t3 ON t2.spu_no = t3.spu_no
+            JOIN store_goods_spu_unit t4 ON t2.spu_no = t4.spu_no
+            LEFT JOIN store_goods_spu_unit_conversion t5 ON t2.spu_no = t5.spu_no
+            AND t1.dept_id = t5.dept_id
+            WHERE
+            <include refid="numCondition"/>
+
+        ) tb
+        GROUP BY
+        tb.spu_no
+    </select>
+
+    <select id="selectNoOrderMerberList" parameterType="com.javaboot.shop.dto.StoreStatDTO" resultType="com.javaboot.shop.domain.StoreMember">
+        SELECT
+            merchant_id id,
+            nickname
+        FROM
+        store_goods_order t1,
+        store_member t2
+        WHERE
+            t1.create_time >= #{weekStartTime} AND t1.create_time &lt; #{weekEndTime}
+            AND t1.merchant_id NOT IN (
+                SELECT merchant_id FROM store_goods_order WHERE create_time >= #{startTime} AND create_time &lt; #{endTime}
+            )
+            AND t1.merchant_id = t2.id
+            <if test="deptId != null  and deptId != ''"> AND t1.dept_id = #{deptId}</if>
+            AND t1.STATUS IN ( '1', '2', '3', '4' )
+        GROUP BY t1.merchant_id, t2.nickname
+    </select>
+
+    <select id="selectOrderTotalList" parameterType="com.javaboot.shop.dto.StoreStatDTO" resultType="com.javaboot.shop.vo.StoreGoodsOrderVO">
+        SELECT
+            DATE_FORMAT( t1.create_time, "%Y-%m-%d") AS createtime,
+            count(*) orderGoodCount
+        FROM
+            store_goods_order t1
+        WHERE
+            t1.create_time >= str_to_date( #{weekStartTime} ,'%Y-%m-%d %H:%i:%s')
+            AND t1.create_time &lt; str_to_date( #{weekEndTime} ,'%Y-%m-%d %H:%i:%s')
+            <if test="deptId != null  and deptId != ''"> AND t1.dept_id = #{deptId}</if>
+            AND t1.STATUS IN ( '1', '2', '3', '4' )
+        GROUP BY DATE_FORMAT( t1.create_time, "%Y-%m-%d" )
+        ORDER BY
+            t1.create_time DESC
+    </select>
+
+    <select id="selectNoPayList" parameterType="com.javaboot.shop.dto.StoreStatDTO" resultType="com.javaboot.shop.vo.StoreGoodsOrderVO">
+        SELECT
+            t1.merchant_id merchantId,
+            t2.nickname merchantName,
+            sum(t1.sorting_price) sortingPrice
+        FROM
+            store_goods_order t1,
+            store_member t2
+        WHERE
+            t1.create_time >= str_to_date(#{weekStartTime} ,'%Y-%m-%d %H:%i:%s')
+            AND t1.create_time &lt; str_to_date( #{weekEndTime} ,'%Y-%m-%d %H:%i:%s')
+            AND t1.pay_status = '0'
+            AND t1.status IN('3')
+            AND t1.merchant_id = t2.id
+            <if test="deptId != null  and deptId != ''"> AND t1.dept_id = #{deptId}</if>
+        GROUP BY t1.merchant_id
+        ORDER BY
+            sum(t1.sorting_price)  DESC
+    </select>
+
+    <select id="selectSpuOrderNumsList" parameterType="com.javaboot.shop.dto.StoreStatDTO" resultType="com.javaboot.shop.domain.StoreGoodsOrderItem">
+        SELECT
+            sum(IFNULL( sorting_quantity, quantity )) sortingquantity,
+            sum(IFNULL( sorting_weight, quantity )) sortingweight,
+            sum(IFNULL( t2.sorting_price, t2.price )) sortingprice,
+            t2.spu_no spuno
+        FROM
+            store_goods_order t1
+            JOIN store_goods_order_item t2 ON t1.order_id = t2.order_id
+            LEFT JOIN store_sorting_detail t3 ON t2.item_id = t3.order_item_id
+        WHERE
+            <include refid="numCondition"/>
+            AND t3.STATUS = '1'
+        GROUP BY
+            t2.spu_no
+    </select>
+</mapper>

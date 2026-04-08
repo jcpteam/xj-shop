@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+	<meta charset="utf-8"/>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<title>操作日志列表</title>
+	<link rel="stylesheet" href="../../../static/assets/libs/layui/css/layui.css" th:href="@{/assets/libs/layui/css/layui.css}"/>
+	<link rel="stylesheet" href="../../../static/assets/module/admin.css?v=316" th:href="@{/assets/module/admin.css?v=316}"/>
+	<!--[if lt IE 9]>
+	<script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+	<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+	<![endif]-->
+</head>
+<body>
+
+<!-- 正文开始 -->
+<div class="layui-fluid">
+	<div class="layui-row layui-col-space15">
+		<div class="layui-card">
+			<!-- 搜索区 -->
+			<form class="layui-form toolbar" th:onsubmit="return false" lay-filter="inputForm" id="inputForm">
+				<div class="layui-form-item">
+					<div class="layui-inline">
+						<label class="layui-form-label label-auto">系统模块：</label>
+						<div class="layui-input-inline">
+							<input class="layui-input" name="title" type="text" placeholder="输入系统模块"/>
+						</div>
+					</div>
+					<div class="layui-inline">
+						<label class="layui-form-label label-auto">操作人员：</label>
+						<div class="layui-input-inline">
+							<input class="layui-input" name="operName" type="text" placeholder="输入操作人员"/>
+						</div>
+					</div>
+					<div class="layui-inline">
+						<label class="layui-form-label label-auto">操作类型：</label>
+						<div class="layui-input-inline">
+							<select name="businessTypes" th:with="type=${@dict.getType('sys_oper_type')}">
+								<option value="">所有</option>
+								<option th:each="dict : ${type}" th:text="${dict.dictLabel}" th:value="${dict.dictValue}"></option>
+							</select>
+						</div>
+					</div>
+					<div class="layui-inline form-search-show-expand">
+						<label class="layui-form-label label-auto">操作状态：</label>
+						<div class="layui-input-inline">
+							<select name="status" th:with="type=${@dict.getType('sys_common_status')}">
+								<option value="">所有</option>
+								<option th:each="dict : ${type}" th:text="${dict.dictLabel}" th:value="${dict.dictValue}"></option>
+							</select>
+						</div>
+					</div>
+					<div class="layui-inline form-search-show-expand">
+						<label class="layui-form-label label-auto">操作时间：</label>
+						<div class="layui-input-inline">
+							<input id="createTime" type="text" placeholder="请选择开始和结束日期" class="layui-input date-icon" autocomplete="off"/>
+							<input id="beginDate" type="hidden" name="params[beginTime]">
+							<input id="endDate" type="hidden" name="params[endTime]">
+						</div>
+					</div>
+					<div class="layui-inline" style="padding-left: 13px;">
+						<button class="layui-btn layui-btn-sm icon-btn" lay-submit lay-filter="searchBtn" id="searchBtn">
+							<i class="layui-icon layui-icon-search"></i>搜索
+						</button>
+						<button class="layui-btn layui-btn-sm icon-btn" type="reset">
+							<i class="layui-icon layui-icon-refresh"></i>重置
+						</button>
+						<a class="layui-btn layui-btn-primary form-search-expand" data-expand="true">
+							展开 <i class="layui-icon layui-icon-down"></i>
+						</a>
+					</div>
+				</div>
+			</form>
+
+			<table class="layui-table" id="dataTable" lay-filter="dataTable"></table>
+
+		</div>
+
+	</div>
+</div>
+
+<!-- 头工具栏 -->
+<script type="text/html" id="toolbarHead">
+	<div class="layui-btn-container">
+		<button class="layui-btn layui-btn-danger layui-btn-sm layui-btn-disabled" id="removeAll" lay-event="removeAll" shiro:hasPermission="monitor:operlog:remove"><i class="layui-icon layui-icon-delete"></i>删除</button>
+		<button class="layui-btn layui-btn-normal layui-btn-sm" lay-event="clean" shiro:hasPermission="monitor:operlog:remove"><i class="layui-icon layui-icon-close"></i>清空</button>
+		<button class="layui-btn layui-btn-normal layui-btn-sm" lay-event="export" shiro:hasPermission="monitor:operlog:export"><i class="layui-icon layui-icon-export"></i>导出</button>
+	</div>
+</script>
+
+<!-- 行工具栏 -->
+<script type="text/html" id="toolbarRow">
+	<a class="layui-btn layui-btn-xs" lay-event="detail" shiro:hasPermission="monitor:operlog:detail">详情</a>
+</script>
+
+<!-- js部分 -->
+<script type="text/javascript" src="../../../static/assets/libs/layui/layui.js" th:src="@{/assets/libs/layui/layui.js}"></script>
+<script type="text/javascript" src="../../../static/assets/js/common.js?v=316" th:src="@{/assets/js/common.js}"></script>
+
+<script type="text/javascript" th:inline="javascript">
+	var ctx = [[@{/}]];
+	var datas = [[${@dict.getType('sys_oper_type')}]];
+</script>
+<script type="text/javascript" th:inline="none">
+	layui.use(['index', 'layer', 'form', 'table', 'util', 'laydate', 'ext'], function () {
+		var $ = layui.jquery;
+		var layer = layui.layer;
+		var form = layui.form;
+		var table = layui.table;
+		var util = layui.util;
+		var laydate = layui.laydate;
+		var ext = layui.ext;
+		var admin = layui.admin;
+		var index = layui.index;
+
+		var prefix = ctx + "monitor/operlog";
+		var url = prefix + "/list";
+		var cleanUrl = prefix + "/clean";
+		var detailUrl = prefix + "/detail/{id}";
+		var removeUrl = prefix + "/remove";
+		var exportUrl = prefix + "/export";
+
+		table.render({
+			elem: '#dataTable'
+			,url: url
+			,method: 'POST'
+			,toolbar: '#toolbarHead'
+			,height: 'full-100'
+			,cellMinWidth: 80
+			,page: true
+			,request: {
+				pageName: 'pageNum' //页码的参数名称，默认：page
+				,limitName: 'pageSize' //每页数据量的参数名，默认：limit
+			}
+			,limit: 10
+			,cols: [[
+				{type: 'checkbox'}
+				,{field: 'title', title: '系统模块'}
+				,{field: 'businessType', title: '操作类型', width: 100, templet:function (res) {
+					return $.table.selectDictLabel(datas, res.businessType);
+				}}
+				,{field: 'operName', title: '操作人员', width: 100}
+				,{field: 'deptName', title: '部门名称', width: 100}
+				,{field: 'operIp', title: '主机', width: 150}
+				,{field: 'operLocation', title: '操作地点', width: 150}
+				,{field: 'status', title: '操作状态', width: 100, templet:function (res) {
+					if (res.status == 0) {
+						return '<span class="layui-badge layui-badge-green">成功</span>';
+					} else if (res.status == 1) {
+						return '<span class="layui-badge layui-badge-red">失败</span>';
+					}
+				 }}
+				,{field: 'operTime', title: '操作时间'}
+				,{field: 'operate', title: '操作', width: 100, toolbar: '#toolbarRow', fixed: 'right'}
+			]]
+			,parseData: function(res){ //将原始数据解析成 table 组件所规定的数据
+				return {
+					"code": res.code, //解析接口状态
+					"msg": res.msg, //解析提示文本
+					"count": res.total, //解析数据长度
+					"data": res.rows //解析数据列表
+				};
+			}
+		});
+
+		//日期范围
+		laydate.render({
+			elem: '#createTime'
+			, range: '~'
+			, done: function (value, date, endDate) {
+				// console.log(value); //得到日期生成的值，如：2017-08-18
+				// console.log(date); //得到日期时间对象：{year: 2017, month: 8, date: 18, hours: 0, minutes: 0, seconds: 0}
+				// console.log(endDate); //得结束的日期时间对象，开启范围选择（range: true）才会返回。对象成员同上。
+				if (value != null && value != '') {
+					var b = $.trim(value.split('~')[0]);
+					var e = $.trim(value.split('~')[1]);
+					// console.log(b);
+					// console.log(e);
+					$("#beginDate").val(b);
+					$("#endDate").val(e);
+				}
+			}
+		});
+
+		//监听搜索
+		form.on('submit(searchBtn)', function (data) {
+			var field = data.field;
+			console.log(JSON.stringify(field));
+			//执行重载
+			table.reload('dataTable', {
+				where: field
+			});
+		});
+
+		//头工具栏事件
+		table.on('toolbar(dataTable)', function(obj){
+			switch(obj.event){
+				case 'removeAll':
+					active.removeAll();
+					break;
+				case 'clean':
+					active.clean();
+					break;
+				case 'export':
+					active.export();
+					break;
+			}
+		});
+
+		//行工具栏事件
+		table.on('tool(dataTable)', function (obj) {
+			var data = obj.data;
+			if (obj.event === 'detail') {
+				active.detail(data.operId);
+			}
+		});
+
+		//复选框勾选/取消勾选监听
+		table.on('checkbox(dataTable)', function(obj){
+			var checkStatus = table.checkStatus('dataTable');
+			var checkData = checkStatus.data;
+			console.log(checkData.length);
+			if(checkData.length == 1){
+				$("#removeAll").removeClass('layui-btn-disabled');
+			} else if(checkData.length > 1){
+				$("#removeAll").removeClass('layui-btn-disabled');
+			} else if(checkData.length == 0){
+				$("#removeAll").addClass('layui-btn-disabled');
+			}
+
+			// console.log(obj.checked); //当前是否选中状态
+			// console.log(obj.data); //选中行的相关数据
+			// console.log(obj.type); //如果触发的是全选，则为：all，如果触发的是单选，则为：one
+		});
+
+		//事件
+		var active = {
+			removeAll: function () {
+				var checkData = table.checkStatus('dataTable').data;
+				var ids = [];
+				layui.each(checkData, function (index, item) {
+					ids.push(item.operId);
+				});
+
+				admin.confirm('确定删除吗？', function () {
+					admin.req(removeUrl, {ids: ids.join(',')}, function (result) {
+						if (result.code == 0) {
+							admin.success('删除成功!');
+							table.reload('dataTable');
+						} else {
+							admin.error(result.msg);
+						}
+					},'post')
+				});
+			}
+			,clean: function () {
+				admin.confirm('确定清空吗？', function () {
+					admin.req(cleanUrl, null, function (result) {
+						if (result.code == 0) {
+							admin.success('清理成功!');
+							table.reload('dataTable');
+						} else {
+							admin.error(result.msg);
+						}
+					},'post')
+				});
+			}
+			,detail: function (id) {
+				var viewUrl = detailUrl.replace("{id}", id);
+				admin.openDialogView('查看详情', viewUrl, '800px', '480px');
+			}
+			,export: function(){
+				$.modal.loading("正在导出数据，请稍后...");
+				$.post(exportUrl, $("#inputForm").serializeArray(), function(result) {
+					if (result.code == web_status.SUCCESS) {
+						window.location.href = ctx + "common/download?fileName=" + encodeURI(result.msg) + "&delete=" + true;
+					} else if (result.code == web_status.WARNING) {
+						$.modal.alertWarning(result.msg)
+					} else {
+						$.modal.alertError(result.msg);
+					}
+					$.modal.closeLoading();
+				});
+			}
+		}
+	});
+</script>
+</body>
+
+</html>

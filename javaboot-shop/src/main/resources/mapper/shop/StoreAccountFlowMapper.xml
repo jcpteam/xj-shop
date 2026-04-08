@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaboot.shop.mapper.StoreAccountFlowMapper">
+    
+    <resultMap type="com.javaboot.shop.vo.StoreAccountFlowVO" id="StoreAccountFlowResult">
+        <result property="flowId"    column="flow_id"    />
+        <result property="accountId"    column="account_id"    />
+        <result property="accountNumber"    column="account_number"    />
+        <result property="type"    column="type"    />
+        <result property="oldAmount"    column="old_amount"    />
+        <result property="changeAmount"    column="change_amount"    />
+        <result property="nowAmount"    column="now_amount"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="lastModifyTime"    column="last_modify_time"    />
+        <result property="nickName"    column="nickname"    />
+        <result property="settlementName"    column="settlementName"    />
+    </resultMap>
+
+    <sql id="selectStoreAccountFlowVo">
+--         select t1.*, tb1.nickname,
+--         ( CASE WHEN tb1.settlement_type = '1' THEN tb1.nickname ELSE tb2.nickname END ) settlementName
+--         from store_account_flow t1
+--         JOIN store_payment_account t2 ON t1.account_id = t2.account_id
+--         JOIN  store_member tb1 ON t2.member_id = tb1.id
+--         LEFT JOIN store_member tb2 ON tb1.super_customer = tb2.customer_no
+
+        SELECT t1.*, tb1.nickname settlementName
+        from store_account_flow t1
+        JOIN store_payment_account t2 ON t1.account_id = t2.account_id
+        JOIN  store_member tb1 ON t2.member_id = tb1.id
+    </sql>
+
+    <select id="selectStoreAccountFlowList" parameterType="com.javaboot.shop.dto.StoreAccountFlowQueryDTO" resultMap="StoreAccountFlowResult">
+        <include refid="selectStoreAccountFlowVo"/>
+        <where>  
+            <if test="accountNumber != null  and accountNumber != ''"> and account_number = #{accountNumber}</if>
+            <if test="type != null  and type != ''"> and type = #{type}</if>
+            <if test="oldAmount != null "> and old_amount = #{oldAmount}</if>
+            <if test="changeAmount != null "> and change_amount = #{changeAmount}</if>
+            <if test="deptId != null and deptId != '' "> and t2.dept_id = #{deptId}</if>
+            <if test="nowAmount != null "> and now_amount = #{nowAmount}</if>
+            <if test="lastModifyTime != null "> and last_modify_time = #{lastModifyTime}</if>
+            <if test="searchKey != null and searchKey!='' ">
+                AND (
+                     t1.account_id like concat('%', #{searchKey}, '%') or
+                     t1.account_number like concat('%', #{searchKey}, '%')
+                )
+            </if>
+            <if test="settlementName != null  and settlementName != '' "> and tb1.nickname like concat('%', #{settlementName}, '%')</if>
+        </where>
+    </select>
+    
+    <select id="selectStoreAccountFlowById" parameterType="Long" resultMap="StoreAccountFlowResult">
+        <include refid="selectStoreAccountFlowVo"/>
+        where flow_id = #{flowId}
+    </select>
+        
+    <insert id="insertStoreAccountFlow" parameterType="StoreAccountFlow">
+        insert into store_account_flow
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="flowId != null ">flow_id,</if>
+            <if test="accountId != null ">account_id,</if>
+            <if test="accountNumber != null  and accountNumber != ''">account_number,</if>
+            <if test="type != null  and type != ''">type,</if>
+            <if test="oldAmount != null ">old_amount,</if>
+            <if test="changeAmount != null ">change_amount,</if>
+            <if test="nowAmount != null ">now_amount,</if>
+            <if test="createTime != null ">create_time,</if>
+            <if test="lastModifyTime != null ">last_modify_time,</if>
+            <if test="remark != null ">remark,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="flowId != null ">#{flowId},</if>
+            <if test="accountId != null ">#{accountId},</if>
+            <if test="accountNumber != null  and accountNumber != ''">#{accountNumber},</if>
+            <if test="type != null  and type != ''">#{type},</if>
+            <if test="oldAmount != null ">#{oldAmount},</if>
+            <if test="changeAmount != null ">#{changeAmount},</if>
+            <if test="nowAmount != null ">#{nowAmount},</if>
+            <if test="createTime != null ">#{createTime},</if>
+            <if test="lastModifyTime != null ">#{lastModifyTime},</if>
+            <if test="remark != null ">#{remark},</if>
+         </trim>
+    </insert>
+
+    <update id="updateStoreAccountFlow" parameterType="StoreAccountFlow">
+        update store_account_flow
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="accountNumber != null  and accountNumber != ''">account_number = #{accountNumber},</if>
+            <if test="type != null  and type != ''">type = #{type},</if>
+            <if test="oldAmount != null ">old_amount = #{oldAmount},</if>
+            <if test="changeAmount != null ">change_amount = #{changeAmount},</if>
+            <if test="nowAmount != null ">now_amount = #{nowAmount},</if>
+            <if test="createTime != null ">create_time = #{createTime},</if>
+            <if test="lastModifyTime != null ">last_modify_time = #{lastModifyTime},</if>
+        </trim>
+        where flow_id = #{flowId}
+    </update>
+
+    <delete id="deleteStoreAccountFlowById" parameterType="Long">
+        delete from store_account_flow where flow_id = #{flowId}
+    </delete>
+
+    <delete id="deleteStoreAccountFlowByIds" parameterType="String">
+        delete from store_account_flow where flow_id in 
+        <foreach item="flowId" collection="array" open="(" separator="," close=")">
+            #{flowId}
+        </foreach>
+    </delete>
+    
+</mapper>

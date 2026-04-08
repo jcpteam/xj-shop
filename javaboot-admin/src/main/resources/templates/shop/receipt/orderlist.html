@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('订单列表')" />
+</head>
+<body class="bg-white">
+
+<div class="layui-fluid">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-card">
+            <table class="layui-table" id="dataTable" lay-filter="dataTable"></table>
+        </div>
+
+    </div>
+    <div class="form-group-bottom text-center">
+        <button id="closeBtn" class="layui-btn layui-btn-primary" ew-event="closeDialog">关闭</button>
+    </div>
+</div>
+
+<th:block th:include="include :: footer" />
+<script th:inline="javascript">
+    var ctx = [[@{/}]];
+    var orderIds = [[${orderIds}]];
+</script>
+<script th:inline="none">
+    layui.use(['index', 'form', 'table'], function(){
+
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var table = layui.table;
+        var admin = layui.admin;
+
+        var listUrl =  ctx + "shop/order/list";
+
+        var deptList=[]
+        admin.req(ctx + "system/dept/getLoginUserDept", { }, function (result) {
+            deptList= result.data;
+        },'get',{async: false})
+
+        table.render({
+            elem: '#dataTable'
+            ,url: listUrl
+            ,method: 'POST'
+            ,height: 'full-100'
+            ,cellMinWidth: 80
+            ,page: true
+            ,where:{orderIds: orderIds}
+            ,request: {
+                pageName: 'pageNum' //页码的参数名称，默认：page
+                ,limitName: 'pageSize' //每页数据量的参数名，默认：limit
+            }
+            ,limit: 20
+            ,cols:[[
+                {type: 'checkbox'}
+                ,{field: 'orderId', title: '订单id', hide: true}
+                ,{field: 'code', title: '订单编号'}
+                ,{field: 'createTime', title: '提交时间'}
+                ,{field: 'merchantName', title: '下单客户'}
+                ,{field: 'price', title: '下单金额'}
+                ,{field: 'sortingPrice', title: '结算金额'}
+                ,{field: 'deptId', title: '所属区域',templet:function (d) {
+                        var name=''
+                        layui.each(deptList,function (index,item) {
+                            if(d.deptId==item.value){
+                                name=item.name
+                            }
+                        })
+                        return name;
+                    }}
+                ,{field: 'sourceName', title: '订单来源'}
+                ,{field: 'printStatusName', title: '打印状态'}
+                ,{field: 'payStatusName', title: '付款状态'}
+                ,{field: 'statusName', title: '订单状态'}
+            ]]
+            ,parseData: function(res){ //将原始数据解析成 table 组件所规定的数据
+                return {
+                    "code": res.code, //解析接口状态
+                    "msg": res.msg, //解析提示文本
+                    "count": res.total, //解析数据长度
+                    "data": res.rows //解析数据列表
+                };
+            }
+        });
+
+    })
+</script>
+</body>
+</html>

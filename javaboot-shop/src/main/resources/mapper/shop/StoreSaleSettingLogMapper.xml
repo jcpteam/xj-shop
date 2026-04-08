@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaboot.shop.mapper.StoreSaleSettingLogMapper">
+    
+    <resultMap type="StoreSaleSettingLog" id="StoreSaleSettingLogResult">
+        <result property="logId"    column="log_id"    />
+        <result property="settingId"    column="setting_id"    />
+        <result property="goodId"    column="good_id"    />
+        <result property="spuNo"    column="spu_no"    />
+        <result property="oldContent"    column="old_content"    />
+        <result property="newContent"    column="new_content"    />
+        <result property="creatorId"    column="creator_id"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="lastModifyTime"    column="last_modify_time"    />
+        <result property="goodName"    column="property_name"    />
+        <result property="spuName"    column="name" />
+        <result property="creatorName"    column="user_name"    />
+        <result property="quotatioName"    column="quotation_name"  />
+    </resultMap>
+
+    <sql id="selectStoreSaleSettingLogVo">
+        select log_id, setting_id, good_id, spu_no, old_content, new_content, creator_id, create_time, last_modify_time from store_sale_setting_log
+    </sql>
+
+    <select id="selectStoreSaleSettingLogList" parameterType="StoreSaleSettingLog" resultMap="StoreSaleSettingLogResult">
+        SELECT
+        t1.log_id,t1.setting_id,t1.good_id,t1.spu_no,t1.old_content,
+        t1.new_content,t1.creator_id,t1.create_time,
+        t1.last_modify_time ,t3.property_name,t2.quotation_name,t4.name,t5.user_name
+        FROM
+            store_sale_setting_log t1,
+            store_goods_quotation t2,
+            store_goods_quotation_goods t3,
+            store_goods_spu t4,
+            sys_user t5
+        WHERE t1.good_id = t3.goods_id
+        AND t2.quotation_id = t3.quotation_id
+        AND t1.spu_no = t4.spu_no AND t1.creator_id = t5.user_id
+        <where>  
+            <if test="settingId != null "> and t1.setting_id = #{settingId}</if>
+            <if test="goodId != null "> and t1.good_id = #{goodId}</if>
+            <if test="spuNo != null  and spuNo != ''"> and t1.spu_no = #{spuNo}</if>
+            <if test="oldContent != null  and oldContent != ''"> and t1.old_content = #{oldContent}</if>
+            <if test="newContent != null  and newContent != ''"> and t1.new_content = #{newContent}</if>
+            <if test="creatorId != null "> and t1.creator_id = #{creatorId}</if>
+            <if test="lastModifyTime != null "> and t1.last_modify_time = #{lastModifyTime}</if>
+        </where>
+    </select>
+    
+    <select id="selectStoreSaleSettingLogById" parameterType="Long" resultMap="StoreSaleSettingLogResult">
+        <include refid="selectStoreSaleSettingLogVo"/>
+        where log_id = #{logId}
+    </select>
+        
+    <insert id="insertStoreSaleSettingLog" parameterType="StoreSaleSettingLog" useGeneratedKeys="true" keyProperty="logId">
+        insert into store_sale_setting_log
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="settingId != null ">setting_id,</if>
+            <if test="goodId != null ">good_id,</if>
+            <if test="spuNo != null  and spuNo != ''">spu_no,</if>
+            <if test="oldContent != null  and oldContent != ''">old_content,</if>
+            <if test="newContent != null  and newContent != ''">new_content,</if>
+            <if test="creatorId != null ">creator_id,</if>
+            <if test="createTime != null ">create_time,</if>
+            <if test="lastModifyTime != null ">last_modify_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="settingId != null ">#{settingId},</if>
+            <if test="goodId != null ">#{goodId},</if>
+            <if test="spuNo != null  and spuNo != ''">#{spuNo},</if>
+            <if test="oldContent != null  and oldContent != ''">#{oldContent},</if>
+            <if test="newContent != null  and newContent != ''">#{newContent},</if>
+            <if test="creatorId != null ">#{creatorId},</if>
+            <if test="createTime != null ">#{createTime},</if>
+            <if test="lastModifyTime != null ">#{lastModifyTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateStoreSaleSettingLog" parameterType="StoreSaleSettingLog">
+        update store_sale_setting_log
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="settingId != null ">setting_id = #{settingId},</if>
+            <if test="goodId != null ">good_id = #{goodId},</if>
+            <if test="spuNo != null  and spuNo != ''">spu_no = #{spuNo},</if>
+            <if test="oldContent != null  and oldContent != ''">old_content = #{oldContent},</if>
+            <if test="newContent != null  and newContent != ''">new_content = #{newContent},</if>
+            <if test="creatorId != null ">creator_id = #{creatorId},</if>
+            <if test="createTime != null ">create_time = #{createTime},</if>
+            <if test="lastModifyTime != null ">last_modify_time = #{lastModifyTime},</if>
+        </trim>
+        where log_id = #{logId}
+    </update>
+
+    <delete id="deleteStoreSaleSettingLogById" parameterType="Long">
+        delete from store_sale_setting_log where log_id = #{logId}
+    </delete>
+
+    <delete id="deleteStoreSaleSettingLogByIds" parameterType="String">
+        delete from store_sale_setting_log where log_id in 
+        <foreach item="logId" collection="array" open="(" separator="," close=")">
+            #{logId}
+        </foreach>
+    </delete>
+    
+</mapper>

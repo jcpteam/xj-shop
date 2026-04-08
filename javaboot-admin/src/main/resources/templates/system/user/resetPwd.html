@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+	<meta charset="utf-8">
+	<title>重置密码</title>
+	<meta name="renderer" content="webkit">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+	<link rel="stylesheet" href="../../../static/assets/libs/layui/css/layui.css" th:href="@{/assets/libs/layui/css/layui.css}"/>
+	<link rel="stylesheet" href="../../../static/assets/module/admin.css" th:href="@{/assets/module/admin.css}"/>
+</head>
+<body class="bg-white">
+
+	<!-- 正文开始 -->
+	<form class="layui-form model-form" id="inputForm" th:onsubmit="return false" th:action="@{/system/user/resetPwd}">
+		<input name="userId"  type="hidden" th:value="${user.userId}" />
+		<div class="layui-form-item">
+			<label class="layui-form-label layui-form-required">用户名称:</label>
+			<div class="layui-input-block">
+				<input name="loginName" type="text" th:value="${user.loginName}" placeholder="请输入用户名称" class="layui-input" lay-verType="tips" lay-verify="required" required/>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label layui-form-required">输入密码:</label>
+			<div class="layui-input-block">
+				<input name="password" th:value="${@config.getKey('sys.user.initPassword')}" type="password" placeholder="请输入密码" class="layui-input" lay-verType="tips" lay-verify="psw" required/>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label layui-form-required">确认密码:</label>
+			<div class="layui-input-block">
+				<input type="password" th:value="${@config.getKey('sys.user.initPassword')}" placeholder="请确认密码" class="layui-input" lay-verType="tips" lay-verify="required|equalTo" lay-equalto="input[name=password]" required/>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<button id="resetBtn" type="reset" class="layui-btn layui-btn-primary layui-hide">重置</button>
+			<button id="submitBtn" class="layui-btn layui-hide" lay-filter="submitBtn" lay-submit>保存</button>
+			<button id="closeBtn" class="layui-btn layui-btn-danger layui-hide">关闭</button>
+		</div>
+	</form>
+
+	<script th:inline="javascript">
+		var ctx = [[@{/}]];
+	</script>
+	<script type="text/javascript" src="../../../static/assets/libs/layui/layui.js" th:src="@{/assets/libs/layui/layui.js}"></script>
+	<script type="text/javascript" src="../../../static/assets/js/common.js" th:src="@{/assets/js/common.js}"></script>
+	<script th:inline="javascript">
+		layui.use(['index', 'form', 'admin', 'formX'], function(){
+			var $ = layui.$;
+			var form = layui.form;
+			var admin = layui.admin;
+			var layer = layui.layer;
+
+
+		})
+	</script>
+</body>
+
+</html>

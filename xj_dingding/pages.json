@@ -1,0 +1,297 @@
+{
+	"pages": [{
+			"path": "pages/login/login",
+			"style": {
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/index/index",
+			"style": {
+				"navigationBarTitleText": "工作台",
+				"navigationStyle": "custom",
+				"app-plus": {
+					"titleNView": {
+						"type": "transparent"
+					}
+				},
+				"h5": {
+					"titleNView": false
+				}
+			}
+		},
+		{
+			"path": "pages/clienter/index",
+			"style": {
+				"navigationBarTitleText": "客户列表",
+				"navigationStyle": "default",
+				"h5": {
+					//"titleNView":false
+				}
+			}
+		},
+		{
+			"path": "pages/kongshu/index",
+			"style": {
+				"navigationBarTitleText": "控数列表",
+				"navigationStyle": "default",
+				"h5": {
+					//"titleNView":false
+					"titleNView": {
+						"backgroundColor": "#fff",
+						"buttons": [
+							/* {
+								"fontSrc": "/static/font/myfont.ttf",
+								"text": "筛选",
+								"fontSize": "14",
+								"color": "#303133"
+							} */
+						]
+					}
+				}
+			}
+		}, {
+			"path": "pages/kongshu/detail",
+			"style": {
+				"navigationBarTitleText": "控数详情",
+				"navigationStyle": "default",
+				"h5": {
+					//"titleNView":false
+				}
+			}
+		}, {
+			"path": "pages/kongjia/index",
+			"style": {
+				"navigationBarTitleText": "控价列表",
+				"navigationStyle": "default",
+				"h5": {
+					//"titleNView":false
+					"titleNView": {
+						"backgroundColor": "#fff",
+						"buttons": [{
+							"fontSrc": "/static/font/myfont.ttf",
+							"text": "筛选",
+							"fontSize": "14",
+							"color": "#303133"
+						}]
+					}
+				}
+			}
+		}, {
+			"path": "pages/kongjia/detail",
+			"style": {
+				"navigationBarTitleText": "控价详情",
+				"navigationStyle": "default",
+				"h5": {
+					//"titleNView":false
+				}
+			}
+		}, {
+			"path": "pages/kongjia/kongjiashenhe",
+			"style": {
+				"navigationBarTitleText": "控价审核",
+				"navigationStyle": "default",
+				"h5": {
+					//"titleNView":false
+					"titleNView": {
+						"backgroundColor": "#fff"
+						/* "buttons": [
+							{
+								"fontSrc": "/static/font/myfont.ttf",
+								"text": "筛选",
+								"fontSize": "14",
+								"color": "#303133"
+							}
+						] */
+					}
+				}
+			}
+		}, {
+			"path": "pages/rukudan/index",
+			"style": {
+				"navigationBarTitleText": "入库审核",
+				"navigationStyle": "default",
+				"h5": {
+					//"titleNView":false
+					"titleNView": {
+						"backgroundColor": "#fff"
+						// "buttons": [
+						// 	{
+						// 		"fontSrc": "/static/font/myfont.ttf",
+						// 		"text": "筛选",
+						// 		"fontSize": "14",
+						// 		"color": "#303133"
+						// 	}
+						// ]
+					}
+				}
+			}
+		}, {
+			"path": "pages/rukudan/detail",
+			"style": {
+				"navigationBarTitleText": "入库单明细",
+				"navigationStyle": "default",
+				"h5": {
+					//"titleNView":false
+				}
+			}
+		}, {
+			"path": "pages/rukudan/detailupdate",
+			"style": {
+				"navigationBarTitleText": "入库单明细",
+				"navigationStyle": "default",
+				"h5": {
+					//"titleNView":false
+				}
+
+			}
+
+		},{
+			"path": "pages/user/set",
+			"style": {
+				"navigationBarTitleText": "个人信息",
+				"navigationStyle": "default",
+				"h5": {
+					//"titleNView":false
+				}
+
+			}
+		}, {
+			"path": "pages/statistics/index",
+			"style": {
+				"navigationBarTitleText": "统计分析",
+				"navigationStyle": "default",
+				"h5": {
+					//"titleNView":false
+				}
+
+			}
+		},
+
+
+		//从商城过来的页面----start
+		{
+			"path": "pages/xjshop/tabs/type/type",
+			"style": {
+				"navigationBarTitleText": "商品列表"
+			}
+		},
+		{
+			"path": "pages/xjshop/tabs/cart/cart",
+			"style": {
+				"navigationBarTitleText": "购物车"
+			}
+		},
+		{
+			"path": "pages/xjshop/order/cartitem",
+			"style": {
+				"navigationBarTitleText": "已选商品"
+			}
+		},
+		{
+			"path": "pages/xjshop/order/cartgoodremark",
+			"style": {
+				"navigationBarTitleText": "商品备注"
+			}
+		},
+		{
+			"path": "pages/xjshop/order/orderremark",
+			"style": {
+				"navigationBarTitleText": "订单备注"
+			}
+		},
+		{
+			"path": "pages/xjshop/tabs/order/order",
+			"style": {
+				"navigationBarTitleText": "订单列表",
+				"navigationStyle": "default",
+				"h5": {
+					"titleNView":false
+				}
+			}
+		},
+		{
+			"path": "pages/xjshop/order/orderdetail",
+			"style": {
+				"navigationBarTitleText": "订单详情"
+			}
+		},
+		{
+			"path": "pages/xjshop/order/ordermodify",
+			"style": {
+				"navigationBarTitleText": "订单修改"
+			}
+		},
+		{
+			"path": "pages/xjshop/order/ordermodifyadd",
+			"style": {
+				"navigationBarTitleText": "订单新增商品"
+			}
+		},
+		{
+			"path": "pages/xjshop/order/gooddetail",
+			"style": {
+				"navigationBarTitleText": "商品详情"
+			}
+		},
+		//从商城过来的页面----end
+		{
+			"path": "pages/index/message",
+			"style": {
+				"navigationBarTitleText": "消息列表"
+			}
+		},
+		{
+			"path": "pages/user/user",
+			"style": {
+				"navigationBarTitleText": "",
+				"navigationStyle": "custom"
+
+			}
+
+		}
+	],
+
+	"globalStyle": {
+		"navigationBarTextStyle": "black",
+		"navigationBarTitleText": "湘佳牧业",
+		"navigationBarBackgroundColor": "#F8F8F8",
+		"backgroundColor": "#F8F8F8",
+		//"navigationStyle":"custom"//导航栏默认不开启
+		"navigationStyle": "default" //导航栏默认开启
+	},
+
+	"tabBar": {
+		"iconWidth": "24px",
+		"color": "#6c6c6c",
+		"selectedColor": "#DD524D",
+		"borderStyle": "black",
+		"backgroundColor": "#ffffff",
+		"list": [{
+				"pagePath": "pages/index/index",
+				"iconPath": "static/tab/tab-home.png",
+				"selectedIconPath": "static/tab/tab-home-current.png",
+				"text": "首页"
+			},
+			{
+				"pagePath": "pages/xjshop/tabs/order/order",
+				"iconPath": "static/tab/category.png",
+				"selectedIconPath": "static/tab/category_cur.png",
+				"text": "订单"
+			},
+			{
+				"pagePath": "pages/clienter/index",
+				"iconPath": "static/tab/tab-cart.png",
+				"selectedIconPath": "static/tab/tab-cart-current.png",
+				"text": "客户"
+			},
+			{
+				"pagePath": "pages/user/user",
+				"iconPath": "static/tab/tab-my.png",
+				"selectedIconPath": "static/tab/tab-my-current.png",
+				"text": "我的"
+			}
+
+		]
+	}
+}

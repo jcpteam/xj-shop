@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('修改收款单')" />
+</head>
+<body class="bg-white">
+
+<!-- 正文开始 -->
+<form class="layui-form bg-white" id="inputForm" th:onsubmit="return false" th:action="@{/shop/receipt/edit}" th:object="${storeReceipt}">
+
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <div class="layui-row">
+                <input name="receiptId" th:field="*{receiptId}" type="hidden">
+                <input name="orderIds" th:field="*{orderIds}" type="hidden">
+                <!--<input id = "goodsList" name="goodsList" th:value="${goodsList}" type="hidden">-->
+                <input name="voucherPath" id="voucherPath" type="hidden" th:value = "${voucherPath}">
+                <div class="layui-form-item">
+
+                    <label class="layui-form-label layui-form-required">二维码:</label>
+<!--                    <div class="layui-upload-drag" id="adImgUpload">-->
+<!--                        <i class="layui-icon"></i>-->
+<!--                        <p>点击上传，或将图片拖拽到此处</p>-->
+<!--                        <div class="layui-hide" id="uploadImgView">-->
+<!--                            <hr>-->
+<!--                            <img src="" alt="上传成功后渲染" id = "otherQRCode" style="max-width: 250px">-->
+<!--                        </div>-->
+<!--                    </div>-->
+                    <div class="layui-card-body text-left" style="height: 225px;box-sizing: border-box;">
+                        <div id="otherQRCode" class="layui-inline"></div>
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label layui-form-required">付款金额:</label>
+                    <div class="layui-input-inline">
+                        <input class="layui-input" name="amount" type="text" disabled th:field="*{amount}"/>
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">结算单位:</label>
+                    <div class="layui-input-inline" style="width:500px ">
+                        <input class="layui-input" name="merchantName" th:field="${storePaymentFlow.merchantName}" type="text" disabled/>
+                    </div>
+                </div>
+
+                <div id="payGoodsListRoot" class="layui-form-item">
+                    <label class="layui-form-label">商品列表:</label>
+                    <div class="layui-input-inline" id="payGoodsList" >
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="layui-form-item layui-hide">
+        <button id="submitBtn" class="layui-btn" lay-filter="submitBtn" lay-submit>保存</button>
+        <button id="closeBtn" class="layui-btn layui-btn-primary" ew-event="closeDialog">关闭</button>
+    </div>
+</form>
+
+<th:block th:include="include :: footer" />
+<script th:inline="javascript">
+    var ctx = [[@{/}]];
+    var prefix = ctx + "shop/receipt";
+    var storeReceipt=[[${storeReceipt}]];
+    var storePaymentFlow=[[${storePaymentFlow}]];
+    var goodsList=[[${goodsList}]];
+</script>
+<script th:inline="none">
+        layui.use(['upload','index', 'form', 'formX', 'table', 'laydate', 'upload', 'ext', 'QRCode'], function(){
+            var $ = layui.$;
+            var form = layui.form;
+            var formX = layui.formX;
+            var layer = layui.layer;
+            var table = layui.table;
+            var admin = layui.admin;
+            var upload = layui.upload;
+            var laydate = layui.laydate;
+            var upload = layui.upload;
+            var QRCode = layui.QRCode;
+            if(storeReceipt.voucherPath!=null&&storeReceipt.voucherPath!=''){
+                layui.$('#uploadImgView').removeClass('layui-hide').find('img').attr('src', getLocationUrl()+storeReceipt.voucherPath);
+            }
+
+            //拖拽上传
+            upload.render({
+                elem: '#adImgUpload'
+                ,url: ctx + "common/upload" //改成您自己的上传接口
+                ,done: function(res){
+                    if(res && res.code == 0){
+                        $("#voucherPath").val(res.fileName);
+                        layer.msg('上传成功');
+                        layui.$('#uploadImgView').removeClass('layui-hide').find('img').attr('src', res.url);
+                    }else{
+                        layer.msg('上传失败');
+                    }
+                }
+            });
+
+            // 二维码
+            new QRCode(document.getElementById("otherQRCode"), {
+                text: storePaymentFlow.qrCode,
+                width: 200,
+                height: 200,
+                colorDark: '#000000',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.H
+            });
+
+            function getLocationUrl() {
+                //获取当前网址，如： http://localhost:8083/uimcardprj/share/meun.jsp
+                var curWwwPath = window.document.location.href;
+                //获取主机地址之后的目录，如： uimcardprj/share/meun.jsp
+                var pathName = window.document.location.pathname;
+                var pos = curWwwPath.indexOf(pathName);
+                //获取主机地址，如： http://localhost:8083
+                var localhostPaht = curWwwPath.substring(0, pos);
+                //获取带"/"的项目名，如：/uimcardprj
+                var projectName = pathName.substring(0, pathName.substr(1).indexOf('/') + 1);
+                return localhostPaht;
+            }
+
+            //显示商品列表
+            showGoodsList();
+            function showGoodsList() {
+                if (goodsList && goodsList.length > 0) {
+                    document.getElementById('payGoodsListRoot').style.visibility="visible";
+                    var goodsHtmlContent = '';
+                    //商品列表
+                    goodsHtmlContent += '<div style="width: 500px;">'
+                        + '<table style="width:100%;border: 1px solid #000000;border-collapse:collapse;text-align: center" cellpadding="0" cellspacing="0">' +
+                        '       <tr>' +
+                        '            <td style="width:28% ;border: 1px solid #000000;">商品名</td>' +
+                        '            <td style="width:18% ;border: 1px solid #000000">下单数</td>' +
+                        '            <td style="width:18% ;border: 1px solid #000000">出库数</td>' +
+                        '            <td style="width:18% ;border: 1px solid #000000">单价</td>' +
+                        '            <td style="width:18% ;border: 1px solid #000000">出库金额</td>' +
+                        '        </tr>' +
+                        getOrderGoodTableHtml(goodsList) +
+                        '    </table>'
+                        + '</div>'
+                    document.getElementById('payGoodsList').innerHTML = '';
+                    document.getElementById('payGoodsList').innerHTML = goodsHtmlContent;
+                } else {
+                    document.getElementById('payGoodsListRoot').style.visibility="hidden";
+                    return;
+                }
+            }
+
+            //获取订单商品信息展示表格hmtl拼接内容
+            function getOrderGoodTableHtml(goodsList) {
+                var alldata = goodsList;
+                var content = '';
+                console.log('test goodsLit--->len:',alldata.length);
+                for (var i = 0; i < alldata.length; i++) {
+                    var item = alldata[i];
+                    console.log('test goodsLit--->item:',item);
+                    content += '       <tr>';
+                    content += '            <td style="width:28% ;border: 1px solid #000000;">' + item.goodName + '</td>';
+                    content += '            <td style="width:18% ;border: 1px solid #000000">' + item.quantity + item.unitName + '</td>';
+                    content += '            <td style="width:18% ;border: 1px solid #000000">' + item.sortingWeight + '公斤' + '</td>';
+                    content += '            <td style="width:18% ;border: 1px solid #000000"> ' + item.price + '</td>';
+                    content += '            <td style="width:18% ;border: 1px solid #000000">' + getSortingPrice(item.sortingPrice) + '</td>'
+                    content += '        </tr>';
+                }
+                return content;
+            };
+
+            //获取分拣的金额
+            function getSortingPrice(sortingPrice){
+                if(sortingPrice){
+                    return sortingPrice;
+                }else {
+                    return '0'
+                }
+            };
+        })
+</script>
+</script>
+</body>
+</html>

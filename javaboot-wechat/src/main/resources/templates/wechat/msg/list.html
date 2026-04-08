@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+	<meta charset="utf-8"/>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<title>用户消息</title>
+	<link rel="stylesheet" href="../../../static/assets/libs/layui/css/layui.css" th:href="@{/assets/libs/layui/css/layui.css}"/>
+	<link rel="stylesheet" href="../../../static/assets/module/admin.css?v=316" th:href="@{/assets/module/admin.css}"/>
+	<!--[if lt IE 9]>
+	<script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+	<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+	<![endif]-->
+	<style>
+		#dictTable + .layui-table-view .layui-table-tool-temp {
+			padding-right: 0;
+		}
+
+		#dictTable + .layui-table-view .layui-table-body tbody > tr td {
+			cursor: pointer;
+		}
+
+		#dictTable + .layui-table-view .layui-table-body tbody > tr.layui-table-click {
+			background-color: #fff3e0;
+		}
+
+		#dictTable + .layui-table-view .layui-table-body tbody > tr.layui-table-click td:last-child > div:before {
+			position: absolute;
+			right: 6px;
+			content: "\e602";
+			font-size: 12px;
+			font-style: normal;
+			font-family: layui-icon !important;
+			-webkit-font-smoothing: antialiased;
+			-moz-osx-font-smoothing: grayscale;
+		}
+
+	</style>
+</head>
+<body>
+
+<!-- 正文开始 -->
+<div class="layui-fluid">
+	<div class="layui-row layui-col-space15">
+<!--		<div class="layui-col-md3">-->
+<!--			<div class="layui-card">-->
+<!--				<div class="layui-card-body" style="padding: 10px;">-->
+<!--					&lt;!&ndash; 表格工具栏1 &ndash;&gt;-->
+<!--					<form class="layui-form toolbar">-->
+<!--						<div class="layui-form-item">-->
+<!--							<div class="layui-inline" style="max-width: 140px;">-->
+<!--								<input name="name" class="layui-input" placeholder="输入公众号名称"/>-->
+<!--							</div>-->
+<!--							<div class="layui-inline">-->
+<!--								<button class="layui-btn layui-btn-sm icon-btn" lay-filter="dictTbSearch" lay-submit>-->
+<!--									<i class="layui-icon">&#xe615;</i>搜索-->
+<!--								</button>-->
+<!--							</div>-->
+<!--						</div>-->
+<!--					</form>-->
+<!--					&lt;!&ndash; 数据表格1 &ndash;&gt;-->
+<!--					<table id="dictTable" lay-filter="dictTable"></table>-->
+<!--				</div>-->
+<!--			</div>-->
+<!--		</div>-->
+
+		<div class="layui-col-md12">
+			<div class="layui-card">
+				<div class="layui-card-body" style="padding: 10px;">
+					<!-- 搜索区 -->
+					<form class="layui-form toolbar" th:onsubmit="return false" lay-filter="inputForm" id="inputForm">
+						<div class="layui-form-item">
+							<input id="appid" name="appid" type="hidden" />
+							<div class="layui-inline">
+								<label class="layui-form-label label-auto">消息类型：</label>
+								<div class="layui-input-inline">
+									<select name="repType" th:with="type=${@dict.getType('wechat_msg_rep_type')}">
+										<option value="">所有</option>
+										<option th:each="dict : ${type}" th:text="${dict.dictLabel}" th:value="${dict.dictValue}"></option>
+									</select>
+								</div>
+							</div>
+							<div class="layui-inline">
+								<label class="layui-form-label label-auto">是否已读：</label>
+								<div class="layui-input-inline">
+									<select name="readFlag" th:with="type=${@dict.getType('wechat_msg_read_flag')}">
+										<option value="">所有</option>
+										<option th:each="dict : ${type}" th:text="${dict.dictLabel}" th:value="${dict.dictValue}"></option>
+									</select>
+								</div>
+							</div>
+							<div class="layui-inline" style="padding-left: 13px;">
+								<button class="layui-btn layui-btn-sm icon-btn" lay-submit lay-filter="searchBtn" id="searchBtn">
+									<i class="layui-icon layui-icon-search"></i>搜索
+								</button>
+								<button class="layui-btn layui-btn-sm icon-btn" type="reset">
+									<i class="layui-icon layui-icon-refresh"></i>重置
+								</button>
+							</div>
+						</div>
+					</form>
+
+					<table class="layui-table" id="dataTable" lay-filter="dataTable"></table>
+				</div>
+			</div>
+		</div>
+
+	</div>
+</div>
+
+<!-- 头工具栏 -->
+<script type="text/html" id="toolbarHead">
+	<div class="layui-btn-container">
+		<button class="layui-btn layui-btn-normal layui-btn-sm" lay-event="import" shiro:hasPermission="system:config:import"><i class="layui-icon layui-icon-upload"></i>打印</button>
+		<button class="layui-btn layui-btn-normal layui-btn-sm" lay-event="export" shiro:hasPermission="system:config:export"><i class="layui-icon layui-icon-export"></i>导出</button>
+	</div>
+</script>
+
+<!-- 行工具栏 -->
+<script type="text/html" id="toolbarRow">
+	<a class="layui-btn layui-btn-xs" lay-event="edit" shiro:hasPermission="system:config:edit">消息</a>
+</script>
+
+<!-- js部分 -->
+<script type="text/javascript" src="../../../static/assets/libs/layui/layui.js" th:src="@{/assets/libs/layui/layui.js}"></script>
+<script type="text/javascript" src="../../../static/assets/js/common.js?v=316" th:src="@{/assets/js/common.js}"></script>
+
+<script type="text/javascript" th:inline="javascript">
+	var ctx = [[@{/}]];
+	var wechat_msg_type = [[${@dict.getType('wechat_msg_type')}]];
+	var wechat_msg_rep_type = [[${@dict.getType('wechat_msg_rep_type')}]];
+	var wechat_msg_rep_event = [[${@dict.getType('wechat_msg_rep_event')}]];
+	var wechat_msg_read_flag = [[${@dict.getType('wechat_msg_read_flag')}]];
+</script>
+<script type="text/javascript" th:inline="none">
+	layui.use(['index', 'layer', 'form', 'table', 'util', 'laydate', 'ext'], function () {
+		var $ = layui.jquery;
+		var layer = layui.layer;
+		var form = layui.form;
+		var table = layui.table;
+		var util = layui.util;
+		var laydate = layui.laydate;
+		var ext = layui.ext;
+		var admin = layui.admin;
+		var index = layui.index;
+
+		var prefix = ctx + "wechat/msg";
+		var url = prefix + "/list";
+		var createUrl = prefix + "/add";
+		var updateUrl = prefix + "/edit/{id}";
+		var removeUrl = prefix + "/remove";
+		var exportUrl = prefix + "/export";
+		var syncUrl = prefix + "/sync";
+
+		//公众号列表
+		table.render({
+			elem: '#dictTable'
+			,url: ctx + "wechat/account/list"
+			,method: 'POST'
+			,toolbar: ['<p>',
+				'<button ew-href="/wechat/account/list" ew-title="公众号列表" class="layui-btn layui-btn-sm icon-btn"><i class="layui-icon">&#xe62a;</i>管理</button>&nbsp;',
+				'<button lay-event="refresh" class="layui-btn layui-btn-sm icon-btn"><i class="layui-icon">&#xe669;</i>刷新</button>&nbsp;',
+				'</p>'].join('')
+			,defaultToolbar: []
+			,height: 'full-100'
+			,cellMinWidth: 80
+			//,page: true
+			,request: {
+				pageName: 'pageNum' //页码的参数名称，默认：page
+				,limitName: 'pageSize' //每页数据量的参数名，默认：limit
+			}
+			//,limit: 10
+			,cols: [[
+				{type: 'numbers'}
+				,{field: 'name', title: '公众号名称'}
+			]]
+			,parseData: function(res){ //将原始数据解析成 table 组件所规定的数据
+				return {
+					"code": res.code, //解析接口状态
+					"msg": res.msg, //解析提示文本
+					"count": res.total, //解析数据长度
+					"data": res.rows //解析数据列表
+				};
+			}
+		});
+
+		/* 表格搜索 */
+		form.on('submit(dictTbSearch)', function (data) {
+			table.reload('dictTable', {where: data.field});
+			return false;
+		});
+
+		/* 监听行单击事件 */
+		table.on('row(dictTable)', function (obj) {
+			obj.tr.addClass('layui-table-click').siblings().removeClass('layui-table-click');
+			$('#appid').val(obj.data.appid);
+			$('#searchBtn').trigger('click');
+		});
+
+		/* 监听表格头部工具栏 */
+		table.on('toolbar(dictTable)', function(obj) {
+			switch(obj.event) {
+				case 'refresh':
+					table.reload('dictTable');
+					break;
+			}
+		})
+
+		//用户消息列表
+		table.render({
+			elem: '#dataTable'
+			,url: url
+			,method: 'POST'
+			,toolbar: '#toolbarHead'
+			,height: 'full-100'
+			,cellMinWidth: 80
+			,page: true
+			,request: {
+				pageName: 'pageNum' //页码的参数名称，默认：page
+				,limitName: 'pageSize' //每页数据量的参数名，默认：limit
+			}
+			,limit: 10
+			,cols: [[
+				{type: 'checkbox'}
+				,{field: 'type', title: '消息分类', templet:function(res){
+					return $.table.selectDictLabel(wechat_msg_type, res.type);
+				}}
+				,{field: 'repType', title: '消息类型', templet:function(res){
+					return $.table.selectDictLabel(wechat_msg_rep_type, res.repType);
+				}}
+				,{field: 'headimgUrl', title: '用户', templet:function(res){
+					return '<img src="' + res.headimgUrl + '" width="30px" height="30px">';
+				 }}
+				,{field: 'nickName', title: '昵称'}
+				,{field: 'repContent', title: '内容'}
+				,{field: 'readFlag', title: '是否已读', templet:function(res){
+					return $.table.selectDictLabel(wechat_msg_read_flag, res.readFlag);
+				}}
+				,{field: 'createTime', title: '时间'}
+				// ,{field: 'operate', title: '操作', width: 80, toolbar: '#toolbarRow', fixed: 'right'}
+			]]
+			,parseData: function(res){ //将原始数据解析成 table 组件所规定的数据
+				return {
+					"code": res.code, //解析接口状态
+					"msg": res.msg, //解析提示文本
+					"count": res.total, //解析数据长度
+					"data": res.rows //解析数据列表
+				};
+			}
+		});
+
+		//日期范围
+		laydate.render({
+			elem: '#createTime'
+			, range: '~'
+			, done: function (value, date, endDate) {
+				console.log(value); //得到日期生成的值，如：2017-08-18
+				console.log(date); //得到日期时间对象：{year: 2017, month: 8, date: 18, hours: 0, minutes: 0, seconds: 0}
+				console.log(endDate); //得结束的日期时间对象，开启范围选择（range: true）才会返回。对象成员同上。
+				if (value != null && value != '') {
+					var b = $.trim(value.split('~')[0]);
+					var e = $.trim(value.split('~')[1]);
+					console.log(b);
+					console.log(e);
+					$("#beginDate").val(b);
+					$("#endDate").val(e);
+				}
+			}
+		});
+
+		//监听搜索
+		form.on('submit(searchBtn)', function (data) {
+			var field = data.field;
+			console.log(JSON.stringify(field));
+			//执行重载
+			table.reload('dataTable', {
+				where: field
+			});
+		});
+
+		//头工具栏事件
+		table.on('toolbar(dataTable)', function(obj){
+			switch(obj.event){
+				case 'add':
+					active.add();
+					break;
+				case 'edit':
+					var checkStatus = table.checkStatus('dataTable')
+							, checkData = checkStatus.data; //得到选中的数据
+					var id = null;
+					if (id == null) {
+						if (checkData.length === 0) {
+							return admin.info('请选择一条数据');
+						} else if (checkData.length > 1) {
+							return admin.info('只能选择一条数据编辑');
+						} else {
+							id = checkData[0].id;
+						}
+					}
+					active.edit(id);
+					break;
+				case 'import':
+					break;
+				case 'export':
+					$.modal.loading("正在导出数据，请稍后...");
+					$.post(exportUrl, $("#inputForm").serializeArray(), function(result) {
+						if (result.code == web_status.SUCCESS) {
+							window.location.href = ctx + "common/download?fileName=" + encodeURI(result.msg) + "&delete=" + true;
+						} else if (result.code == web_status.WARNING) {
+							$.modal.alertWarning(result.msg)
+						} else {
+							$.modal.alertError(result.msg);
+						}
+						$.modal.closeLoading();
+					});
+					break;
+				case 'sync':
+					active.sync();
+					break;
+			};
+		});
+
+		//行工具栏事件
+		table.on('tool(dataTable)', function (obj) {
+			var data = obj.data;
+			if (obj.event === 'view') {
+				active.view(data.id);
+			} else if (obj.event === 'edit') {
+				active.edit(data.id);
+			} else if (obj.event === 'del') {
+				active.del(data.id);
+			}
+		});
+
+		//事件
+		var active = {
+			sync: function () {
+				admin.confirm('同步用户需要一定时间，用户量越大、用时越久，请耐心等待，勿重复提交；确认此操作吗?', function() {
+					admin.req(syncUrl, null, function (res) {
+						if (res.code == 0) {
+							table.reload('dataTable');
+							admin.success(res.msg);
+						} else {
+							admin.error(res.msg);
+						}
+					},'post')
+				});
+			}
+			,view: function (id) {
+				var viewUrl = updateUrl.replace("{id}", id);
+				admin.openDialog('查看公众号', viewUrl, '800px', '480px');
+			}
+			,add: function () {
+				admin.openDialog('新增公众号', createUrl, '800px', '480px');
+			}
+			,edit: function (id) {
+				var editUrl = updateUrl.replace("{id}", id);
+				admin.openDialog('编辑公众号', editUrl, '800px', '480px');
+			}
+			,del: function(id){
+				admin.confirm('确定删除吗?',function(){
+					admin.req(removeUrl, {ids: id}, function (data) {
+						if (data.code == 0) {
+							table.reload('dataTable');
+							admin.success('删除成功!');
+						} else {
+							admin.error(data.msg);
+						}
+					},'post')
+				});
+			}
+		}
+	});
+</script>
+</body>
+
+</html>

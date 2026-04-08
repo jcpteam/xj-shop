@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaboot.shop.mapper.StoreGoodsReturnOrderItemMapper">
+    
+    <resultMap type="com.javaboot.shop.vo.StoreGoodsReturnOrderItemVO" id="StoreGoodsReturnOrderItemResult">
+        <result property="itemId"    column="item_id"    />
+        <result property="returnOrderId"    column="return_order_id"    />
+        <result property="goodsId"    column="goods_id"    />
+        <result property="spuNo"    column="spu_no"    />
+        <result property="quantity"    column="quantity"    />
+        <result property="amount"    column="amount"    />
+        <result property="price"    column="price"    />
+        <result property="comment"    column="comment"    />
+        <result property="unitId"    column="unit_id"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="lastModifyTime"    column="last_modify_time"    />
+    </resultMap>
+
+    <sql id="selectStoreGoodsReturnOrderItemVo">
+        select * from store_goods_return_order_item
+    </sql>
+
+    <select id="selectStoreGoodsReturnOrderItemList" parameterType="StoreGoodsReturnOrderItem" resultMap="StoreGoodsReturnOrderItemResult">
+        <include refid="selectStoreGoodsReturnOrderItemVo"/>
+        <where>  
+            <if test="returnOrderId != null "> and return_order_id = #{returnOrderId}</if>
+            <if test="goodsId != null  and goodsId != ''"> and goods_id = #{goodsId}</if>
+            <if test="spuNo != null  and spuNo != ''"> and spu_no = #{spuNo}</if>
+            <if test="quantity != null "> and quantity = #{quantity}</if>
+            <if test="amount != null "> and amount = #{amount}</if>
+            <if test="price != null "> and price = #{price}</if>
+            <if test="comment != null  and comment != ''"> and comment = #{comment}</if>
+            <if test="lastModifyTime != null "> and last_modify_time = #{lastModifyTime}</if>
+        </where>
+    </select>
+    
+    <select id="selectStoreGoodsReturnOrderItemById" parameterType="Long" resultMap="StoreGoodsReturnOrderItemResult">
+        <include refid="selectStoreGoodsReturnOrderItemVo"/>
+        where item_id = #{itemId}
+    </select>
+        
+    <insert id="insertStoreGoodsReturnOrderItem" parameterType="StoreGoodsReturnOrderItem" useGeneratedKeys="true" keyProperty="itemId">
+        insert into store_goods_return_order_item
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="returnOrderId != null ">return_order_id,</if>
+            <if test="goodsId != null  and goodsId != ''">goods_id,</if>
+            <if test="spuNo != null  and spuNo != ''">spu_no,</if>
+            <if test="quantity != null ">quantity,</if>
+            <if test="amount != null ">amount,</if>
+            <if test="price != null ">price,</if>
+            <if test="comment != null  and comment != ''">comment,</if>
+            <if test="unitId != null  and unitId != ''">unit_id,</if>
+            create_time,last_modify_time
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="returnOrderId != null ">#{returnOrderId},</if>
+            <if test="goodsId != null  and goodsId != ''">#{goodsId},</if>
+            <if test="spuNo != null  and spuNo != ''">#{spuNo},</if>
+            <if test="quantity != null ">#{quantity},</if>
+            <if test="amount != null ">#{amount},</if>
+            <if test="price != null ">#{price},</if>
+            <if test="comment != null  and comment != ''">#{comment},</if>
+            <if test="unitId != null  and unitId != ''">#{unitId},</if>
+            now(),now()
+         </trim>
+    </insert>
+
+    <update id="updateStoreGoodsReturnOrderItem" parameterType="StoreGoodsReturnOrderItem">
+        update store_goods_return_order_item
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="returnOrderId != null ">return_order_id = #{returnOrderId},</if>
+            <if test="goodsId != null  and goodsId != ''">goods_id = #{goodsId},</if>
+            <if test="spuNo != null  and spuNo != ''">spu_no = #{spuNo},</if>
+            <if test="quantity != null ">quantity = #{quantity},</if>
+            <if test="amount != null ">amount = #{amount},</if>
+            <if test="price != null ">price = #{price},</if>
+            <if test="comment != null  and comment != ''">comment = #{comment},</if>
+            <if test="unitId != null  and unitId != ''">unit_id=#{unitId},</if>
+            last_modify_time = now()
+        </trim>
+        where item_id = #{itemId}
+    </update>
+
+    <delete id="deleteStoreGoodsReturnOrderItemById" parameterType="Long">
+        delete from store_goods_return_order_item where item_id = #{itemId}
+    </delete>
+
+    <delete id="deleteStoreGoodsReturnOrderItemByIds" parameterType="String">
+        delete from store_goods_return_order_item where item_id in 
+        <foreach item="itemId" collection="array" open="(" separator="," close=")">
+            #{itemId}
+        </foreach>
+    </delete>
+    <delete id="deleteStoreGoodsReturnOrderItemByReturnOrderId" parameterType="Long">
+          delete from store_goods_return_order_item where return_order_id = #{returnOrderId}
+    </delete>
+</mapper>

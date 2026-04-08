@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('新增商品列表')"/>
+    <style>
+        .pic-more { width:100%; left; margin: 10px 0px 0px 40px;}
+        .pic-more li { width:250px; float: left; margin-right: 5px;}
+        .pic-more li a { position: absolute; top: 0; display: block; }
+        .pic-more li a i { font-size: 24px; background-color: #008800; }
+        #goodsImg .item_img { max-width: 250px; }
+        #goodsImg li{position: relative;}
+        #goodsImg li .operate{ color: #000; display: none;}
+        #goodsImg li .toleft{ position: absolute;top: 40px; left: 1px; cursor:pointer;}
+        #goodsImg li .toright{ position: absolute;top: 40px; right: 1px;cursor:pointer;}
+        #goodsImg li .close{position: absolute;top: 5px; right: 5px;cursor:pointer;}
+        #goodsImg li:hover .operate{ display: block;}
+
+        .form-group-bottom {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            padding: 10px 20px;
+            background-color: #fff;
+            box-shadow: 0 -1px 2px 0 rgba(0, 0, 0, .05);
+        }
+    </style>
+</head>
+<body class="bg-white">
+<!-- 加载动画-->
+
+<!-- 正文开始 -->
+<form class="layui-form bg-white" id="inputForm" lay-filter="inputForm" th:onsubmit="return false"  th:object="${storeGoodsSpu}" th:action="@{/shop/spu/edit}">
+    <!-- 正文开始 -->
+    <div class="layui-card" style="margin-bottom: 60px">
+<!--                <div class="layui-card-header">公司信息</div>-->
+        <div class="layui-card-body">
+
+            <div class="layui-form-item layui-row">
+                <div class="layui-inline layui-col-md12">
+                    <label class="layui-form-label">商品图片</label>
+                    <div class="layui-input-block">
+                        <input name="spuNo" id="spuNo" type="hidden" th:field="*{spuNo}">
+                        <div class="layui-upload-drag" id="adImgUpload">
+                            <i class="layui-icon"></i>
+                            <p>点击上传，或将图片拖拽到此处</p>
+                        </div>
+                    </div>
+                    <div class="pic-more">
+                        <ul id="goodsImg">
+<!--                                    <li><div class="operate"><i class="close layui-icon"><img style="height: 32px;width: 32px;" src="../../../assets/images/del.png" /></i></div><img class="item_img" src="http://localhost:9999/profile/upload/2021/08/21/f6af3e771ed57207e586e00e8c8ba1ba.png"  ></li>-->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="layui-form-item layui-row">
+                <div class="layui-inline layui-col-md12">
+                    <label class="layui-form-label layui-form-required">商品介绍</label>
+                    <div class="layui-input-block">
+                        <div id="goodsIntroduce"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group-bottom text-center">
+            <button id="submitBtn" class="layui-btn" lay-filter="submitBtn" lay-submit>保存</button>
+            <button id="closeBtn" class="layui-btn layui-btn-primary" ew-event="closeDialog">关闭</button>
+        </div>
+    </div>
+
+</form>
+<!-- 行工具栏 -->
+
+<script type="text/javascript" src="../../../assets/libs/tinymce/tinymce.min.js"></script>
+<th:block th:include="include :: footer"/>
+<script th:inline="javascript">
+    var ctx = [[@{/}]];
+    var prefix = ctx + "shop/spu";
+    var storeGoodsSpu = [[${storeGoodsSpu}]];
+</script>
+<script th:inline="none">
+
+
+    layui.use(['index', 'form', 'formX', 'table', 'laydate',  'cascader','upload'], function () {
+        var $ = layui.$;
+        var form = layui.form;
+        var table = layui.table;
+        var admin = layui.admin;
+        var cascader = layui.cascader;
+        var upload = layui.upload;
+
+
+        // 渲染富文本编辑器
+        tinymce.init({
+            selector: '#goodsIntroduce',
+            height: 400,
+            branding: false,
+            language: 'zh_CN',
+            plugins: 'code print preview fullscreen paste searchreplace save autosave link autolink image imagetools media table codesample lists advlist hr charmap emoticons anchor directionality pagebreak quickbars nonbreaking visualblocks visualchars wordcount',
+            toolbar: 'fullscreen preview code | undo redo | forecolor backcolor | bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | outdent indent | numlist bullist | formatselect fontselect fontsizeselect | link image media emoticons charmap anchor pagebreak codesample | ltr rtl',
+            toolbar_drawer: 'sliding',
+            images_upload_url: ctx + "common/upload",
+            file_picker_types: 'media',
+            file_picker_callback: function (callback, value, meta) {
+                layer.msg('演示环境不允许上传', {anim: 6});
+            },
+            init_instance_callback: function (editor) {
+                editor.setContent(storeGoodsSpu.description);
+            }
+        });
+
+        //tinymce.get('goodsIntroduce').setContent(storeGoodsSpu.description);
+        if(storeGoodsSpu.image) {
+            layui.each(storeGoodsSpu.image.split(","),function(idx, item){
+
+                var li = $('<li></li>')
+                var divIcon = $('<div class="operate"></div>')
+                var icon = $('<i class="close layui-icon"></i>')
+                var delImg = $('<img class="delPic" src="../../../assets/images/del.png" />');
+                var uploadImg = $('<img class="item_img" src="'+ item +'"  />');
+
+                delImg.click(function () {
+                    $(this).parents('li').remove()
+                })
+                icon.append(delImg)
+                divIcon.append(icon)
+                li.append(divIcon).append(uploadImg);
+                $('#goodsImg').append(li)
+            })
+        }
+
+
+
+        //拖拽上传
+        upload.render({
+            elem: '#adImgUpload'
+            ,url: ctx + "common/upload" //改成您自己的上传接口
+            ,done: function(res){
+                if(res && res.code == 0){
+                    //$("#url").val(res.fileName);
+                    //layer.msg('上传成功');
+                    //layui.$('#goodsImg').removeClass('layui-hide').find('img').attr('src', res.url);
+
+                    if($(".item_img").length >= 5) {
+                        return admin.info('商品图片不超过5张！');
+                    }
+
+                    var li = $('<li></li>')
+                    var divIcon = $('<div class="operate"></div>')
+                    var icon = $('<i class="close layui-icon"></i>')
+                    var delImg = $('<img class="delPic" src="../../../assets/images/del.png" />');
+                    var uploadImg = $('<img class="item_img" src="'+res.location+'"  />');
+
+                    delImg.click(function () {
+                        $(this).parents('li').remove()
+                    })
+                    icon.append(delImg)
+                    divIcon.append(icon)
+                    li.append(divIcon).append(uploadImg);
+                    $('#goodsImg').append(li)
+                }else{
+                    layer.msg('上传失败');
+                }
+            }
+        });
+
+        layui.form.on('submit(submitBtn)', function (data) {
+
+
+            data.field.description = tinymce.get('goodsIntroduce').getContent();
+            if(!data.field.description) {
+                return admin.info('请填写商品介绍！');
+            }
+            var srcList = [];
+            layui.each($(".item_img"), function (index, item) {
+                srcList.push($(item).attr("src"))
+            })
+            data.field.image = srcList.join(',');
+            if(srcList.length == 0) {
+                return admin.info('请上传商品图片！');
+            }
+            if(srcList.length > 5) {
+                return admin.info('商品图片不超过5张！');
+            }
+            admin.req(prefix + '/edit',data.field, function (data) {
+                if (data.code == 0) {
+                    admin.success('保存成功!');
+                    var index = parent.layer.getFrameIndex(window.name);
+                    parent.layer.close(index);
+                } else {
+                    admin.error(data.msg);
+                }
+            }, 'post');
+        })
+
+        // function getLocationUrl() {
+        //     //获取当前网址，如： http://localhost:8083/uimcardprj/share/meun.jsp
+        //     var curWwwPath = window.document.location.href;
+        //     //获取主机地址之后的目录，如： uimcardprj/share/meun.jsp
+        //     var pathName = window.document.location.pathname;
+        //     var pos = curWwwPath.indexOf(pathName);
+        //     //获取主机地址，如： http://localhost:8083
+        //     var localhostPaht = curWwwPath.substring(0, pos);
+        //     //获取带"/"的项目名，如：/uimcardprj
+        //     var projectName = pathName.substring(0, pathName.substr(1).indexOf('/') + 1);
+        //     return localhostPaht;
+        // }
+
+    })
+</script>
+
+</body>
+</html>

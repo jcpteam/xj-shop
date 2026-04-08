@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaboot.shop.mapper.StoreGoodsSpuUnitMapper">
+    
+    <resultMap type="StoreGoodsSpuUnit" id="StoreGoodsSpuUnitResult">
+        <result property="spuNo"    column="spu_no"    />
+        <result property="mainUnitId"    column="main_unit_id"    />
+        <result property="subUnitId"    column="sub_unit_id"    />
+        <result property="lastModifyTime"    column="last_modify_time"    />
+    </resultMap>
+
+    <sql id="selectStoreGoodsSpuUnitVo">
+        select spu_no, main_unit_id, sub_unit_id, last_modify_time from store_goods_spu_unit
+    </sql>
+
+    <select id="selectStoreGoodsSpuUnitList" parameterType="StoreGoodsSpuUnit" resultMap="StoreGoodsSpuUnitResult">
+        <include refid="selectStoreGoodsSpuUnitVo"/>
+        <where>  
+            <if test="mainUnitId != null "> and main_unit_id = #{mainUnitId}</if>
+            <if test="subUnitId != null "> and sub_unit_id = #{subUnitId}</if>
+            <if test="lastModifyTime != null "> and last_modify_time = #{lastModifyTime}</if>
+            <if test="spuNoList != null and spuNoList.size()>0">
+                and spu_no in
+                <foreach item="spu" collection="spuNoList" open="(" separator="," close=")">
+                    #{spu}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    
+    <select id="selectStoreGoodsSpuUnitById" parameterType="String" resultMap="StoreGoodsSpuUnitResult">
+        <include refid="selectStoreGoodsSpuUnitVo"/>
+        where spu_no = #{spuNo}
+    </select>
+        
+    <insert id="insertStoreGoodsSpuUnit" parameterType="StoreGoodsSpuUnit">
+        insert into store_goods_spu_unit
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="spuNo != null  and spuNo != ''">spu_no,</if>
+            <if test="mainUnitId != null ">main_unit_id,</if>
+            <if test="subUnitId != null ">sub_unit_id,</if>
+            <if test="lastModifyTime != null ">last_modify_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="spuNo != null  and spuNo != ''">#{spuNo},</if>
+            <if test="mainUnitId != null ">#{mainUnitId},</if>
+            <if test="subUnitId != null ">#{subUnitId},</if>
+            <if test="lastModifyTime != null ">#{lastModifyTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateStoreGoodsSpuUnit" parameterType="StoreGoodsSpuUnit">
+        update store_goods_spu_unit
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="mainUnitId != null ">main_unit_id = #{mainUnitId},</if>
+            <if test="subUnitId != null ">sub_unit_id = #{subUnitId},</if>
+            <if test="lastModifyTime != null ">last_modify_time = #{lastModifyTime},</if>
+        </trim>
+        where spu_no = #{spuNo}
+    </update>
+
+    <delete id="deleteStoreGoodsSpuUnitById" parameterType="String">
+        delete from store_goods_spu_unit where spu_no = #{spuNo}
+    </delete>
+
+    <delete id="deleteStoreGoodsSpuUnitByIds" parameterType="String">
+        delete from store_goods_spu_unit where spu_no in 
+        <foreach item="spuNo" collection="array" open="(" separator="," close=")">
+            #{spuNo}
+        </foreach>
+    </delete>
+
+    <select id="selectSpuUnitCountByIds" parameterType="String" resultType="Integer">
+       SELECT
+            count(1)
+        FROM
+            store_goods_spu_unit
+        WHERE
+            main_unit_id IN
+            <foreach item="unit" collection="array" open="(" separator="," close=")">
+                #{unit}
+            </foreach>
+            OR sub_unit_id IN
+            <foreach item="unit" collection="array" open="(" separator="," close=")">
+                #{unit}
+            </foreach>
+    </select>
+
+    <select id="selectUnitAndCoversionByDeptId" parameterType="String" resultType="com.javaboot.shop.domain.StoreGoodsSpuUnit">
+        SELECT
+            t1.spu_no spuno,
+            t1.main_unit_id mainunitid,
+            t3.NAME mainunitname,
+            t1.sub_unit_id subunitid,
+            t4.NAME subunitname,
+            IFNULL( t2.main_case_sub, 1.0 ) maincasesub,
+            IFNULL( t2.sub_case_main, 1.0 ) subcasemain,
+            t2.dept_id
+        FROM
+            store_goods_spu_unit t1
+            LEFT JOIN store_goods_spu_unit_conversion t2 ON t1.spu_no = t2.spu_no
+            AND t2.dept_id = #{deptId}
+            JOIN store_goods_sales_unit t3 ON t1.main_unit_id = t3.unit_id
+            JOIN store_goods_sales_unit t4 ON t1.sub_unit_id = t4.unit_id
+        ORDER BY
+        t1.spu_no
+    </select>
+</mapper>

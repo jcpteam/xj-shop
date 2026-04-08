@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+	<meta charset="utf-8"/>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<title>响应时间监控</title>
+	<link rel="stylesheet" href="../../../static/assets/libs/layui/css/layui.css" th:href="@{/assets/libs/layui/css/layui.css}"/>
+	<link rel="stylesheet" href="../../../static/assets/module/admin.css?v=316" th:href="@{/assets/module/admin.css?v=316}"/>
+	<!--[if lt IE 9]>
+	<script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+	<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+	<![endif]-->
+</head>
+<body class="bg-white">
+
+
+
+<!-- 正文开始 -->
+<div class="layui-fluid">
+	<blockquote class="layui-elem-quote">
+		系统响应时间超过<span th:text="${CONDITION_TIME}"></span>毫秒时，后台方法将被记录！
+	</blockquote>
+
+	<div class="">
+		<table class="layui-table" id="dataTable" lay-filter="dataTable"></table>
+	</div>
+</div>
+
+<!-- 头工具栏 -->
+<script type="text/html" id="toolbarHead">
+	<div class="layui-btn-container">
+		<button class="layui-btn layui-btn-danger layui-btn-sm layui-btn-disabled" id="removeAll" lay-event="removeAll" shiro:hasPermission="system:costTime:remove"><i class="layui-icon layui-icon-delete"></i>删除</button>
+		<button class="layui-btn layui-btn-normal layui-btn-danger layui-btn-sm" lay-event="clean" shiro:hasPermission="system:costTime:remove"><i class="layui-icon layui-icon-close"></i>清空</button>
+	</div>
+</script>
+
+<!-- 行工具栏 -->
+<script type="text/html" id="toolbarRow">
+	<a class="layui-btn layui-btn-xs" lay-event="del" shiro:hasPermission="system:costTime:remove">删除</a>
+</script>
+
+<!-- js部分 -->
+<script type="text/javascript" src="../../../static/assets/libs/layui/layui.js" th:src="@{/assets/libs/layui/layui.js}"></script>
+<script type="text/javascript" src="../../../static/assets/js/common.js?v=316" th:src="@{/assets/js/common.js}"></script>
+
+<script type="text/javascript" th:inline="javascript">
+	var ctx = [[@{/}]];
+	var datas = [[${@dict.getType('sys_oper_type')}]];
+</script>
+<script type="text/javascript" th:inline="none">
+	layui.use(['index', 'layer', 'form', 'table', 'util', 'laydate', 'ext'], function () {
+		var $ = layui.jquery;
+		var layer = layui.layer;
+		var form = layui.form;
+		var table = layui.table;
+		var util = layui.util;
+		var laydate = layui.laydate;
+		var ext = layui.ext;
+		var admin = layui.admin;
+		var index = layui.index;
+
+		var prefix = ctx + "system/costTime";
+		var url = prefix + "/list";
+		var removeUrl = prefix + "/remove";
+		var cleanUrl = prefix + "/clean";
+
+		table.render({
+			elem: '#dataTable'
+			,url: url
+			,method: 'POST'
+			,toolbar: '#toolbarHead'
+			,height: 'full-100'
+			,cellMinWidth: 80
+			,page: true
+			,request: {
+				pageName: 'pageNum' //页码的参数名称，默认：page
+				,limitName: 'pageSize' //每页数据量的参数名，默认：limit
+			}
+			,limit: 10
+			,cols: [[
+				{type: 'checkbox'}
+				,{field: 'className', title: '类名'}
+				,{field: 'methodName', title: '方法名', width: 100}
+				,{field: 'spendTime', title: '消耗的时间', width: 100}
+				,{field: 'id', title: '时间', width: 200, templet:function (res) {
+					return active.convertTimeUuidToDateStr(res.id);
+				}}
+				,{field: 'operate', title: '操作', width: 100, toolbar: '#toolbarRow', fixed: 'right'}
+			]]
+			,parseData: function(res){ //将原始数据解析成 table 组件所规定的数据
+				return {
+					"code": res.code, //解析接口状态
+					"msg": res.msg, //解析提示文本
+					"count": res.total, //解析数据长度
+					"data": res.rows //解析数据列表
+				};
+			}
+		});
+
+		//头工具栏事件
+		table.on('toolbar(dataTable)', function(obj){
+			switch(obj.event){
+				case 'removeAll':
+					active.removeAll();
+					break;
+				case 'clean':
+					active.clean();
+					break;
+				case 'export':
+					active.export();
+					break;
+			}
+		});
+
+		//行工具栏事件
+		table.on('tool(dataTable)', function (obj) {
+			var data = obj.data;
+			if (obj.event === 'del') {
+				active.del(data.id);
+			}
+		});
+
+		//复选框勾选/取消勾选监听
+		table.on('checkbox(dataTable)', function(obj){
+			var checkStatus = table.checkStatus('dataTable');
+			var checkData = checkStatus.data;
+			//console.log(checkData.length);
+			if(checkData.length == 1){
+				$("#removeAll").removeClass('layui-btn-disabled');
+			} else if(checkData.length > 1){
+				$("#removeAll").removeClass('layui-btn-disabled');
+			} else if(checkData.length == 0){
+				$("#removeAll").addClass('layui-btn-disabled');
+			}
+		});
+
+		//事件
+		var active = {
+			removeAll: function () {
+				var checkData = table.checkStatus('dataTable').data;
+				var ids = [];
+				layui.each(checkData, function (index, item) {
+					ids.push(item.id);
+				});
+
+				admin.confirm('确定删除吗？', function () {
+					admin.req(removeUrl, {ids: ids.join(',')}, function (result) {
+						if (result.code == 0) {
+							admin.success('删除成功!');
+							table.reload('dataTable');
+						} else {
+							admin.error(result.msg);
+						}
+					},'post')
+				});
+			}
+			,clean: function () {
+				admin.confirm('确定清空吗？', function () {
+					admin.req(cleanUrl, null, function (result) {
+						if (result.code == 0) {
+							admin.success('清理成功!');
+							table.reload('dataTable');
+						} else {
+							admin.error(result.msg);
+						}
+					},'post')
+				});
+			}
+			,del: function (id) {
+				// var rmUrl = detailUrl.replace("{id}", id);
+				// admin.openDialogView('查看详情', viewUrl, '800px', '480px');
+
+				admin.confirm('确定删除吗？', function () {
+					admin.req(removeUrl, {ids: id}, function (result) {
+						if (result.code == 0) {
+							admin.success('删除成功!');
+							table.reload('dataTable');
+						} else {
+							admin.error(result.msg);
+						}
+					},'post')
+				});
+			}
+			,export: function(){
+				$.modal.loading("正在导出数据，请稍后...");
+				$.post(exportUrl, $("#inputForm").serializeArray(), function(result) {
+					if (result.code == web_status.SUCCESS) {
+						window.location.href = ctx + "common/download?fileName=" + encodeURI(result.msg) + "&delete=" + true;
+					} else if (result.code == web_status.WARNING) {
+						$.modal.alertWarning(result.msg)
+					} else {
+						$.modal.alertError(result.msg);
+					}
+					$.modal.closeLoading();
+				});
+			}
+			,convertTimeUuidToDateStr: function(id){
+				id = id+"";
+				var year = "20"+id.substring(0,2);
+				var month = id.substring(2,4);
+				var day = id.substring(4,6);
+				var hour = id.substring(6,8);
+				var min = id.substring(8,10);
+				var sec = id.substring(10,12);
+				return	year+"-"+month+"-"+day+" "+hour+":"+min+":"+sec;
+			}
+		}
+	});
+</script>
+</body>
+
+</html>

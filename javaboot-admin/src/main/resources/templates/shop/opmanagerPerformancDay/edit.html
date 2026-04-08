@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('修改业务员每日绩效')" />
+</head>
+<body class="bg-white">
+<!-- 加载动画-->
+<div class="page-loading">
+    <div class="ball-loader">
+        <span></span><span></span><span></span><span></span>
+    </div>
+</div>
+<!-- 正文开始 -->
+<form class="layui-form bg-white" id="inputForm" th:onsubmit="return false" th:action="@{/shop/opmanagerPerformancDay/edit}" th:object="${storeOpmanagerPerformanceDay}">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <div class="layui-row">
+                <input name="id" type="hidden">
+                <div class="layui-form-item">
+                    <label class="layui-form-label layui-form-required">业务员id:</label>
+                    <div class="layui-input-block">
+                        <input name="opmanagerId" th:field="*{opmanagerId}" type="text" class="layui-input" lay-verType="tips" lay-verify="required"/>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label layui-form-required">统计日期，如：2020-07-20:</label>
+                    <div class="layui-input-block">
+                        <input name="performanceDay" th:field="*{performanceDay}" type="text" class="layui-input" lay-verType="tips" lay-verify="required"/>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">绩效总金额:</label>
+                    <div class="layui-input-block">
+                        <input name="totalPrice" th:field="*{totalPrice}" type="text" class="layui-input"/>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">成本金额:</label>
+                    <div class="layui-input-block">
+                        <input name="costPrice" th:field="*{costPrice}" type="text" class="layui-input"/>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">毛利金额:</label>
+                    <div class="layui-input-block">
+                        <input name="profitPrice" th:field="*{profitPrice}" type="text" class="layui-input"/>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">备注:</label>
+                    <div class="layui-input-block">
+                        <input name="comment" th:field="*{comment}" type="text" class="layui-input"/>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label layui-form-required">状态：0-删除，1-正常:</label>
+                    <div class="layui-input-block">
+                        <input type="radio" name="status" value="" lay-verType="tips" lay-verify="required">
+                        <div class="layui-form-mid layui-word-aux">代码生成请选择字典属性</div>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label layui-form-required">最后更新时间:</label>
+                    <div class="layui-input-block">
+                        <input id="lastModifyTime" th:value="${#dates.format(storeOpmanagerPerformanceDay.lastModifyTime, 'yyyy-MM-dd HH:mm:ss')}" type="text" placeholder="请选择最后更新时间" class="layui-input date-icon" autocomplete="off" readonly="true"/>
+                        <input type="hidden" name="lastModifyTime" th:value="${#dates.format(storeOpmanagerPerformanceDay.lastModifyTime, 'yyyy-MM-dd HH:mm:ss')}">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-hide">
+        <button id="submitBtn" class="layui-btn" lay-filter="submitBtn" lay-submit>保存</button>
+        <button id="closeBtn" class="layui-btn layui-btn-primary" ew-event="closeDialog">关闭</button>
+    </div>
+</form>
+
+<th:block th:include="include :: footer" />
+<script th:inline="javascript">
+    var ctx = [[@{/}]];
+    var prefix = ctx + "shop/opmanagerPerformancDay";
+</script>
+<script th:inline="none">
+    layui.use(['index', 'form', 'formX', 'table', 'laydate', 'upload', 'ext'], function(){
+        var $ = layui.$;
+        var form = layui.form;
+        var formX = layui.formX;
+        var layer = layui.layer;
+        var table = layui.table;
+        var admin = layui.admin;
+        var upload = layui.upload;
+        var laydate = layui.laydate;
+
+        //日期范围
+        laydate.render({
+            elem: '#lastModifyTime'
+            , type: 'datetime'
+            , done: function (value, date, endDate) {
+                $("input[name='lastModifyTime']").val(value);
+            }
+        });
+
+    })
+</script>
+</body>
+</html>

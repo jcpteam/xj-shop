@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('新增线路和商户关联')" />
+</head>
+<body class="bg-white">
+<!-- 加载动画-->
+<!--<div class="page-loading">-->
+    <!--<div class="ball-loader">-->
+        <!--<span></span><span></span><span></span><span></span>-->
+    <!--</div>-->
+<!--</div>-->
+<!-- 正文开始 -->
+<form class="layui-form bg-white" id="inputForm" th:onsubmit="return false" th:action="@{/shop/routeCustomer/add}" th:object="${storeRouteShop}">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <div class="layui-row">
+                <input name="routeId" type="hidden">
+                <input type="hidden" th:value="${routeInfo}" id="routeInfo"/>
+                <input name="routeId" type="hidden" id="routeId" th:value="${routeInfo.routeId}"/>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label layui-form-required">线路名称:</label>
+                    <div class="layui-input-block">
+                        <input name="routeName" type="text" th:field="${routeInfo.routeName}" class="layui-input layui-disabled" lay-verType="tips" lay-verify="required" autocomplete="off" required readonly/>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label layui-form-required">商户名称:</label>
+                    <div class="layui-input-block">
+                        <!--<select name="customerId" id="customerId" class="layui-select" lay-verType="tips" lay-verify="required">-->
+                        <!--</select>-->
+
+                        <select name="customerId" id="customerId" lay-verify="required" lay-search="">
+                            <option value="">直接选择或搜索选择</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label layui-form-required">配送顺序:</label>
+                    <div class="layui-input-block">
+                        <input name="sequenceNo" type="text" class="layui-input" lay-verType="tips" lay-verify="required" autocomplete="off"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-hide">
+        <button id="submitBtn" class="layui-btn" lay-filter="submitBtn" lay-submit>保存</button>
+        <button id="closeBtn" class="layui-btn layui-btn-primary" ew-event="closeDialog">关闭</button>
+    </div>
+</form>
+
+<th:block th:include="include :: footer" />
+<script th:inline="javascript">
+    var ctx = [[@{/}]];
+    var prefix = ctx + "shop/routeCustomer";
+</script>
+<script th:inline="none">
+    layui.use(['index', 'form', 'formX', 'table', 'laydate', 'upload', 'ext'], function(){
+        var $ = layui.$;
+        var form = layui.form;
+        var formX = layui.formX;
+        var layer = layui.layer;
+        var table = layui.table;
+        var admin = layui.admin;
+        var upload = layui.upload;
+        var laydate = layui.laydate;
+
+        //获取角色列表
+        admin.req(ctx + "shop/routeCustomer/getCustomerList", {}, function (result) {
+            var select = document.getElementById('customerId');
+            select.innerHTML = "";
+            var o = document.createElement("option");
+            o.setAttribute("value","");
+            o.innerText = "直接选择或搜索选择";
+            select.appendChild(o);
+
+            if(result.rows && result.rows.length){
+                for(var i =0;i<result.rows.length;i++){
+                    var data = result.rows[i];
+                    var option = document.createElement("option");
+                    option.setAttribute("value",data.customerId);
+                    option.setAttribute("data-name",data.customerName);
+                    option.innerText = data.customerName;
+                    select.appendChild(option);
+                }
+            }
+            form.render('select');
+        },'post')
+    })
+</script>
+</body>
+</html>

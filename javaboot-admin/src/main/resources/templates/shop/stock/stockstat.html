@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('中间统计表')" />
+    <style>
+        .laytable-cell-checkbox .layui-disabled.layui-form-checked i {
+            background: #fff !important;
+        }
+
+
+    </style>
+</head>
+<body>
+
+<!-- 正文开始 -->
+<div class="layui-fluid">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-card">
+            <!-- 搜索区 -->
+            <form class="layui-form toolbar" th:onsubmit="return false" lay-filter="inputForm" id="inputForm">
+                <div class="layui-form-item">
+
+                    <div class="layui-inline">
+                        <label class="layui-form-label label-auto">所属区域：</label>
+                        <div class="layui-input-inline">
+                            <select name="deptId"  id="deptId"   >
+                                <option  value="" th:checked="true">选择区域</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="layui-inline">
+                        <label class="layui-form-label label-auto">日期</label>
+                        <div class="layui-input-block">
+                            <input id="optDate" type="text" placeholder="请选择日期"  class="layui-input date-icon" autocomplete="off" readonly="readonly"/>
+                            <input type="hidden" id="statDate" name="statDate">
+                        </div>
+                    </div>
+                    <div class="layui-inline" style="padding-left: 13px;">
+                        <button class="layui-btn layui-btn-sm icon-btn" lay-submit lay-filter="searchBtn" id="searchBtn">
+                            <i class="layui-icon layui-icon-search"></i>搜索
+                        </button>
+                        <button class="layui-btn layui-btn-sm icon-btn" type="reset" id="restBtn">
+                            <i class="layui-icon layui-icon-refresh"></i>重置
+                        </button>
+
+                        <!--<button class="layui-btn layui-btn-sm icon-btn" lay-submit lay-filter="auditPatch" id="auditPatch">
+                            <i class="layui-icon layui-icon-add-circle-fine"></i>批量审核
+                        </button>-->
+                        <a class="layui-btn layui-btn-primary form-search-expand layui-hide" data-expand="true">
+                            展开 <i class="layui-icon layui-icon-down"></i>
+                        </a>
+                    </div>
+                </div>
+            </form>
+
+            <table class="layui-table" id="dataTable" lay-filter="dataTable"></table>
+        </div>
+
+    </div>
+</div>
+
+<!-- js部分 -->
+<th:block th:include="include :: footer" />
+<script type="text/javascript" th:inline="javascript">
+    var ctx = [[@{/}]];
+</script>
+<script type="text/javascript" th:inline="none">
+    layui.use(['index', 'layer', 'form', 'table', 'laydate','util', 'ext'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        var table = layui.table;
+        var util = layui.util;
+        var laydate = layui.laydate;
+        var ext = layui.ext;
+        var admin = layui.admin;
+        var index = layui.index;
+
+        var prefix = ctx + "shop/detail/stat";
+        var listUrl = prefix + "/report9";
+
+        // $("input[name='optDate']").val(getRecentDay(0));
+
+        table.render({
+            elem: '#dataTable'
+            ,url: listUrl
+            ,method: 'POST'
+            //,toolbar: '#toolbarHead'
+            ,height: 'full-100'
+            ,page: true
+            ,request: {
+                pageName: 'pageNum' //页码的参数名称，默认：page
+                ,limitName: 'pageSize' //每页数据量的参数名，默认：limit
+            }
+            ,where:{qryDate:getRecentDay(0),orderByColumn:"stat_date",isAsc:"desc"}
+            ,limit: 10
+            ,cols: [[
+                //{type: 'checkbox'}
+                {field: 'deptName', title: '所属区域'}
+                ,{field: 'spuName', title: '商品'}
+                ,{field: 'statDate',title: '日期',templet:function (d) {
+                    return layui.util.toDateString(d.statDate, 'yyyy-MM-dd');
+                }}
+                ,{field: 'stockMainTotalQuanity',  title: '库存主单位数量'}
+                ,{field: 'stockSubTotalQuanity',  title: '库存副单位数量'}
+                //,{field: 'stockTotalPrice', width: 120, title: '库存总额'}
+                //,{field: 'stockAvgPrice', width: 120, title: '库存单价'}
+                ,{field: 'inventoryMainTotalQuanity',   title: '盘库主单位数量'}
+                ,{field: 'inventorySubTotalQuanity',   title: '盘库副单位数量'}
+                //,{field: 'costPrice',  width: 120, title: '每日成本价'}
+            ]]
+            ,parseData: function(res){ //将原始数据解析成 table 组件所规定的数据
+                return {
+                    "code": res.code, //解析接口状态
+                    "msg": res.msg, //解析提示文本
+                    "count": res.total, //解析数据长度
+                    "data": res.rows //解析数据列表
+                };
+            },done: function () {
+
+                //$(".layui-table-body, .layui-table-box, .layui-table-cell").css('overflow', 'visible');
+            }
+        });
+
+        function getRecentDay(day) {
+            var today = new Date();
+            var targetday_milliseconds = today.getTime() + 1000 * 60 * 60 * 24 * day;
+            today.setTime(targetday_milliseconds);
+            var tYear = today.getFullYear();
+            var tMonth = today.getMonth();
+            var tDate = today.getDate();
+            var tHours = today.getHours();
+            var tMinutes = today.getMinutes();
+            var tSeconds = today.getSeconds();
+            tMonth = doHandleMonth(tMonth + 1);
+            tDate = doHandleMonth(tDate);
+            // tHours = doHandleMonth(tHours);
+            // tMinutes = doHandleMonth(tMinutes);
+            // tSeconds = doHandleMonth(tSeconds);
+
+            return tYear + "-" + tMonth + "-" + tDate;
+        }
+
+        function doHandleMonth(month){
+            var m = month;
+            if(month.toString().length == 1){
+                m = "0" + month;
+            }
+            return m;
+        }
+        
+        $("#statDate").val(getRecentDay(0));
+
+        laydate.render({
+            elem: '#optDate'
+            ,value: getRecentDay(0)
+            ,done: function (value) {
+                $("#statDate").val(value);
+            }
+        });
+
+        $("#restBtn").click(function () {
+            $("input[type='hidden']").val("")
+        })
+
+        //监听搜索
+        form.on('submit(searchBtn)', function (data) {
+            var field = data.field;
+            debugger
+            //执行重载
+            table.reload('dataTable', {
+                where: field
+                ,page:{curr:1}
+            });
+        });
+
+        //所属区域------------------------------------------------------------------------------------------------------
+        admin.req(ctx + "system/dept/getLoginUserDept", { }, function (result) {
+            var select= document.getElementById('deptId');
+            for (var i=0;i<result.data.length;i++) {
+                var data= result.data[i];
+                var option = document.createElement("option");
+                option.setAttribute("value", data.value);
+                option.innerText =data.name;
+                select.appendChild(option)
+            }
+            form.render('select');
+        },'get')
+
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('新增商城首页广告信息')" />
+</head>
+<body class="bg-white">
+<!-- 加载动画-->
+<!--<div class="page-loading">-->
+    <!--<div class="ball-loader">-->
+        <!--<span></span><span></span><span></span><span></span>-->
+    <!--</div>-->
+<!--</div>-->
+<!-- 正文开始 -->
+<form class="layui-form bg-white" id="inputForm" th:onsubmit="return false" th:action="@{/shop/homepageAd/add}" th:object="${storeHomepageAds}">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <div class="layui-row">
+                <input name="id" type="hidden">
+                <input name="imgUrl" id="imgUrl" type="hidden" th:value = "${imgUrl}">
+                <div class="layui-form-item">
+                    <label class="layui-form-label layui-form-required">编号:</label>
+                    <div class="layui-input-block">
+                        <input name="adNo" type="text" class="layui-input" lay-verType="tips" lay-verify="required" autocomplete="off"/>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <!--<label class="layui-form-label layui-form-required">广告图片地址:</label>-->
+                    <!--<div class="layui-input-block">-->
+                        <!--<input name="imgUrl" type="text" class="layui-input" lay-verType="tips" lay-verify="required"/>-->
+                    <!--</div>-->
+                    <label class="layui-form-label layui-form-required">商品图片:</label>
+                    <div class="layui-upload-drag" id="adImgUpload">
+                        <i class="layui-icon"></i>
+                        <p>点击上传，或将图片拖拽到此处</p>
+                        <div class="layui-hide" id="uploadImgView">
+                            <hr>
+                            <img src="" alt="上传成功后渲染" style="max-width: 250px">
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label layui-form-required">序号:</label>
+                    <div class="layui-input-block">
+                        <input name="sequenceNo" type="text" class="layui-input" lay-verType="tips" lay-verify="required" autocomplete="off"/>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <!--<label class="layui-form-label">状态：0-关闭，1-开启:</label>-->
+                    <!--<div class="layui-input-block">-->
+                        <!--<input type="radio" name="status" value="">-->
+                        <!--<div class="layui-form-mid layui-word-aux">代码生成请选择字典属性</div>-->
+                    <!--</div>-->
+
+                    <label class="layui-form-label">状态:</label>
+                    <div class="layui-input-block">
+                        <input type="radio" name="status" value="0" title="关闭" >
+                        <input type="radio" name="status" value="1" title="开启" checked="">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-hide">
+        <button id="submitBtn" class="layui-btn" lay-filter="submitBtn" lay-submit>保存</button>
+        <button id="closeBtn" class="layui-btn layui-btn-primary" ew-event="closeDialog">关闭</button>
+    </div>
+</form>
+
+<th:block th:include="include :: footer" />
+<script th:inline="javascript">
+    var ctx = [[@{/}]];
+    var prefix = ctx + "shop/homepageAd";
+</script>
+<script th:inline="none">
+    layui.use(['upload','index', 'form', 'formX', 'table', 'laydate', 'upload', 'ext'], function(){
+        var $ = layui.$;
+        var form = layui.form;
+        var formX = layui.formX;
+        var layer = layui.layer;
+        var table = layui.table;
+        var admin = layui.admin;
+        var upload = layui.upload;
+        var laydate = layui.laydate;
+        var upload = layui.upload;
+
+        //拖拽上传
+        upload.render({
+            elem: '#adImgUpload'
+            ,url: ctx + "common/upload" //改成您自己的上传接口
+            ,done: function(res){
+                if(res && res.code == 0){
+                    $("#imgUrl").val(res.location);
+                    layer.msg('上传成功');
+                    layui.$('#uploadImgView').removeClass('layui-hide').find('img').attr('src', res.url);
+                }else{
+                    layer.msg('上传失败');
+                }
+            }
+        });
+    })
+</script>
+</body>
+</html>

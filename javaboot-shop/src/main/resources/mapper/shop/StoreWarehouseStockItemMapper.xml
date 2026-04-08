@@ -1,0 +1,302 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaboot.shop.mapper.StoreWarehouseStockItemMapper">
+
+    <resultMap type="StoreWarehouseStockItem" id="StoreWarehouseStockItemResult">
+        <result property="itemId"    column="item_id"    />
+        <result property="stockId"    column="stock_id"    />
+        <result property="spuNo"    column="spu_no"    />
+        <result property="status"    column="status"    />
+        <result property="warehouseId"    column="warehouse_id"    />
+        <result property="quantity"    column="quantity"    />
+        <result property="stocksNumber"    column="stocks_number"    />
+        <result property="realQuantity"    column="real_quantity"    />
+        <result property="realStocksNumber"    column="real_stocks_number"    />
+        <result property="amount"    column="amount"    />
+        <result property="quantityUnit"    column="quantity_unit"    />
+        <result property="weightUnit"    column="weight_unit"    />
+        <result property="taxRate"    column="tax_rate"    />
+        <result property="tax"    column="tax"    />
+        <result property="noTaxPrice"    column="no_tax_price"    />
+        <result property="totalPrice"    column="total_price"    />
+        <result property="insertTime"    column="insert_time"    />
+        <result property="objectJson"    column="object_json"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="adjustAmount"    column="adjust_amount"    />
+        <result property="comment"    column="comment"    />
+        <result property="adjustAmount"    column="adjust_amount"    />
+        <result property="lastModifyTime"    column="last_modify_time"    />
+    </resultMap>
+
+    <sql id="selectStoreWarehouseStockItemVo">
+        select * from store_warehouse_stock_item
+    </sql>
+
+    <select id="selectStoreWarehouseStockItemList" parameterType="StoreWarehouseStockItem" resultMap="StoreWarehouseStockItemResult">
+        <include refid="selectStoreWarehouseStockItemVo"/>
+        <where>
+            <if test="spuNo != null  and spuNo != ''"> and spu_no = #{spuNo}</if>
+            <if test="stockId != null  and stockId != ''"> and stock_id = #{stockId}</if>
+            <if test="warehouseId != null "> and warehouse_id = #{warehouseId}</if>
+            <if test="quantity != null "> and quantity = #{quantity}</if>
+            <if test="stocksNumber != null "> and stocks_number = #{stocksNumber}</if>
+            <if test="status != null and status !='' "> and status = #{status}</if>
+            <if test="amount != null "> and amount = #{amount}</if>
+            <if test="quantityUnit != null  and quantityUnit != ''"> and quantity_unit = #{quantityUnit}</if>
+            <if test="weightUnit != null  and weightUnit != ''"> and weight_unit = #{weightUnit}</if>
+            <if test="lastModifyTime != null "> and last_modify_time = #{lastModifyTime}</if>
+            <if test="stockIds != null and stockIds.size()>0 ">
+                and stock_id in
+                <foreach collection="stockIds" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+
+            </if>
+        </where>
+    </select>
+
+    <select id="selectStoreWarehouseStockItemById" parameterType="Long" resultMap="StoreWarehouseStockItemResult">
+        <include refid="selectStoreWarehouseStockItemVo"/>
+        where item_id = #{itemId}
+    </select>
+
+    <insert id="insertStoreWarehouseStockItem" parameterType="StoreWarehouseStockItem" useGeneratedKeys="true" keyProperty="itemId">
+        insert into store_warehouse_stock_item
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="spuNo != null  and spuNo != ''">spu_no,</if>
+            <if test="stockId != null  and stockId != ''">stock_id,</if>
+            <if test="warehouseId != null ">warehouse_id,</if>
+            <if test="quantity != null ">quantity,</if>
+            <if test="stocksNumber != null ">stocks_number,</if>
+            <if test="realQuantity != null ">real_quantity,</if>
+            <if test="realStocksNumber != null ">real_stocks_number,</if>
+            <if test="amount != null ">amount,</if>
+            <if test="quantityUnit != null  and quantityUnit != ''">quantity_unit,</if>
+            <if test="weightUnit != null  and weightUnit != ''">weight_unit,</if>
+            <if test="taxRate != null ">tax_rate,</if>
+            <if test="tax != null ">tax,</if>
+            <if test="noTaxPrice != null ">no_tax_price,</if>
+            <if test="totalPrice != null ">total_price,</if>
+            <if test="insertTime != null ">insert_time,</if>
+            <if test="objectJson != null and objectJson != '' ">object_json,</if>
+            <if test="createTime != null ">create_time,</if>
+            <if test="lastModifyTime != null ">last_modify_time,</if>
+            <if test="comment != null  and comment != '' ">comment,</if>
+            <if test="adjustAmount != null  and adjustAmount!=''">adjust_amount,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="spuNo != null  and spuNo != ''">#{spuNo},</if>
+            <if test="stockId != null  and stockId != ''">#{stockId},</if>
+            <if test="warehouseId != null ">#{warehouseId},</if>
+            <if test="quantity != null ">#{quantity},</if>
+            <if test="stocksNumber != null ">#{stocksNumber},</if>
+            <if test="realQuantity != null ">#{realQuantity},</if>
+            <if test="realStocksNumber != null ">#{realStocksNumber},</if>
+            <if test="amount != null ">#{amount},</if>
+            <if test="quantityUnit != null  and quantityUnit != ''">#{quantityUnit},</if>
+            <if test="weightUnit != null  and weightUnit != ''">#{weightUnit},</if>
+            <if test="taxRate != null ">#{taxRate},</if>
+            <if test="tax != null ">#{tax},</if>
+            <if test="noTaxPrice != null ">#{noTaxPrice},</if>
+            <if test="totalPrice != null ">#{totalPrice},</if>
+            <if test="insertTime != null ">#{insertTime},</if>
+            <if test="objectJson != null and objectJson != '' ">#{objectJson},</if>
+            <if test="createTime != null ">#{createTime},</if>
+            <if test="lastModifyTime != null ">#{lastModifyTime},</if>
+            <if test="comment != null  and comment != '' ">#{comment},</if>
+            <if test="adjustAmount != null  and adjustAmount!=''">#{adjustAmount},</if>
+        </trim>
+    </insert>
+
+    <update id="updateStoreWarehouseStockItem" parameterType="StoreWarehouseStockItem">
+        update store_warehouse_stock_item
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="spuNo != null  and spuNo != ''">spu_no = #{spuNo},</if>
+            <if test="stockId != null  and stockId != ''">stock_id = #{stockId},</if>
+            <if test="warehouseId != null ">warehouse_id = #{warehouseId},</if>
+            <if test="quantity != null ">quantity = #{quantity},</if>
+            <if test="stocksNumber != null ">stocks_number = #{stocksNumber},</if>
+            <if test="realQuantity != null ">real_quantity = #{realQuantity},</if>
+            <if test="realStocksNumber != null ">real_stocks_number = #{realStocksNumber},</if>
+            <if test="amount != null ">amount = #{amount},</if>
+            <if test="quantityUnit != null  and quantityUnit != ''">quantity_unit = #{quantityUnit},</if>
+            <if test="weightUnit != null  and weightUnit != ''">weight_unit = #{weightUnit},</if>
+            <if test="taxRate != null ">tax_rate = #{taxRate},</if>
+            <if test="tax != null ">tax = #{tax},</if>
+            <if test="noTaxPrice != null ">no_tax_price = #{noTaxPrice},</if>
+            <if test="totalPrice != null ">total_price = #{totalPrice},</if>
+            <if test="insertTime != null ">insert_time = #{insertTime},</if>
+            <if test="createTime != null ">create_time = #{createTime},</if>
+            <if test="lastModifyTime != null ">last_modify_time = #{lastModifyTime},</if>
+            <if test="comment != null  and comment != ''">comment = #{comment},</if>
+            <if test="adjustAmount != null  and adjustAmount!=''">adjust_amount = #{adjustAmount},</if>
+        </trim>
+        where item_id = #{itemId}
+    </update>
+
+    <delete id="deleteStoreWarehouseStockItemById" parameterType="Long">
+        delete from store_warehouse_stock_item where item_id = #{itemId}
+    </delete>
+
+    <delete id="deleteStoreWarehouseStockItemByIds" parameterType="String">
+        delete from store_warehouse_stock_item where item_id in
+        <foreach item="itemId" collection="array" open="(" separator="," close=")">
+            #{itemId}
+        </foreach>
+    </delete>
+
+    <select id="selectWarehouseStockItemNum" parameterType="StoreWarehouseStockItem" resultMap="StoreWarehouseStockItemResult">
+       SELECT
+          spu_no, sum(quantity) quantity, sum(stocks_number) stocks_number
+       FROM
+          store_warehouse_stock t1,  store_warehouse_stock_item t2
+       WHERE t1.dept_id = #{deptId} AND t1.stock_id = t2.stock_id AND t2.status = '1' AND t1.status = '1'
+             AND t2.create_time >= #{startTime} AND t2.create_time &lt;= #{endTime}
+       GROUP BY spu_no
+    </select>
+
+    <select id="selectWareStockQuantity" parameterType="StoreWarehouseStockItem" resultMap="StoreWarehouseStockItemResult">
+        SELECT
+            t2.spu_no,
+            sum(t2.quantity ) quantity,
+            sum(t2.stocks_number) stocks_number
+
+        FROM
+            store_warehouse_stock t1,
+            store_warehouse_stock_item t2
+        WHERE
+            t1.create_time >= #{startTime}
+            AND t1.create_time &lt;= #{endTime}
+            AND t1.stock_id = t2.stock_id
+            <if test="deptId != null  and deptId != ''">
+                AND t1.dept_id = #{deptId}
+            </if>
+            AND t2.status = '1'
+        GROUP BY
+            t2.spu_no
+    </select>
+
+    <select id="selectInventoryQuantity" parameterType="StoreWarehouseStockItem" resultMap="StoreWarehouseStockItemResult">
+        SELECT
+          t2.spu_no,
+          sum(t2.inventory_quantity) quantity,
+          sum(t2.inventory_lonely_quantity) stocks_number
+
+        FROM
+            store_warehouse_inventory t1,
+            store_warehouse_inventory_item t2
+        WHERE
+            t1.inventory_id = t2.inventory_id
+            AND t1.intentory_date = #{startTime}
+            AND t1.dept_id = #{deptId}
+            AND t1.status = '1'
+        GROUP BY t2.spu_no
+
+    </select>
+
+
+    <select id="selectExportStockItemList" parameterType="com.javaboot.shop.dto.StoreWarehouseStockQueryDTO" resultType="com.javaboot.shop.dto.StoreStockExportDTO">
+          SELECT
+            t1.stock_no stockno,
+            t1.warehouse_id warehouseid,
+            t4.store_name warehouseName,
+            t1.dept_id deptid,
+            t6.dict_label supplierId,
+            case t1.category
+            when '1' then '正常入库'
+            when '2' then '退货入库'
+            when '3' then 'EAS入库'
+            when '4' then '采购单入库'
+            when '5' then '调拨单入库'
+            else '调拨单出库'
+            end  category,
+            t5.dept_name deptname,
+            t2.spu_no spuno,
+            t3.NAME spuname,
+            t2.amount,
+            t2.quantity weight,
+            t2.stocks_number quantity,
+            t2.quantity_unit mainunit,
+            t2.weight_unit subunit,
+            IFNULL(t2.tax_rate, 0) taxrate,
+            IFNULL(t2.tax, 0) tax,
+            IFNULL(t2.no_tax_price, t2.total_price) notaxprice,
+            t2.total_price totalprice,
+            t2.adjust_amount adjustamount,
+            t2.total_price totalprice,
+            t1.create_time createtime,
+            t1.purchase_date purchaseDate,
+            case t1.syn_status
+            when '0' then '未同步'
+            when '1' then '已同步'
+            else '同步失败'
+            end  synstatus,
+            t2.comment,
+            t2.adjust_amount adjustamount
+        FROM
+            store_warehouse_stock t1,
+            store_warehouse_stock_item t2,
+            store_goods_spu t3,
+            store_house t4,
+            sys_dept t5,
+            sys_dict_data t6
+        WHERE
+            t1.STATUS = '1'
+            AND t1.stock_id = t2.stock_id
+            AND t2.STATUS = '1'
+            AND t5.dept_id = t1.dept_id
+            AND t2.spu_no = t3.spu_no
+            AND t4.store_id = t1.warehouse_id
+            AND t1.supplier_id = t6.dict_value
+            AND t6.dict_type = 'store_stock_supplier'
+            <if test="deptId!=null and deptId!=''">
+                AND  t1.dept_id = #{deptId}
+            </if>
+            <if test="loginUserDeptId != null  and loginUserDeptId !='' and (deptId==null or deptId=='')">
+                AND  t1.dept_id IN (
+                SELECT
+                dept_id
+                FROM
+                sys_dept
+                WHERE
+                find_in_set( #{loginUserDeptId}, ancestors )  or dept_id=#{loginUserDeptId}
+                )
+            </if>
+            <if test="beginDate != null and beginDate!='' and endDate != null and endDate!='' ">
+                and t1.insert_time  BETWEEN
+                DATE_FORMAT(#{beginDate},'%Y-%m-%d %H:%i:%s')
+                AND DATE_FORMAT(#{endDate},'%Y-%m-%d %H:%i:%s')
+            </if>
+            <if test="stockBeginDate != null and stockBeginDate!='' and stockEndDate != null and stockEndDate!='' ">
+                and t1.create_time  BETWEEN
+                DATE_FORMAT(#{stockBeginDate},'%Y-%m-%d')
+                AND DATE_FORMAT(#{stockEndDate},'%Y-%m-%d')
+            </if>
+            <if test="purchaseBeginDate != null and purchaseBeginDate!='' and purchaseEndDate != null and purchaseEndDate!='' ">
+                and t1.purchase_date  BETWEEN
+                DATE_FORMAT(#{purchaseBeginDate},'%Y-%m-%d')
+                AND DATE_FORMAT(#{purchaseEndDate},'%Y-%m-%d')
+            </if>
+            <if test="synStatus != null and synStatus!=''   ">
+                and t1.syn_status = #{synStatus}
+            </if>
+            <if test="supplierId != null and supplierId!='' ">
+                and t1.supplier_id = #{supplierId}
+            </if>
+        LIMIT 10000
+    </select>
+
+    <select id="selectStockItemListForSorting" parameterType="com.javaboot.shop.domain.StoreWarehouseStockItem"
+            resultType="com.javaboot.shop.domain.StoreWarehouseStockItem">
+      SELECT t1.*,t2.create_time as create_day,t2.category as category FROM `store_warehouse_stock_item` t1
+      join store_warehouse_stock t2 on t1.stock_id = t2.stock_id
+      where t1.status = '1'
+      and t2.status = '1'
+      and t2.category in ('4','5')
+      and t2.dept_id = #{deptId}
+      and t2.create_time BETWEEN #{startDate} and #{endDate}
+    </select>
+
+</mapper>

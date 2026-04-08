@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('新增分拣绩效标准信息')" />
+</head>
+<body class="bg-white">
+<!-- 加载动画-->
+<!--<div class="page-loading">-->
+    <!--<div class="ball-loader">-->
+        <!--<span></span><span></span><span></span><span></span>-->
+    <!--</div>-->
+<!--</div>-->
+<!-- 正文开始 -->
+<form class="layui-form bg-white" id="inputForm" th:onsubmit="return false" th:action="@{/shop/performanceStand/add}" th:object="${storeSortingPerformanceStand}">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <div class="layui-row">
+                <input name="id" type="hidden">
+                <div class="layui-form-item">
+                    <label class="layui-form-label layui-form-required">客户类型：大客户   批发客户  零散客户:</label>
+                    <div class="layui-input-block">
+                        <select name="customerType" class="layui-select" lay-verType="tips" lay-verify="required">
+                            <option value="">所有</option>
+                        </select>
+                        <div class="layui-form-mid layui-word-aux">代码生成请选择字典属性</div>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label layui-form-required">商品spu:</label>
+                    <div class="layui-input-block">
+                        <input name="spuNo" type="text" class="layui-input" lay-verType="tips" lay-verify="required"/>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label layui-form-required">绩效单位:</label>
+                    <div class="layui-input-block">
+                        <input name="performUnitId" type="text" class="layui-input" lay-verType="tips" lay-verify="required"/>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label layui-form-required">商品单位:</label>
+                    <div class="layui-input-block">
+                        <input name="goodUnitId" type="text" class="layui-input" lay-verType="tips" lay-verify="required"/>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label layui-form-required">单位比例:</label>
+                    <div class="layui-input-block">
+                        <input name="unitRatio" type="text" class="layui-input" lay-verType="tips" lay-verify="required"/>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label layui-form-required">分拣权重:</label>
+                    <div class="layui-input-block">
+                        <input name="sortingWeightRatio" type="text" class="layui-input" lay-verType="tips" lay-verify="required"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-hide">
+        <button id="submitBtn" class="layui-btn" lay-filter="submitBtn" lay-submit>保存</button>
+        <button id="closeBtn" class="layui-btn layui-btn-primary" ew-event="closeDialog">关闭</button>
+    </div>
+</form>
+
+<th:block th:include="include :: footer" />
+<script th:inline="javascript">
+    var ctx = [[@{/}]];
+    var prefix = ctx + "shop/performanceStand";
+</script>
+<script th:inline="none">
+    layui.use(['index', 'form', 'formX', 'table', 'laydate', 'upload', 'ext'], function(){
+        var $ = layui.$;
+        var form = layui.form;
+        var formX = layui.formX;
+        var layer = layui.layer;
+        var table = layui.table;
+        var admin = layui.admin;
+        var upload = layui.upload;
+        var laydate = layui.laydate;
+
+
+    })
+</script>
+</body>
+</html>

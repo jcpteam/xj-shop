@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+	<meta charset="utf-8">
+	<title>角色数据权限</title>
+	<meta name="renderer" content="webkit">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=0">
+	<link rel="stylesheet" href="../../../static/assets/libs/layui/css/layui.css" th:href="@{/assets/libs/layui/css/layui.css}"/>
+	<link rel="stylesheet" href="../../../static/assets/module/admin.css" th:href="@{/assets/module/admin.css}"/>
+</head>
+<body class="bg-white">
+
+<!-- 正文开始 -->
+<form class="layui-form bg-white" id="inputForm" th:onsubmit="return false" th:action="@{/system/role/authDataScope}" th:object="${role}">
+	<div class="layui-card">
+		<div class="layui-card-body">
+			<div class="layui-row">
+				<input id="roleId" name="roleId" type="hidden" th:field="*{roleId}"/>
+				<div class="layui-form-item">
+					<label class="layui-form-label layui-form-required">角色名称:</label>
+					<div class="layui-input-block">
+						<input name="roleName" th:field="*{roleName}" type="text" class="layui-input" lay-verType="tips" lay-verify="required"/>
+					</div>
+				</div>
+				<div class="layui-form-item">
+					<label class="layui-form-label layui-form-required">权限字符:</label>
+					<div class="layui-input-block">
+						<input name="roleKey" th:field="*{roleKey}" type="text" class="layui-input" lay-verType="tips" lay-verify="required"/>
+					</div>
+				</div>
+				<div class="layui-form-item">
+					<label class="layui-form-label layui-form-required">数据范围:</label>
+					<div class="layui-input-block">
+						<select id="dataScope" name="dataScope" lay-filter="dataScope">
+							<option value="1" th:field="*{dataScope}">全部数据权限</option>
+							<option value="2" th:field="*{dataScope}">自定数据权限</option>
+							<option value="3" th:field="*{dataScope}">本部门数据权限</option>
+							<option value="4" th:field="*{dataScope}">本部门及以下数据权限</option>
+							<option value="5" th:field="*{dataScope}">仅本人数据权限</option>
+						</select>
+					</div>
+				</div>
+				<div class="layui-form-item" id="authDataScope" th:style="'display:' + @{(*{dataScope=='2'} ? 'block' : 'none')} + ''">
+					<label class="layui-form-label">数据权限:</label>
+					<div class="layui-input-block">
+						<input type="hidden" id="deptIds" name="deptIds">
+						<div id="deptTrees" class="ztree"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="layui-form-item layui-hide">
+		<button id="submitBtn" class="layui-btn" lay-filter="submitBtn" lay-submit>保存</button>
+		<button id="closeBtn" class="layui-btn layui-btn-primary" ew-event="closeDialog">关闭</button>
+	</div>
+</form>
+
+<script type="text/javascript" src="../../../static/assets/libs/layui/layui.js" th:src="@{/assets/libs/layui/layui.js}"></script>
+<script type="text/javascript" src="../../../static/assets/js/common.js" th:src="@{/assets/js/common.js}"></script>
+<script th:inline="javascript">
+	var ctx = [[@{/}]];
+</script>
+<script th:inline="none">
+	layui.use(['index', 'form', 'formX', 'table', 'ext'], function(){
+		var $ = layui.$;
+		var form = layui.form;
+		var formX = layui.formX;
+		var layer = layui.layer;
+		var table = layui.table;
+		var admin = layui.admin;
+
+		$(function() {
+			var url = ctx + "system/dept/roleDeptTreeData?roleId=" + $("#roleId").val();
+			var options = {
+				id: "deptTrees",
+				url: url,
+				check: { enable: true },
+				expandLevel: 0,
+				onCheck: onCheck,
+				onLoadSuccess: onLoadSuccess
+			};
+			$.tree.init(options);
+
+		});
+
+		function onLoadSuccess(data) {
+			//console.log('onLoadSuccess:' + data);
+			var deptIds = $.tree.getCheckedNodes();
+			$("#deptIds").val(deptIds);
+		};
+
+		function onCheck(event, treeId, treeNode) {
+			console.log('onCheck:' + treeNode.id + "==" + treeNode.pId);
+			var deptIds = $.tree.getCheckedNodes();
+			$("#deptIds").val(deptIds);
+		};
+
+		form.on('select(dataScope)', function(data){
+			console.log(data.value); //得到被选中的值
+			var dataScope = data.value;
+			// dataScopeVisible(data.value);
+			if (dataScope == 2) {
+				$("#authDataScope").show();
+				$.tree.expand();
+			} else {
+				$._tree.checkAllNodes(false);
+				$("#deptIds").val();
+				$("#authDataScope").hide();
+			}
+		});
+	})
+</script>
+</body>
+</html>

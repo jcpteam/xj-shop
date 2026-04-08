@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaboot.shop.mapper.StorePriceSettingMapper">
+    
+    <resultMap type="StorePriceSetting" id="StorePriceSettingResult">
+        <result property="settingId"    column="setting_id"    />
+        <result property="deptId"    column="dept_id"    />
+        <result property="deptName"    column="dept_name"    />
+        <result property="optDate"    column="opt_date"    />
+        <result property="status"    column="status"    />
+        <result property="submit_status"    column="submitStatus"    />
+        <result property="goodsCount"    column="goods_count"    />
+        <result property="adjustCount"    column="adjust_count"    />
+        <result property="lastModifyTime"    column="last_modify_time"    />
+    </resultMap>
+
+    <sql id="selectStorePriceSettingVo">
+        select t1.setting_id, t1.dept_id,dpt.dept_name, t1.opt_date, t1.status, t1.goods_count, t1.adjust_count, t1.last_modify_time from store_price_setting t1
+        left join  sys_dept dpt on dpt.dept_id = t1.dept_id
+    </sql>
+
+
+    <sql id="selectStorePriceSettingVoJoin">
+        select t1.setting_id as setting_id, t1.dept_id as dept_id,dpt.dept_name , t1.opt_date as opt_date, t1.status as status,t1.submit_status as submit_status, ifnull(t4.goods_count,0) as goods_count,
+               ifnull(t4.adjust_count,0) as adjust_count, t1.last_modify_time as last_modify_time from store_price_setting t1
+             left join (select count(distinct(t2.quotation_id)) as adjust_count,count(t3.goods_id) as goods_count ,t2.dept_id  from store_goods_quotation t2
+             left join store_goods_quotation_goods t3 on t2.quotation_id=t3.quotation_id where   t2.status=1 and  t3.status!=0 group by dept_id ) as t4  on t1.dept_id = t4.dept_id
+             left join sys_dept dpt on dpt.dept_id = t1.dept_id
+    </sql>
+
+    <sql id="selectStorePriceSettingGoods">
+        select count(distinct(t2.quotation_id)) as adjust_count,count(t3.goods_id) as goods_count ,t2.dept_id  from store_goods_quotation t2
+        left join store_goods_quotation_goods t3 on t2.quotation_id=t3.quotation_id
+    </sql>
+
+
+
+
+    <select id="selectStorePriceSettingList" parameterType="StorePriceSetting" resultMap="StorePriceSettingResult">
+        <include refid="selectStorePriceSettingVoJoin"/>
+        <where>  
+            <if test="deptId != null  and deptId != ''"> and t1.dept_id = #{deptId}</if>
+            <if test="optDate != null  and optDate != '' "> and t1.opt_date = #{optDate}</if>
+            <if test="status != null  and status != ''"> and t1.status = #{status}</if>
+            <if test="submitStatus != null  and submitStatus != ''"> and t1.submit_status = #{submitStatus}</if>
+        </where>
+        order  by t1.opt_date desc
+    </select>
+    
+    <select id="selectStorePriceSettingById" parameterType="Long" resultMap="StorePriceSettingResult">
+        <include refid="selectStorePriceSettingVo"/>
+        where t1.setting_id = #{settingId}
+    </select>
+
+
+    <select id="selectStorePriceSettingByDeptId" parameterType="String" resultMap="StorePriceSettingResult">
+        <include refid="selectStorePriceSettingGoods"/>
+        where dept_id = #{deptId}
+        group by dept_id
+    </select>
+        
+    <insert id="insertStorePriceSetting" parameterType="StorePriceSetting" useGeneratedKeys="true" keyProperty="settingId">
+        insert into store_price_setting
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="deptId != null  and deptId != ''">dept_id,</if>
+            <if test="optDate != null ">opt_date,</if>
+            <if test="status != null  and status != ''">status,</if>
+            <if test="goodsCount != null ">goods_count,</if>
+            <if test="adjustCount != null ">adjust_count,</if>
+            <if test="lastModifyTime != null ">last_modify_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="deptId != null  and deptId != ''">#{deptId},</if>
+            <if test="optDate != null ">#{optDate},</if>
+            <if test="status != null  and status != ''">#{status},</if>
+            <if test="goodsCount != null ">#{goodsCount},</if>
+            <if test="adjustCount != null ">#{adjustCount},</if>
+            <if test="lastModifyTime != null ">#{lastModifyTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateStorePriceSetting" parameterType="StorePriceSetting">
+        update store_price_setting
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="optDate != null ">opt_date = #{optDate},</if>
+            <if test="status != null  and status == 0">status = case status when 2 then -1 else 1 end,</if>
+            <if test="status != null  and status == 2">status = #{status},</if>
+            <if test="submitStatus != null  and submitStatus != ''">submit_status = #{submitStatus},</if>
+            <if test="goodsCount != null ">goods_count = #{goodsCount},</if>
+            <if test="adjustCount != null ">adjust_count = #{adjustCount},</if>
+            <if test="lastModifyTime != null ">last_modify_time = #{lastModifyTime},</if>
+        </trim>
+        <where>
+            <if test="deptId != null  and deptId != ''"> and dept_id = #{deptId}</if>
+            <if test="settingId != null "> and setting_id = #{settingId}</if>
+        </where>
+    </update>
+
+
+    <delete id="deleteStorePriceSettingById" parameterType="Long">
+        delete from store_price_setting where setting_id = #{settingId}
+    </delete>
+
+    <delete id="deleteStorePriceSettingByIds" parameterType="String">
+        delete from store_price_setting where setting_id in 
+        <foreach item="settingId" collection="array" open="(" separator="," close=")">
+            #{settingId}
+        </foreach>
+    </delete>
+    
+</mapper>

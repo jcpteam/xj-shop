@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaboot.shop.mapper.StoreGoodsCartItemMapper">
+    
+    <resultMap type="StoreGoodsCartItem" id="StoreGoodsCartItemResult">
+        <result property="itemId"    column="item_id"    />
+        <result property="userId"    column="user_id"    />
+        <result property="goodsId"    column="goods_id"    />
+        <result property="spuNo"    column="spu_no"    />
+        <result property="quantity"    column="quantity"    />
+        <result property="amount"    column="amount"    />
+        <result property="price"    column="price"    />
+        <result property="unitId"    column="unit_id"    />
+        <result property="comment"    column="comment"    />
+        <result property="status"    column="status"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="nowPrice"    column="nowPrice"    />
+        <result property="nowAmount"    column="nowAmount"    />
+        <result property="goodsImg"    column="goodsImg"    />
+        <result property="lastModifyTime"    column="last_modify_time"    />
+    </resultMap>
+
+    <sql id="selectStoreGoodsCartItemVo">
+--         select item_id, user_id, goods_id, spu_no, quantity, amount, price, comment, status, create_time, last_modify_time,unit_id from store_goods_cart_item
+        select sgci.*,
+            sgqg.price as nowPrice,
+            (sgci.quantity * sgqg.price) as nowAmount,
+            sgs.image as goodsImg
+        from store_goods_cart_item sgci
+        join store_goods_quotation_goods sgqg on sgci.goods_id = sgqg.goods_id
+        join store_goods_spu sgs on sgci.spu_no = sgs.spu_no
+    </sql>
+
+    <select id="selectStoreGoodsCartItemList" parameterType="StoreGoodsCartItem" resultMap="StoreGoodsCartItemResult">
+        <include refid="selectStoreGoodsCartItemVo"/>
+        <where>
+            and sgci.status = '1'
+            <if test="userId != null  and userId != ''"> and sgci.user_id = #{userId}</if>
+            <if test="goodsId != null  and goodsId != ''"> and sgci.goods_id = #{goodsId}</if>
+            <if test="spuNo != null  and spuNo != ''"> and sgci.spu_no = #{spuNo}</if>
+            <if test="quantity != null "> and sgci.quantity = #{quantity}</if>
+            <if test="amount != null "> and sgci.amount = #{amount}</if>
+            <if test="price != null "> and sgci.price = #{price}</if>
+            <if test="unitId != null "> and sgci.unit_id = #{unitId}</if>
+            <if test="comment != null  and comment != ''"> and sgci.comment = #{comment}</if>
+            <if test="status != null  and status != ''"> and sgci.status = #{status}</if>
+            <if test="lastModifyTime != null "> and sgci.last_modify_time = #{lastModifyTime}</if>
+        </where>
+    </select>
+    
+    <select id="selectStoreGoodsCartItemById" parameterType="Long" resultMap="StoreGoodsCartItemResult">
+        <include refid="selectStoreGoodsCartItemVo"/>
+        where sgci.item_id = #{itemId}
+        and sgci.status = '1'
+    </select>
+        
+    <insert id="insertStoreGoodsCartItem" parameterType="StoreGoodsCartItem" useGeneratedKeys="true" keyProperty="itemId">
+        insert into store_goods_cart_item
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="userId != null  and userId != ''">user_id,</if>
+            <if test="goodsId != null  and goodsId != ''">goods_id,</if>
+            <if test="spuNo != null  and spuNo != ''">spu_no,</if>
+            <if test="quantity != null ">quantity,</if>
+            <if test="amount != null ">amount,</if>
+            <if test="price != null ">price,</if>
+            <if test="unitId != null ">unit_id,</if>
+            <if test="comment != null  and comment != ''">comment,</if>
+            <if test="status != null  and status != ''">status,</if>
+            <if test="createTime != null ">create_time,</if>
+            <if test="lastModifyTime != null ">last_modify_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="userId != null  and userId != ''">#{userId},</if>
+            <if test="goodsId != null  and goodsId != ''">#{goodsId},</if>
+            <if test="spuNo != null  and spuNo != ''">#{spuNo},</if>
+            <if test="quantity != null ">#{quantity},</if>
+            <if test="amount != null ">#{amount},</if>
+            <if test="price != null ">#{price},</if>
+            <if test="unitId != null ">#{unitId},</if>
+            <if test="comment != null  and comment != ''">#{comment},</if>
+            <if test="status != null  and status != ''">#{status},</if>
+            <if test="createTime != null ">#{createTime},</if>
+            <if test="lastModifyTime != null ">#{lastModifyTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateStoreGoodsCartItem" parameterType="StoreGoodsCartItem">
+        update store_goods_cart_item
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="userId != null  and userId != ''">user_id = #{userId},</if>
+            <if test="goodsId != null  and goodsId != ''">goods_id = #{goodsId},</if>
+            <if test="spuNo != null  and spuNo != ''">spu_no = #{spuNo},</if>
+            <if test="quantity != null ">quantity = #{quantity},</if>
+            <if test="amount != null ">amount = #{amount},</if>
+            <if test="price != null ">price = #{price},</if>
+            <if test="unitId != null ">unit_id = #{unitId},</if>
+            <if test="comment != null  and comment != ''">comment = #{comment},</if>
+            <if test="status != null  and status != ''">status = #{status},</if>
+            <if test="createTime != null ">create_time = #{createTime},</if>
+            <if test="lastModifyTime != null ">last_modify_time = #{lastModifyTime},</if>
+        </trim>
+        where item_id = #{itemId}
+    </update>
+
+    <delete id="deleteStoreGoodsCartItemById" parameterType="Long">
+        delete from store_goods_cart_item where item_id = #{itemId}
+    </delete>
+
+    <delete id="deleteStoreGoodsCartItemByIds" parameterType="String">
+        delete from store_goods_cart_item where item_id in 
+        <foreach item="itemId" collection="array" open="(" separator="," close=")">
+            #{itemId}
+        </foreach>
+    </delete>
+
+    <update id="delCartGoodsWithUserId" parameterType="StoreGoodsCartItem">
+        update store_goods_cart_item
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="status != null  and status != ''">status = #{status},</if>
+        </trim>
+        where user_id = #{userId}
+    </update>
+    
+</mapper>

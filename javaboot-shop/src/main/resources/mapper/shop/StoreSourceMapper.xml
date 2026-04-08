@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.javaboot.shop.mapper.StoreSourceMapper">
+    
+    <resultMap type="StoreSource" id="StoreSourceResult">
+        <result property="id"    column="id"    />
+        <result property="version"    column="version"    />
+        <result property="downUrl"    column="down_url"    />
+        <result property="goodsId"    column="goods_id"    />
+        <result property="specId"    column="spec_id"    />
+        <result property="specItemId"    column="spec_item_id"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateTime"    column="update_time"    />
+        <result property="goodsName"    column="goodsName"    />
+        <result property="specName"    column="specName"    />
+        <result property="specItemName"  column="specItemName"    />
+    </resultMap>
+
+    <sql id="selectStoreSourceVo">
+        SELECT
+            a.id,
+            a.version,
+            a.down_url,
+            a.goods_id,
+            a.spec_id,
+            a.spec_item_id,
+            a.create_time,
+            a.update_time,
+            a1.goods_name as goodsName,
+            a2.`name` as specName,
+            a3.item as specItemName
+        FROM
+            store_source a
+        LEFT JOIN store_goods a1 ON a1.goods_id = a.goods_id
+        LEFT JOIN store_spec a2 ON a2.id = a.spec_id
+        LEFT JOIN store_spec_item a3 on a3.id = a.spec_item_id
+    </sql>
+
+    <select id="selectStoreSourceList" parameterType="StoreSource" resultMap="StoreSourceResult">
+        <include refid="selectStoreSourceVo"/>
+        <where>
+            <if test="goodsId != null and goodsId != ''">
+                AND a.goods_id = #{goodsId}
+            </if>
+            <if test="specId != null and specId != ''">
+                AND a.spec_id = #{specId}
+            </if>
+            <if test="specItemId != null and specItemId != ''">
+                AND a.spec_item_id = #{specItemId}
+            </if>
+        </where>
+    </select>
+    
+    <select id="selectStoreSourceById" parameterType="Integer" resultMap="StoreSourceResult">
+        <include refid="selectStoreSourceVo"/>
+        where a.id = #{id}
+    </select>
+        
+    <insert id="insertStoreSource" parameterType="StoreSource" useGeneratedKeys="true" keyProperty="id">
+        insert into store_source
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="version != null and version != ''">version,</if>
+            <if test="downUrl != null and downUrl != ''">down_url,</if>
+            <if test="goodsId != null">goods_id,</if>
+            <if test="specId != null">spec_id,</if>
+            <if test="specItemId != null">spec_item_id,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateTime != null">update_time,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="version != null and version != ''">#{version},</if>
+            <if test="downUrl != null and downUrl != ''">#{downUrl},</if>
+            <if test="goodsId != null">#{goodsId},</if>
+            <if test="specId != null">#{specId},</if>
+            <if test="specItemId != null">#{specItemId},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateStoreSource" parameterType="StoreSource">
+        update store_source
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="version != null  and version != ''">version = #{version},</if>
+            <if test="downUrl != null and downUrl != ''">down_url = #{downUrl},</if>
+            <if test="goodsId != null">goods_id = #{goodsId},</if>
+            <if test="specId != null">spec_id = #{specId},</if>
+            <if test="specItemId != null">spec_item_id = #{specItemId},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteStoreSourceById" parameterType="Integer">
+        delete from store_source where id = #{id}
+    </delete>
+
+    <delete id="deleteStoreSourceByIds" parameterType="String">
+        delete from store_source where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+    
+</mapper>

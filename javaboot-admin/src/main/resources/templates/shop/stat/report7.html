@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('物料统计汇总')" />
+</head>
+<body>
+
+<!-- 正文开始 -->
+<div class="layui-fluid">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-card">
+            <!-- 搜索区 -->
+            <form class="layui-form toolbar" th:onsubmit="return false" lay-filter="inputForm" id="inputForm">
+                <div class="layui-form-item">
+
+                    <div class="layui-inline">
+                        <label class="layui-form-label label-auto">所属区域：</label>
+                        <div class="layui-input-inline">
+                            <select name="deptId"  id="deptId"   >
+                                <option  value="" th:checked="true">选择区域</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="layui-inline" style="padding-left: 13px;">
+                        <button class="layui-btn layui-btn-sm icon-btn" lay-submit lay-filter="searchBtn" id="searchBtn">
+                            <i class="layui-icon layui-icon-search"></i>搜索
+                        </button>
+                        <button class="layui-btn layui-btn-sm icon-btn" type="reset" id="restBtn">
+                            <i class="layui-icon layui-icon-refresh"></i>重置
+                        </button>
+
+                        <!--<button class="layui-btn layui-btn-sm icon-btn" lay-submit lay-filter="auditPatch" id="auditPatch">
+                            <i class="layui-icon layui-icon-add-circle-fine"></i>批量审核
+                        </button>-->
+                        <a class="layui-btn layui-btn-primary form-search-expand layui-hide" data-expand="true">
+                            展开 <i class="layui-icon layui-icon-down"></i>
+                        </a>
+                    </div>
+                </div>
+            </form>
+
+            <table class="layui-table" id="dataTable" lay-filter="dataTable"></table>
+        </div>
+
+    </div>
+</div>
+
+<!-- js部分 -->
+<th:block th:include="include :: footer" />
+<script type="text/javascript" th:inline="javascript">
+    var ctx = [[@{/}]];
+</script>
+<script type="text/javascript" th:inline="none">
+    layui.use(['index', 'layer', 'form', 'table', 'laydate','util', 'ext'], function () {
+        var $ = layui.jquery;
+        var form = layui.form;
+        var table = layui.table;
+        var admin = layui.admin;
+
+        var prefix = ctx + "shop/detail/stat";
+        var listUrl = prefix + "/report7";
+
+        queryList();
+        function queryList() {
+            admin.req(listUrl, {deptId:$("#deptId").val()}, function (result) {
+
+                var dataList = result.rows;
+                table.render({
+                    elem: '#dataTable'
+                    //,url: listUrl
+                    ,data:dataList
+                    ,method: 'POST'
+                    //,toolbar: '#toolbarHead'
+                    ,height: 'full-100'
+                    ,cellMinWidth: 80
+                    ,page: true
+                    ,request: {
+                        pageName: 'pageNum' //页码的参数名称，默认：page
+                        ,limitName: 'pageSize' //每页数据量的参数名，默认：limit
+                    }
+                    //,where:{qryDate:getRecentDay(0)}
+                    ,limit: 10
+                    ,cols: [[
+                        //{type: 'checkbox'}
+                        ,{field: 'deptId', title: '所属中心id', hide: true}
+                        ,{field: 'deptName', title: '所属区域'}
+                        ,{field: 'spuName', title: '商品名称'}
+                        ,{field: 'qnum',title: '报价单数量'}
+                        ,{field: 'goodsNum', title: '在售数量'}
+                        ,{field: 'sortUserNum', title: '下架数量',templet:function (d) {
+                                return d.goodsNum - d.normalNum;
+                            }}
+                    ]]
+                    ,parseData: function(res){ //将原始数据解析成 table 组件所规定的数据
+                        return {
+                            "code": res.code, //解析接口状态
+                            "msg": res.msg, //解析提示文本
+                            "count": res.total, //解析数据长度
+                            "data": res.rows //解析数据列表
+                        };
+                    }
+                });
+            },'post')
+        }
+
+
+
+
+        $("#restBtn").click(function () {
+            $("input[type='hidden']").val("")
+        })
+
+        //监听搜索
+        form.on('submit(searchBtn)', function (data) {
+            var field = data.field;
+            queryList();
+        });
+
+        //所属区域------------------------------------------------------------------------------------------------------
+        admin.req(ctx + "system/dept/getLoginUserDept", { }, function (result) {
+            var select= document.getElementById('deptId');
+            for (var i=0;i<result.data.length;i++) {
+                var data= result.data[i];
+                var option = document.createElement("option");
+                option.setAttribute("value", data.value);
+                option.innerText =data.name;
+                select.appendChild(option)
+            }
+            form.render('select');
+        },'get')
+
+    });
+</script>
+
+</body>
+</html>

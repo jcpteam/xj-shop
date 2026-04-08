@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('商品SPU信息列表')" />
+</head>
+<body>
+
+<style>
+    .layui-table-cell {
+        min-height: 30px;
+        height: initial;
+        white-space: initial;
+        word-break: break-word;
+        text-align: center;
+    }
+</style>
+<!-- 正文开始 -->
+<div class="layui-fluid">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-card">
+            <!-- 搜索区 -->
+            <form class="layui-form toolbar" th:onsubmit="return false" lay-filter="inputForm" id="inputForm">
+                <div class="layui-form-item">
+
+                    <div class="layui-inline">
+                        <label class="layui-form-label label-auto">输入搜索：</label>
+                        <div class="layui-input-inline">
+                            <input class="layui-input" name="searchKey" type="text" placeholder="商品名称|商品货号"/>
+                        </div>
+                    </div>
+
+                    <div class="layui-inline">
+                        <label class="layui-form-label label-auto">商品类型：</label>
+                        <div class="layui-input-inline">
+                            <input   id="classifyId" name="classifyId" placeholder="请选择商品分类" class="layui-hide"/>
+
+                        </div>
+                    </div>
+
+
+                    <div class="layui-inline" style="padding-left: 13px;">
+                        <button class="layui-btn layui-btn-sm icon-btn" lay-submit lay-filter="searchBtn" id="searchBtn">
+                            <i class="layui-icon layui-icon-search"></i>搜索
+                        </button>
+                        <button class="layui-btn layui-btn-sm icon-btn" type="reset">
+                            <i class="layui-icon layui-icon-refresh"></i>重置
+                        </button>
+                        <button class="layui-btn layui-btn-normal layui-btn-sm" lay-event="add" shiro:hasPermission="shop:spu:add"><i class="layui-icon layui-icon-upload"></i>数据同步</button>
+
+                    </div>
+                </div>
+            </form>
+
+            <table class="layui-table" id="dataTable" lay-filter="dataTable"></table>
+        </div>
+
+    </div>
+</div>
+
+
+<!-- 头工具栏 -->
+<script type="text/html" id="toolbarHead">
+    <div class="layui-btn-container">
+        <button class="layui-btn layui-btn-normal layui-btn-sm" lay-event="add" shiro:hasPermission="shop:unit:add"><i class="layui-icon layui-icon-addition"></i>批量新增单位</button>
+    </div>
+</script>
+<!-- 行工具栏 -->
+<script type="text/html" id="toolbarRow">
+
+    {{#  if(d.mainUnitName==null&&d.subUnitName==null){ }}
+    <a class="layui-btn layui-btn-xs" lay-event="add" shiro:hasPermission="shop:unit:add">新增单位</a>
+    {{#  } else { }}
+    <a class="layui-btn layui-btn-xs" lay-event="edit" shiro:hasPermission="shop:unit:edit">修改单位</a>
+<!--    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del" shiro:hasPermission="shop:unit:remove">删除单位</a>-->
+    {{#  } }}
+    <a class="layui-btn layui-btn-xs" lay-event="detail" shiro:hasPermission="shop:unit:edit">详情</a>
+</script>
+<!-- js部分 -->
+<th:block th:include="include :: footer" />
+<script type="text/javascript" th:inline="javascript">
+    var ctx = [[@{/}]];
+</script>
+<script type="text/javascript" th:inline="none">
+    layui.use(['index', 'layer', 'form', 'table', 'util', 'cascader'], function () {
+        var $ = layui.jquery;
+        var form = layui.form;
+        var table = layui.table;
+        var cascader = layui.cascader;
+        var admin = layui.admin;
+
+        var prefix = ctx + "shop/spu";
+        var listUrl = prefix + "/list";
+        var detailUrl = prefix + "/edit/{id}";
+        var prefixUnit = ctx + "shop/spuUnit";
+        var createUrl = prefixUnit + "/add/{id}";
+        var updateUrl = prefixUnit + "/edit/{id}";
+        var removeUrl = prefixUnit + "/remove";
+        table.render({
+            elem: '#dataTable'
+            ,url: listUrl
+            ,method: 'POST'
+            ,height: 'full-80'
+            ,cellMinWidth: 80
+            ,page: true
+            ,toolbar: '#toolbarHead'
+            ,defaultToolbar:[]
+            ,request: {
+                pageName: 'pageNum' //页码的参数名称，默认：page
+                ,limitName: 'pageSize' //每页数据量的参数名，默认：limit
+            }
+            ,limit: 10
+            ,cols: [[
+                {type: 'checkbox'}
+                ,{field: 'spuNo', title: '商品spu', hide: true}
+                ,{field: 'code', title: '商品编号', width:150}
+                ,{field: 'image', title: '商品图片',width:100, height:'50px', templet: function (d) {
+
+                        var url=d.image&&d.image!=null? d.image.split(',')[0]:"/assets/images/logo.png";
+                        return  ' <img src=\"'+url+'\" style=\"width: 70px;height: 50px\">';
+                    }}
+                ,{field: 'name', title: '商品名称',width:150}
+                ,{field: 'classifyName', title: '商品类型',width:180}
+                ,{title: '主单位',width:100,templet: function (d) {
+                        if(d.mainUnitName==null&&d.subUnitName==null){
+                            return '<span style=\"color:red\">未设置</span>'
+                        }
+                        return  d.mainUnitName;
+                    }}
+                ,{ title: '副单位', templet: function (d) {
+                       if(d.mainUnitName==null&&d.subUnitName==null){
+                           return '<span style=\"color:red\">未设置</span>'
+                       }
+                        return  d.subUnitName;
+                    }}
+                //,{field: 'description', title: '商品描述',width:100}
+                ,{field: 'createTime', title: '创建时间',width:180}
+                ,{field: 'operate', title: '操作', minWidth: 140, toolbar: '#toolbarRow', fixed: 'right'}
+            ]]
+            ,parseData: function(res){ //将原始数据解析成 table 组件所规定的数据
+                return {
+                    "code": res.code, //解析接口状态
+                    "msg": res.msg, //解析提示文本
+                    "count": res.total, //解析数据长度
+                    "data": res.rows //解析数据列表
+                };
+            }
+            ,done:function(res, curr, count){
+
+                //动态监听表头高度变化，冻结行跟着改变高度
+                $(".layui-table-header  tr").resize(function () {
+                    $(".layui-table-header  tr").each(function (index, val) {
+                        $($(".layui-table-fixed .layui-table-header table tr")[index]).height($(val).height());
+                    });
+                });
+                //初始化高度，使得冻结行表头高度一致
+                $(".layui-table-header  tr").each(function (index, val) {
+                    $($(".layui-table-fixed .layui-table-header table tr")[index]).height($(val).height());
+                });
+                //动态监听表体高度变化，冻结行跟着改变高度
+                $(".layui-table-body  tr").resize(function () {
+                    $(".layui-table-body  tr").each(function (index, val) {
+                        $($(".layui-table-fixed .layui-table-body table tr")[index]).height($(val).height());
+                    });
+                });
+                //初始化高度，使得冻结行表体高度一致
+                $(".layui-table-body  tr").each(function (index, val) {
+                    $($(".layui-table-fixed .layui-table-body table tr")[index]).height($(val).height());
+                });
+            }
+        });
+
+
+
+        //监听搜索
+        form.on('submit(searchBtn)', function (data) {
+            var field = data.field;
+            var arr=field.classifyId.split(',');
+            field.classifyId=arr.length>1?arr[1]:field.classifyId
+            //执行重载
+            table.reload('dataTable', {
+                where: field
+            });
+        });
+
+        //分类级联------------------------------------------------------------------------------------------------------
+        admin.req(ctx + "shop/classify/queryClassifyTree", {}, function (result) {
+            cascader.render({
+                elem: '#classifyId',
+                data: result.rows
+            });
+            form.render('select');
+        }, 'post');
+
+        //头工具栏事件
+        table.on('toolbar(dataTable)', function(obj){
+            switch(obj.event){
+                case 'add':
+                    active.add();
+                    break;
+                case 'edit':
+                    var checkStatus = table.checkStatus('dataTable')
+                        , checkData = checkStatus.data; //得到选中的数据
+                    var id = null;
+                    if (id == null) {
+                        if (checkData.length === 0) {
+                            return admin.info('请选择一条数据');
+                        } else if (checkData.length > 1) {
+                            return admin.info('只能选择一条数据编辑');
+                        } else {
+                            id = checkData[0].spuNo;
+                        }
+                    }
+                    active.edit(id);
+                    break;
+                case 'batchdel':
+                    active.batchdel();
+                    break;
+            };
+        });
+
+        //行工具栏事件
+        table.on('tool(dataTable)', function (obj) {
+            var data = obj.data;
+            if (obj.event === 'add') {
+                active.add(data.spuNo);
+            } else if(obj.event === 'edit'){
+                active.edit(data.spuNo);
+            } else if (obj.event === 'del') {
+                active.del(data.spuNo);
+            } else if (obj.event === 'detail') {
+                active.detail(data.spuNo);
+            }
+        });
+
+
+        //事件
+        var active = {
+            batchdel: function () {
+                var checkStatus = table.checkStatus('dataTable')
+                    , checkData = checkStatus.data; //得到选中的数据
+
+                if (checkData.length === 0) {
+                    return admin.info('请选择数据');
+                }
+
+                var ids = [];
+                layui.each(checkData, function (index, item) {
+                    ids.push(item.spuNo);
+                });
+
+                admin.confirm('确定删除吗？', function () {
+                    admin.req(removeUrl, {ids: ids.join(',')}, function (result) {
+                        if (result.code == 0) {
+                            table.reload('dataTable');
+                            admin.success('删除成功!');
+                        } else {
+                            admin.error(result.msg);
+                        }
+                    },'post')
+                });
+            }
+
+            ,add: function (id) {
+                var ids = [];
+                 if(id==null){
+                     var checkStatus = table.checkStatus('dataTable')
+                         , checkData = checkStatus.data; //得到选中的数据
+
+                     if (checkData.length === 0) {
+                         return admin.info('请选择数据');
+                     }
+                     layui.each(checkData, function (index, item) {
+                         ids.push(item.spuNo);
+                     });
+                 } else
+                {
+                    ids.push(id);
+                }
+                var addUrl = createUrl.replace("{id}", ids);
+                admin.openDialog('新增spu单位', addUrl, '800px', '480px');
+            }
+            ,edit: function (id) {
+                var editUrl = updateUrl.replace("{id}", id);
+                admin.openDialog('修改spu单位', editUrl, '800px', '480px');
+            }
+            ,detail: function (id) {
+                var editDetailUrl = detailUrl.replace("{id}", id);
+                parent.layui.admin.openUrl('修改商品详情', editDetailUrl, '100%', '100%');
+            }
+            ,del: function(id){
+                admin.confirm('确定删除吗?',function(){
+                    admin.req(removeUrl, {ids: id}, function (data) {
+                        if (data.code == 0) {
+                            table.reload('dataTable');
+                            admin.success('删除成功!');
+                        } else {
+                            admin.error(data.msg);
+                        }
+                    },'post')
+                });
+            }
+        }
+    });
+</script>
+
+</body>
+</html>

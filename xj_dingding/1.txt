@@ -1,0 +1,40 @@
+
+	
+更换角色 /system/user/changeUserRoleAuth   {userId:userId,roleAuthId:roleAuthId}
+========================================
+问题
+失效不返回500，怎么判断要到登录页去？
+
+
+
+
+========================================================================================================================================
+
+
+
+http://csds.xiangjiamuye.com/
+
+多角色账号   admin_gz / 123456
+
+
+移动端
+http://csds.xiangjiamuye.com:9999/xjshop
+13908456031/123456
+
+
+在这个页面最上面加一行            当前：XXXX
+
+
+==============================================================
+个人权限菜单  /system/user/profile/menu/{userId}
+
+订单审核 shop:order:edit    menu-order
+控数设置 shop:sale:edit     menu-kongshu
+控价管理 shop:price:list    menu-kongjia
+待下单  shop:order:add      menu-daixiadan     
+订单审核  shop:stock:view   menu-ordercheck
+入库管理  shop:stock:list   menu-rukuguanli
+控价审核 shop:price:audit   menu-kongjiashenhe
+客户列表  shop:member:view  menu-kehuliebiao
+===============================================================
+入库单商品详情 /shop/stock/detail/{stockId}

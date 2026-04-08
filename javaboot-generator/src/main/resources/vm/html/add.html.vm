@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('新增${functionName}')" />
+</head>
+<body class="bg-white">
+<!-- 加载动画-->
+<div class="page-loading">
+    <div class="ball-loader">
+        <span></span><span></span><span></span><span></span>
+    </div>
+</div>
+<!-- 正文开始 -->
+<form class="layui-form bg-white" id="inputForm" th:onsubmit="return false" th:action="@{/${moduleName}/${businessName}/add}" th:object="${${className}}">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <div class="layui-row">
+                <input name="${pkColumn.javaField}" th:field="*{${pkColumn.javaField}}" type="hidden">
+#foreach($column in $columns)
+#if($column.edit && !$column.pk)
+#if(($column.usableColumn) || (!$column.superColumn))
+#set($parentheseIndex=$column.columnComment.indexOf("（"))
+#if($parentheseIndex != -1)
+#set($comment=$column.columnComment.substring(0, $parentheseIndex))
+#else
+#set($comment=$column.columnComment)
+#end
+#set($field=$column.javaField)
+#set($dictType=$column.dictType)
+#if("" != $treeParentCode && $column.javaField == $treeParentCode)
+#set($BusinessName=$businessName.substring(0,1).toUpperCase() + ${businessName.substring(1)})
+#set($treeId = "${className}?.${treeCode}")
+                <div class="layui-form-item">
+                    <label class="layui-form-label#if($column.required) layui-form-required#end">${comment}:</label>
+                    <div class="layui-input-block">
+                        <input id="treeId" name="${treeParentCode}" type="hidden" th:value="${${treeId}}"/>
+                        <input id="treeName" th:value="${${treeName}}" type="text" class="layui-input icon-search" readonly="true"/>
+                    </div>
+                </div>
+#elseif($column.htmlType == "input")
+                <div class="layui-form-item">
+                    <label class="layui-form-label#if($column.required) layui-form-required#end">${comment}:</label>
+                    <div class="layui-input-block">
+                        <input name="${field}" type="text" class="layui-input"#if($column.required) lay-verType="tips" lay-verify="required"#end/>
+                    </div>
+                </div>
+#elseif($column.htmlType == "select" && "" != $dictType)
+                <div class="layui-form-item">
+                    <label class="layui-form-label#if($column.required) layui-form-required#end">${comment}:</label>
+                    <div class="layui-input-block">
+                        <select class="layui-select" name="${field}" th:with="type=${@dict.getType('${dictType}')}"#if($column.required) lay-verType="tips" lay-verify="required"#end>
+                            <option th:each="dict : ${type}" th:text="${dict.dictLabel}" th:value="${dict.dictValue}"></option>
+                        </select>
+                    </div>
+                </div>
+#elseif($column.htmlType == "select" && $dictType)
+                <div class="layui-form-item">
+                    <label class="layui-form-label#if($column.required) layui-form-required#end">${comment}:</label>
+                    <div class="layui-input-block">
+                        <select name="${field}" class="layui-select"#if($column.required) lay-verType="tips" lay-verify="required"#end>
+                            <option value="">所有</option>
+                        </select>
+                        <div class="layui-form-mid layui-word-aux">代码生成请选择字典属性</div>
+                    </div>
+                </div>
+#elseif($column.htmlType == "radio" && "" != $dictType)
+                <div class="layui-form-item">
+                    <label class="layui-form-label#if($column.required) layui-form-required#end">${comment}:</label>
+                    <div class="layui-input-block">
+                        <input type="radio" name="${field}" th:each="dict : ${@dict.getType('${dictType}')}" th:title="${dict.dictLabel}" th:value="${dict.dictValue}">
+                    </div>
+                </div>
+#elseif($column.htmlType == "radio" && $dictType)
+                <div class="layui-form-item">
+                    <label class="layui-form-label#if($column.required) layui-form-required#end">${comment}:</label>
+                    <div class="layui-input-block">
+                        <input type="radio" name="${field}" value=""#if($column.required)  lay-verType="tips" lay-verify="required"#end>
+                        <div class="layui-form-mid layui-word-aux">代码生成请选择字典属性</div>
+                    </div>
+                </div>
+#elseif($column.htmlType == "checkbox" && "" != $dictType)
+                <div class="layui-form-item">
+                    <label class="layui-form-label#if($column.required) layui-form-required#end">${comment}:</label>
+                    <div class="layui-input-block">
+                        <input type="checkbox" name="${field}" th:each="dict : ${@dict.getType('${dictType}')}" th:title="${dict.dictLabel}" th:value="${dict.dictValue}" lay-skin="primary">
+                    </div>
+                </div>
+#elseif($column.htmlType == "checkbox" && $dictType)
+                <div class="layui-form-item">
+                    <label class="layui-form-label#if($column.required) layui-form-required#end">${comment}:</label>
+                    <div class="layui-input-block">
+                        <input type="checkbox" name="${field}" value=""#if($column.required) lay-verType="tips" lay-verify="required"#end lay-skin="primary">
+                        <div class="layui-form-mid layui-word-aux">代码生成请选择字典属性</div>
+                    </div>
+                </div>
+#elseif($column.htmlType == "datetime")
+                <div class="layui-form-item">
+                    <label class="layui-form-label#if($column.required) layui-form-required#end">${comment}:</label>
+                    <div class="layui-input-block">
+                        <input id="${field}" type="text" placeholder="请选择${comment}" class="layui-input date-icon" autocomplete="off" readonly="readonly"/>
+                        <input type="hidden" name="${field}"#if($column.required) lay-verType="tips" lay-verify="required"#end>
+                    </div>
+                </div>
+#elseif($column.htmlType == "textarea")
+                <div class="layui-form-item">
+                    <label class="layui-form-label#if($column.required) layui-form-required#end">${comment}:</label>
+                    <div class="layui-input-block">
+                        <textarea name="${field}" class="layui-textarea" maxlength="500" rows="3"#if($column.required) lay-verType="tips" lay-verify="required"#end>[[*{${field}}]]</textarea>
+                    </div>
+                </div>
+#end
+#end
+#end
+#end
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-hide">
+        <button id="submitBtn" class="layui-btn" lay-filter="submitBtn" lay-submit>保存</button>
+        <button id="closeBtn" class="layui-btn layui-btn-primary" ew-event="closeDialog">关闭</button>
+    </div>
+</form>
+
+<th:block th:include="include :: footer" />
+<script th:inline="javascript">
+    var ctx = [[@{/}]];
+    var prefix = ctx + "${moduleName}/${businessName}";
+</script>
+<script th:inline="none">
+    layui.use(['index', 'form', 'formX', 'table', 'laydate', 'upload', 'ext'], function(){
+        var $ = layui.$;
+        var form = layui.form;
+        var formX = layui.formX;
+        var layer = layui.layer;
+        var table = layui.table;
+        var admin = layui.admin;
+        var upload = layui.upload;
+        var laydate = layui.laydate;
+
+#foreach($column in $columns)
+#if($column.edit && !$column.superColumn && !$column.pk && $column.htmlType == "datetime")
+#set($field=$column.javaField)
+        //日期范围
+        laydate.render({
+            elem: '#${field}'
+            , type: 'datetime'
+            , done: function (value, date, endDate) {
+                $("input[name='${field}']").val(value);
+            }
+        });
+#end
+#end
+
+#if($table.tree)
+        /* 树选择 */
+        $("#treeName").click(function(){
+            var treeId = $("#treeId").val();
+            var menuId = treeId > 0 ? treeId : 1;
+            var url = prefix + "/select${BusinessName}Tree/" + menuId;
+            var options = {
+                title: '${functionName}选择',
+                width: "380",
+                url: url,
+                callBack: doSubmit
+            };
+            $.modal.openOptions(options);
+        })
+
+        function doSubmit(index, layero){
+            var body = layer.getChildFrame('body', index);
+            $("#treeId").val(body.find('#treeId').val());
+            $("#treeName").val(body.find('#treeName').val());
+            layer.close(index);
+        }
+#end
+    })
+</script>
+</body>
+</html>

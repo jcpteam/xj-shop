@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('控价列表')" />
+</head>
+<body>
+
+<!-- 正文开始 -->
+<div class="layui-fluid">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-card">
+            <!-- 搜索区 -->
+            <form class="layui-form toolbar" th:onsubmit="return false" lay-filter="inputForm" id="inputForm">
+                <div class="layui-form-item">
+
+                    <div class="layui-inline">
+                        <label class="layui-form-label label-auto">所属区域：</label>
+                        <div class="layui-input-inline">
+                            <select name="deptId"  id="deptId"   >
+                                <option  value="" th:checked="true">选择区域</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label label-auto">审核状态</label>
+                        <div class="layui-input-inline">
+                            <select name="status" th:with="type=${@dict.getType('dictType')}">
+                                <option value="">所有</option>
+                                <option value="0">未生效</option>
+                                <option value="2">已生效</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-inline">
+                        <label class="layui-form-label label-auto">提交状态</label>
+                        <div class="layui-input-inline">
+                            <select name="submit_status" th:with="type=${@dict.getType('dictType')}">
+                                <option value="">所有</option>
+                                <option value="0">未提交</option>
+                                <option value="1">已提交</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="layui-inline">
+                        <label class="layui-form-label label-auto">控价日期</label>
+                        <div class="layui-input-block">
+                            <input id="optDate" type="text" placeholder="请选择控价日期"  class="layui-input date-icon" autocomplete="off" readonly="readonly"/>
+                            <input type="hidden"  name="optDate">
+                        </div>
+                    </div>
+                    <div class="layui-inline" style="padding-left: 13px;">
+                        <button class="layui-btn layui-btn-sm icon-btn" lay-submit lay-filter="searchBtn" id="searchBtn">
+                            <i class="layui-icon layui-icon-search"></i>搜索
+                        </button>
+                        <button class="layui-btn layui-btn-sm icon-btn" type="reset">
+                            <i class="layui-icon layui-icon-refresh"></i>重置
+                        </button>
+
+                        <!--<button class="layui-btn layui-btn-sm icon-btn" lay-submit lay-filter="auditPatch" id="auditPatch">
+                            <i class="layui-icon layui-icon-add-circle-fine"></i>批量审核
+                        </button>-->
+                        <a class="layui-btn layui-btn-primary form-search-expand layui-hide" data-expand="true">
+                            展开 <i class="layui-icon layui-icon-down"></i>
+                        </a>
+                    </div>
+                </div>
+            </form>
+
+            <table class="layui-table" id="dataTable" lay-filter="dataTable"></table>
+        </div>
+
+    </div>
+</div>
+
+<!-- 头工具栏 -->
+<script type="text/html" id="toolbarHead">
+    <div class="layui-btn-container">
+<!--
+       <button class="layui-btn layui-btn-normal layui-btn-sm" lay-event="add" id="add" shiro:hasPermission="shop:price:add"><i class="layui-icon layui-icon-addition"></i>新增</button>
+        <button class="layui-btn layui-btn-warm layui-btn-sm" lay-event="edit" shiro:hasPermission="shop:price:edit"><i class="layui-icon layui-icon-edit"></i>修改</button>
+        <button class="layui-btn layui-btn-danger layui-btn-sm" lay-event="batchdel" shiro:hasPermission="shop:price:remove"><i class="layui-icon layui-icon-delete"></i>删除</button>
+        <button class="layui-btn layui-btn-normal layui-btn-sm" lay-event="import" shiro:hasPermission="shop:price:import"><i class="layui-icon layui-icon-upload"></i>导入</button>
+  -->      <button class="layui-btn layui-btn-normal layui-btn-sm" lay-event="auditBatch" shiro:hasPermission="shop:price:audit"><i class="layui-icon layui-icon-chrome"></i>批量审核</button>
+
+    </div>
+</script>
+
+<!-- 行工具栏 -->
+<script type="text/html" id="toolbarRow">
+    <a class="layui-btn layui-btn-xs" lay-event="detail" shiro:hasPermission="shop:price:detail">查看</a>
+    {{#  if (d.status ==0 || d.status ==1){ }}
+    <a class="layui-btn layui-btn-xs" lay-event="audit" shiro:hasPermission="shop:price:audit">审核</a>
+    {{#  } }}
+    <!--<a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del" shiro:hasPermission="shop:price:remove">删除</a>-->
+</script>
+
+<!-- js部分 -->
+<th:block th:include="include :: footer" />
+<script type="text/javascript" th:inline="javascript">
+    var ctx = [[@{/}]];
+</script>
+<script type="text/javascript" th:inline="none">
+    layui.use(['index', 'layer', 'form', 'table', 'laydate','util', 'ext'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        var table = layui.table;
+        var util = layui.util;
+        var laydate = layui.laydate;
+        var ext = layui.ext;
+        var admin = layui.admin;
+        var index = layui.index;
+
+        var prefix = ctx + "shop/price";
+        var listUrl = prefix + "/list";
+        var createUrl = prefix + "/add";
+        var detailUrl = prefix + "/detail/{settingId}";
+        var updateUrl = prefix + "/edit/{id}";
+        var removeUrl = prefix + "/remove";
+        var exportUrl = prefix + "/export";
+        var auditUrl = prefix + "/audit";
+
+        // $("input[name='optDate']").val(getRecentDay(0));
+
+        table.render({
+            elem: '#dataTable'
+            ,url: listUrl
+            ,method: 'POST'
+            ,toolbar: '#toolbarHead'
+            ,height: 'full-100'
+            ,cellMinWidth: 80
+            ,page: true
+            ,request: {
+                pageName: 'pageNum' //页码的参数名称，默认：page
+                ,limitName: 'pageSize' //每页数据量的参数名，默认：limit
+            }
+            ,limit: 10
+            ,cols: [[
+                {type: 'checkbox'}
+                ,{field: 'settingId', title: '控价id', hide: true}
+                ,{field: 'deptId', title: '所属中心id', hide: true}
+                ,{field: 'deptName', title: '所属中心'}
+                ,{field: 'optDate', title: '控价日期'}
+                ,{field: 'status', title: '生效状态', templet:function(res){
+                        if(res.status == 2){
+                            return '已生效';
+                        }else if(res.status == -1){
+                            return '生效过期';
+                        }else {
+                            return '未生效';
+                        }
+                    }}
+                ,{field: 'submitStatus', title: '提交状态', templet:function(res){
+                        if(res.submitStatus != 1){
+                            return '未提交';
+                        }else if(res.submitStatus == 1){
+                            return '已提交';
+                        }
+                    }}
+                // ,{field: 'clazz', title: '生成类型', templet:function(res){
+                //         if(res.status == 0){
+                //             return '系统提交';
+                //         }else if(res.status == 1){
+                //             return '区域提交';
+                //         }
+                //     }}
+                ,{field: 'goodsCount', title: '商品数量'}
+                ,{field: 'adjustCount', title: '报价单数量'}
+                ,{field: 'lastModifyTime', title: '最后修改时间'}
+                ,{field: 'operate', title: '操作', minWidth: 200, toolbar: '#toolbarRow', fixed: 'right'}
+            ]]
+            ,parseData: function(res){ //将原始数据解析成 table 组件所规定的数据
+                return {
+                    "code": res.code, //解析接口状态
+                    "msg": res.msg, //解析提示文本
+                    "count": res.total, //解析数据长度
+                    "data": res.rows //解析数据列表
+                };
+            }
+        });
+
+
+        function getFormData(){
+            var d = {
+                searchKey:$("#name").val(),
+                classifyIds:$("#settlementUnit").val(),
+            }
+            return d;
+        }
+
+        function getRecentDay(day) {
+            var today = new Date();
+            var targetday_milliseconds = today.getTime() + 1000 * 60 * 60 * 24 * day;
+            today.setTime(targetday_milliseconds);
+            var tYear = today.getFullYear();
+            var tMonth = today.getMonth();
+            var tDate = today.getDate();
+            var tHours = today.getHours();
+            var tMinutes = today.getMinutes();
+            var tSeconds = today.getSeconds();
+            tMonth = doHandleMonth(tMonth + 1);
+            tDate = doHandleMonth(tDate);
+            // tHours = doHandleMonth(tHours);
+            // tMinutes = doHandleMonth(tMinutes);
+            // tSeconds = doHandleMonth(tSeconds);
+
+            return tYear + "-" + tMonth + "-" + tDate;
+        }
+
+        function doHandleMonth(month){
+            var m = month;
+            if(month.toString().length == 1){
+                m = "0" + month;
+            }
+            return m;
+        }
+
+        laydate.render({
+            elem: '#optDate'
+            ,value: getRecentDay(0)
+            , done: function (value, date, endDate) {
+                $("input[name='optDate']").val(value);
+            }
+        });
+
+        //监听搜索
+        form.on('submit(searchBtn)', function (data) {
+            var field = data.field;
+            //执行重载
+            table.reload('dataTable', {
+                where: field
+            });
+        });
+
+        //所属区域------------------------------------------------------------------------------------------------------
+        admin.req(ctx + "system/dept/getLoginUserDept", { }, function (result) {
+            var select= document.getElementById('deptId');
+            for (var i=0;i<result.data.length;i++) {
+                var data= result.data[i];
+                var option = document.createElement("option");
+                option.setAttribute("value", data.value);
+                option.innerText =data.name;
+                select.appendChild(option)
+            }
+            form.render('select');
+        },'get')
+
+        //头工具栏事件
+        table.on('toolbar(dataTable)', function(obj){
+            switch(obj.event){
+                case 'add':
+                    active.add();
+                    break;
+                case 'edit':
+                    var checkStatus = table.checkStatus('dataTable')
+                            , checkData = checkStatus.data; //得到选中的数据
+                    var id = null;
+                    if (id == null) {
+                        if (checkData.length === 0) {
+                            return admin.info('请选择一条数据');
+                        } else if (checkData.length > 1) {
+                            return admin.info('只能选择一条数据编辑');
+                        } else {
+                            id = checkData[0].settingId;
+                        }
+                    }
+                    active.edit(id);
+                    break;
+                case 'batchdel':
+                    active.batchdel();
+                    break;
+                case 'auditBatch':
+                    active.auditBatch();
+                    break;
+                case 'import':
+                    break;
+                case 'export':
+                    $.modal.loading("正在导出数据，请稍后...");
+                    $.post(exportUrl, $("#inputForm").serializeArray(), function(result) {
+                        if (result.code == web_status.SUCCESS) {
+                            window.location.href = ctx + "common/download?fileName=" + encodeURI(result.msg) + "&delete=" + true;
+                        } else if (result.code == web_status.WARNING) {
+                            $.modal.alertWarning(result.msg)
+                        } else {
+                            $.modal.alertError(result.msg);
+                        }
+                        $.modal.closeLoading();
+                    });
+                    break;
+            };
+        });
+
+        //行工具栏事件
+        table.on('tool(dataTable)', function (obj) {
+            var data = obj.data;
+            if (obj.event === 'view') {
+                active.view(data.settingId);
+            } else if(obj.event === 'audit'){
+                active.audit(data.settingId,data.deptId);
+            }else if(obj.event === 'edit'){
+                active.edit(data.settingId);
+            }else if(obj.event === 'detail'){
+                var editUrl = detailUrl.replace("{settingId}", data.settingId);
+                parent.layui.admin.openUrl('控价详情', editUrl, '100%', '100%');
+            } else if (obj.event === 'del') {
+                active.del(data.settingId);
+            }
+        });
+
+        //事件
+        var active = {
+            batchdel: function () {
+                var checkStatus = table.checkStatus('dataTable')
+                        , checkData = checkStatus.data; //得到选中的数据
+
+                if (checkData.length === 0) {
+                    return admin.info('请选择数据');
+                }
+
+                var ids = [];
+                layui.each(checkData, function (index, item) {
+                    ids.push(item.settingId);
+                });
+
+                admin.confirm('确定删除吗？', function () {
+                    admin.req(removeUrl, {ids: ids.join(',')}, function (result) {
+                        if (result.code == 0) {
+                            table.reload('dataTable');
+                            admin.success('删除成功!');
+                        } else {
+                            admin.error(result.msg);
+                        }
+                    },'post')
+                });
+            }
+            ,view: function () {
+                admin.openDialogView('查看控价', editUrl, '800px', '480px');
+            }
+            // ,add: function () {
+            //     admin.openDialog('新增控价', createUrl, '800px', '480px');
+            // }
+            ,edit: function (id) {
+                var editUrl = updateUrl.replace("{id}", id);
+                admin.openDialog('修改控价', editUrl, '800px', '480px');
+            },audit: function(id,deptId){
+                admin.confirm('确定审核通过吗?',function(){
+                    admin.req(auditUrl, {settingId: id,deptId:deptId}, function (data) {
+                        if (data.code == 0) {
+                            table.reload('dataTable');
+                            admin.success('成功!');
+                        } else {
+                            admin.error(data.msg);
+                        }
+                    },'post')
+                });
+            },auditBatch: function(){
+            var checkStatus = table.checkStatus('dataTable')
+                , checkData = checkStatus.data; //得到选中的数据
+
+            if (checkData.length === 0) {
+                return admin.info('请选择要审核数据');
+            }
+
+            admin.confirm('确定批量审核通过吗?',function(){
+                auditBatch(checkData)
+            });
+        },del: function(id){
+                admin.confirm('确定删除吗?',function(){
+                    admin.req(removeUrl, {ids: id}, function (data) {
+                        if (data.code == 0) {
+                            table.reload('dataTable');
+                            admin.success('删除成功!');
+                        } else {
+                            admin.error(data.msg);
+                        }
+                    },'post')
+                });
+            }
+        }
+
+
+        function auditBatch(checkData) {
+            admin.req(ctx  + 'shop/price/auditBatch',  JSON.stringify({priceSettings:checkData}), function (data) {
+                if (data.code == 0) {
+                    table.reload('dataTable');
+                    admin.success('成功!');
+                } else {
+                    admin.error(data.msg);
+                }
+            }, 'post');
+        }
+    });
+</script>
+
+</body>
+</html>

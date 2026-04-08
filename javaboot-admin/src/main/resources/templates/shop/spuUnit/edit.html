@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('修改spu单位')" />
+</head>
+<body class="bg-white">
+<!-- 正文开始 -->
+<form class="layui-form bg-white" id="inputForm" th:onsubmit="return false" th:action="@{/shop/spuUnit/edit}" th:object="${storeGoodsSpuUnit}">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <div class="layui-row">
+                <input name="spuNo" th:field="*{spuNo}" type="hidden">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">主单位:</label>
+                    <div class="layui-input-block">
+                        <select th:with="type=${unitIdList}" name="mainUnitId" id="mainUnitId" lay-filter="mainUnitId" lay-search lay-verType="tips"
+                                lay-verify="required">
+                            <option  th:each="dict:${type}"  th:value="${dict.unitId}" th:selected="${dict.unitId}==*{mainUnitId}" th:text="${{dict.name}}"></option>
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">副单位:</label>
+                    <div class="layui-input-block">
+                        <select th:with="type=${unitIdList}" name="subUnitId" id="subUnitId" lay-filter="subUnitId" lay-search lay-verType="tips"
+                                lay-verify="required">
+                            <option  th:each="dict:${type}"  th:value="${dict.unitId}" th:text="${{dict.name}}" th:selected="${dict.unitId}==*{subUnitId}"></option>
+                        </select>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-hide">
+        <button id="submitBtn" class="layui-btn" lay-filter="submitBtn" lay-submit>保存</button>
+        <button id="closeBtn" class="layui-btn layui-btn-primary" ew-event="closeDialog">关闭</button>
+    </div>
+</form>
+
+<th:block th:include="include :: footer" />
+<script th:inline="javascript">
+    var ctx = [[@{/}]];
+    var prefix = ctx + "shop/spuUnit";
+</script>
+<script th:inline="none">
+    layui.use(['index', 'form', 'formX', 'table', 'laydate', 'upload', 'ext'], function(){
+        var $ = layui.$;
+        var form = layui.form;
+        var formX = layui.formX;
+        var layer = layui.layer;
+        var table = layui.table;
+        var admin = layui.admin;
+        var upload = layui.upload;
+        var laydate = layui.laydate;
+
+        //日期范围
+        laydate.render({
+            elem: '#lastModifyTime'
+            , type: 'datetime'
+            , done: function (value, date, endDate) {
+                $("input[name='lastModifyTime']").val(value);
+            }
+        });
+
+    })
+</script>
+</body>
+</html>

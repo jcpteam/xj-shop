@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link href="../static/assets/images/favicon.ico" rel="icon" th:href="@{/assets/images/favicon.ico}">
+    <title>湘佳电商管理系统</title>
+    <link rel="stylesheet" href="../static/assets/libs/layui/css/layui.css" th:href="@{/assets/libs/layui/css/layui.css}">
+    <link rel="stylesheet" href="../static/assets/module/admin.css" th:href="@{/assets/module/admin.css}">
+    <link rel="stylesheet" href="../../../static/css/font-awesome.min.css" th:href="@{/css/font-awesome.min.css}">
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+<body class="layui-layout-body">
+<div class="layui-layout layui-layout-admin">
+
+    <input type="hidden" id="loginUserInfo" name="loginUserInfo" th:value="${user}"  />
+    <input type="hidden" id="loginUserRoleId" name="loginUserRoleId" th:value="${user.roleId}"  />
+
+    <!-- 头部 -->
+    <div class="layui-header">
+        <div class="layui-logo">
+            <img src="../static/assets/images/logo.png" th:src="@{/assets/images/logo.png}"/>
+            <cite>&nbsp;湘佳电商管理系统</cite>
+        </div>
+        <ul class="layui-nav layui-layout-left">
+            <li class="layui-nav-item" lay-unselect>
+                <a ew-event="flexible" title="侧边伸缩"><i class="layui-icon layui-icon-shrink-right"></i></a>
+            </li>
+            <li class="layui-nav-item" lay-unselect>
+                <a ew-event="refresh" title="刷新"><i class="layui-icon layui-icon-refresh-3"></i></a>
+            </li>
+        </ul>
+        <ul class="layui-nav layui-layout-right">
+            <li class="layui-nav-item" lay-unselect>
+                <a ew-event="message" th:attr="data-url=@{/message}" title="消息">
+                    <i class="layui-icon layui-icon-notice"></i>
+                    <span class="layui-badge-dot"></span>
+                </a>
+            </li>
+
+            <!--
+            <li class="layui-nav-item layui-hide-xs" lay-unselect>
+                <a ew-event="globalization" title="国际化"><i class="layui-icon layui-icon-website"></i></a>
+            </li>
+            -->
+<!--            <li class="layui-nav-item" lay-unselect>-->
+<!--                <a ew-event="note" th:attr="data-url=@{/note}" title="便签"><i class="layui-icon layui-icon-note"></i></a>-->
+<!--            </li>-->
+            <li class="layui-nav-item layui-hide-xs" lay-unselect>
+                <a ew-event="fullScreen" title="全屏"><i class="layui-icon layui-icon-screen-full"></i></a>
+            </li>
+<!--            <li class="layui-nav-item layui-hide-xs" lay-unselect>-->
+<!--                <a ew-event="lockScreen" th:attr="data-url=@{/lockScreen}" title="锁屏"><i class="layui-icon layui-icon-password"></i></a>-->
+<!--            </li>-->
+            <li class="layui-nav-item" lay-unselect>
+                <a>
+<!--                    <img th:src="(${user.avatar} == '') ? @{/assets/images/15367146917869444.jpg} : @{${user.avatar}}" class="layui-nav-img">-->
+                    <cite th:text="${user.userName} + '_' + ${user.dept.deptName} + '_' + ${user.roles[0].roleName}">管理员</cite>
+                </a>
+                <dl class="layui-nav-child">
+                    <dd lay-unselect><a ew-event="changeRoleAuth" data-url="/system/user/profile/changeRoleAuth">切换角色</a></dd>
+                    <dd lay-unselect><a ew-href="/system/user/profile">个人中心</a></dd>
+                    <dd lay-unselect><a ew-event="psw" data-url="/system/user/profile/resetPwd">修改密码</a></dd>
+                    <hr>
+                    <dd lay-unselect><a ew-event="logout" th:attr="data-url=@{logout}">退出</a></dd>
+                </dl>
+            </li>
+            <li class="layui-nav-item" lay-unselect>
+                <a ew-event="theme" th:attr="data-url=@{/theme}" title="主题"><i class="layui-icon layui-icon-more-vertical"></i></a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- 侧边栏 -->
+    <div class="layui-side">
+        <div class="layui-side-scroll" id="view">
+
+        </div>
+    </div>
+
+    <!-- 主体部分 -->
+    <div class="layui-body"></div>
+    <!-- 底部 -->
+    <div class="layui-footer layui-text">
+         © 2022 湖南湘佳电子商务有限公司 All rights reserved.
+        <span class="pull-right">Version 4.4</span>
+    </div>
+</div>
+
+
+
+<script id="demo" type="text/html">
+    {{# var fn = function(a){ var result=""; result=layui.laytpl(childtpl.innerHTML).render(a); return result; }; }}
+    <ul class="layui-nav layui-nav-tree arrow2" lay-filter="admin-side-nav" lay-shrink="all">
+        {{# layui.each(d, function(index, item){ }}
+        <li class="layui-nav-item">
+
+            {{# if(item.children != null && item.children.length > 0){ }}
+                <a><i class="{{ item.icon }}"></i>&emsp;<cite>{{ item.menuName }}</cite></a>
+                {{ fn(item.children) }}
+            {{# } else if(item.target === 'menuBlank'){ }}
+                <a href="{{ item.url }}" target="_blank"><i class="{{ item.icon }}"></i>&emsp;<cite>{{ item.menuName }}</cite></a>
+            {{# } else{ }}
+                <a lay-href="{{ item.url }}"><i class="{{ item.icon }}"></i>&emsp;<cite>{{ item.menuName }}</cite></a>
+            {{# } }}
+
+        </li>
+        {{# }); }}
+
+    </ul>
+</script>
+<script id="childtpl" type="text/html">
+    {{# var fn = function(a){ var result=""; result=layui.laytpl(childtpl.innerHTML).render(a); return result; }; }}
+    <dl class="layui-nav-child">
+        {{# layui.each(d, function(index, item){ }}
+        <dd>
+            {{# if(item.children != null && item.children.length > 0){ }}
+                <a>{{ item.menuName }}</a>
+                {{ fn(item.children) }}
+            {{# } else if(item.target === 'menuBlank'){ }}
+                <a href="{{ item.url }}" target="_blank">{{ item.menuName }}</a>
+            {{# } else{ }}
+                <a lay-href="{{ item.url }}">{{ item.menuName }}</a>
+            {{# } }}
+        </dd>
+        {{# }); }}
+    </dl>
+</script>
+
+<!-- js部分 -->
+<script type="text/javascript" src="../static/assets/libs/layui/layui.js" th:src="@{/assets/libs/layui/layui.js}"></script>
+<script type="text/javascript" src="../static/assets/js/common.js" th:src="@{/assets/js/common.js}"></script>
+
+<script th:inline="javascript">
+    var ctx = [[@{/}]];
+    var menus = [[${menus}]];
+</script>
+<script th:inline="javascript">
+    layui.use(['index', 'admin', 'notice', 'ext'], function () {
+        var $ = layui.jquery;
+        var index = layui.index;
+        var notice = layui.notice;
+        var laytpl = layui.laytpl;
+        var element = layui.element;
+
+        //渲染无限极菜单
+        var getTpl = demo.innerHTML,
+            view = document.getElementById('view');
+        laytpl(getTpl).render(menus, function(html) {
+            view.innerHTML = html;
+            element.render();
+        });
+
+        // 默认切换成绿色主题
+        layui.admin.changeTheme('theme-green');
+
+        var loginUserInfo = $("#loginUserInfo").val();
+        console.log("loginUserInfo--->",loginUserInfo);
+        var loginUserRoleId = $("#loginUserRoleId").val();
+        console.log("loginUserInfo--->roleId:",loginUserRoleId);
+        //判断当前登录用户角色是否是分拣员，如果是分拣员，则直接跳转分拣页面
+        if(loginUserRoleId && (loginUserRoleId == 10005 || loginUserRoleId === '10005')){
+            // 默认加载主页
+            index.loadHome({
+                menuPath: ctx + 'shop/sortingMain',
+                menuName: '<i class="layui-icon layui-icon-home"></i>'
+            });
+            var $layout = $('.layui-layout-admin');
+            $layout.addClass('admin-nav-mini');
+        }else{
+            // 默认加载主页
+            index.loadHome({
+                menuPath: ctx + 'system/main',
+                menuName: '<i class="layui-icon layui-icon-home"></i>'
+            });
+        }
+
+        //websocket
+        var websocket = function () {
+            if ($.websocket) {
+                var host = window.location.host;
+                host = "ws://" + host + "/websocket";
+                $.websocket.open({
+                    host: host,
+                    reconnect: true,
+                    callback: function (result) {
+                        var resultJson = JSON.parse(result);
+                        wesocketMsgResolver[resultJson["fun"]](resultJson["msg"]);
+                    }
+                });
+            }
+        }
+
+        /**
+         * websocket消息解析器
+         *
+         * @type {{online: wesocketMsgResolver.online}}
+         */
+        var wesocketMsgResolver = {
+            online: function (value) {
+                //value && $(".onlineNum").html(value);
+                console.log('websocke online:' + value)
+            },
+            notification: function (value) {
+                //console.log('notification:' + value);
+                //value && Fast.msg_info(decodeURIComponent(value));
+                value && notice.success({title: '消息通知', message: decodeURIComponent(value)});
+            }
+        };
+
+        $(function() {
+            websocket();
+        });
+
+    });
+</script>
+<script>
+    var _hmt = _hmt || [];
+    (function() {
+        var hm = document.createElement("script");
+        hm.src = "https://hm.baidu.com/hm.js?43c8d259fb4edabd57970c04d1a4d20a";
+        var s = document.getElementsByTagName("script")[0];
+        s.parentNode.insertBefore(hm, s);
+    })();
+</script>
+
+</body>
+</html>

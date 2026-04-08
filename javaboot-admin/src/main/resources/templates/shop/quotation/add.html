@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('新增报价信息')" />
+</head>
+<body class="bg-white">
+
+<!-- 正文开始 -->
+<form class="layui-form bg-white" id="inputForm" th:onsubmit="return false" th:action="@{/shop/quotation/add}"  th:object="${storeGoodsQuotation}">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <div class="layui-row">
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label layui-form-required">报价单名称:</label>
+                    <div class="layui-input-block">
+                        <input name="quotationName" maxlength="36" type="text" class="layui-input" lay-verType="tips" placeholder="输入报价单名称" lay-verify="required"/>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label layui-form-required">报价单简称(对外):</label>
+                    <div class="layui-input-block">
+                        <input name="quotationAbbreviation" maxlength="20" placeholder="用于下单商城的展现，不超过20个字符" type="text" class="layui-input" lay-verType="tips" lay-verify="required"/>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <label class="layui-form-label layui-form-required">运营时间</label>
+                        <div class="layui-inline" id="operate">
+                            <div class="layui-input-inline">
+                                <input type="text" autocomplete="off" id="operateStartTime" name="operateStartTime"  class="layui-input" placeholder="开始日期" lay-verType="tips" lay-verify="required">
+                            </div>
+                            <div class="layui-form-mid">-</div>
+                            <div class="layui-input-inline">
+                                <input type="text" autocomplete="off" id="operateEndTime" name="operateEndTime" class="layui-input" placeholder="结束日期" lay-verType="tips" lay-verify="required">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <label class="layui-form-label layui-form-required" >定价周期</label>
+                        <div class="layui-inline" id="makePrice">
+                            <div class="layui-input-inline">
+                                <input type="text" autocomplete="off" id="startTime" name="startTime" class="layui-input" placeholder="开始日期" lay-verType="tips" lay-verify="required">
+                            </div>
+                            <div class="layui-form-mid">-</div>
+                            <div class="layui-input-inline">
+                                <input type="text" autocomplete="off" id="endTime" name="endTime" class="layui-input" placeholder="结束日期" lay-verType="tips" lay-verify="required">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="select_2" class="layui-form-item active" data-id="select_2" data-tag="select"
+                     data-index="1">
+                    <label class="layui-form-label layui-form-required">
+                        所属区域:
+                    </label>
+                    <div class="layui-input-block" style="width:calc(100% - 110px)">
+                        <select name="deptId" lay-verify="required" xm-select="roleid"  id="deptId">
+                        </select>
+                    </div>
+                </div>
+
+                <div id="switch_9" class="layui-form-item active" data-id="switch_9" data-tag="switch"
+                     data-index="4">
+                    <label class="layui-form-label layui-form-required">
+                        激活状态:
+                    </label>
+                    <div class="layui-input-block">
+                        <input type="checkbox" name="status" lay-skin="switch" lay-text="激活|不激活" checked>
+                    </div>
+                </div>
+
+
+
+
+
+                <div id="textarea_6" class="layui-form-item active" data-id="textarea_6"
+                     data-tag="textarea" data-index="3">
+                    <label class="layui-form-label ">
+                        描述:
+                    </label>
+                    <div class="layui-input-block" style="width:calc(100% - 110px)">
+
+                        <textarea name="description"   width="100%" placeholder="请输入描述" class="layui-textarea" maxlength="1000" rows="3"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-hide">
+        <button id="submitBtn" class="layui-btn" lay-filter="submitBtn" lay-submit>保存</button>
+        <button id="closeBtn" class="layui-btn layui-btn-primary" ew-event="closeDialog">关闭</button>
+    </div>
+
+
+</form>
+
+<th:block th:include="include :: footer" />
+<script type="text/javascript" src="../../../static/assets/libs/laydate/laydate.js"
+        th:src="@{/assets/libs/laydate/laydate.js}"></script>
+
+<script th:inline="javascript">
+    var ctx = [[@{/}]];
+        var prefix = ctx + "shop/quotation";
+</script>
+
+<script th:inline="none">
+
+    layui.use(['index', 'form',  'admin', 'laydate' ], function(){
+        var $ = layui.$;
+        var form = layui.form;
+        var laydate = layui.laydate;
+        var admin = layui.admin;
+
+        //日期范围
+        laydate.render({
+            elem: '#operate'
+            ,type: 'time'
+            ,range: ['#operateStartTime', '#operateEndTime']
+        });
+        laydate.render({
+            elem: '#makePrice'
+            ,type: 'date'
+            ,range: ['#startTime', '#endTime']
+        });
+        admin.req(ctx + "system/dept/getLoginUserDept", { }, function (result) {
+
+            var select= document.getElementById('deptId');
+            for (var i=0;i<result.data.length;i++) {
+                var data= result.data[i];
+                var option = document.createElement("option");
+                option.setAttribute("value", data.value);
+                option.innerText =data.name;
+                select.appendChild(option)
+            }
+            form.render('select');
+        },'get')
+
+    })
+</script>
+</body>
+</html>

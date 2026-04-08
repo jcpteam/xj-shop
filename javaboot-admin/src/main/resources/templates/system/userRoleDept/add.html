@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('新增用户角色授权')" />
+</head>
+<body class="bg-white">
+<!-- 加载动画-->
+<!--<div class="page-loading">-->
+    <!--<div class="ball-loader">-->
+        <!--<span></span><span></span><span></span><span></span>-->
+    <!--</div>-->
+<!--</div>-->
+<!-- 正文开始 -->
+<form class="layui-form bg-white" id="inputForm" th:onsubmit="return false" th:action="@{/system/userRoleDept/add}" th:object="${sysUserRoleDept}">
+    <div class="layui-card">
+        <div class="layui-card-body">
+            <div class="layui-row">
+                <input name="id" type="hidden">
+
+                <input name="deptId" type="hidden" id="treeId" th:value="${param.deptId}"/>
+                <input type="hidden" th:value="${user}" id="userInfo"/>
+                <input name="userId" type="hidden" id="userId" th:value="${user.userId}"/>
+
+                <div class="layui-form-item">
+                    <!--<label class="layui-form-label layui-form-required">用户id:</label>
+                    <div class="layui-input-block">
+                        <select name="userId" class="layui-select" lay-verType="tips" lay-verify="required">
+                            <option value="">所有</option>
+                        </select>
+                        <div class="layui-form-mid layui-word-aux">代码生成请选择字典属性</div>
+                    </div>-->
+                    <label class="layui-form-label layui-form-required">用户名称:</label>
+                    <div class="layui-input-block">
+                        <input name="userName" type="text" th:field="${user.userName}" class="layui-input layui-disabled" lay-verType="tips" lay-verify="required" required readonly/>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <!--<label class="layui-form-label layui-form-required">部门id:</label>
+                    <div class="layui-input-block">
+                        <select name="roleId" class="layui-select" lay-verType="tips" lay-verify="required">
+                            <option value="">所有</option>
+                        </select>
+                        <div class="layui-form-mid layui-word-aux">代码生成请选择字典属性</div>
+                    </div>-->
+                    <label class="layui-form-label layui-form-required">授权角色:</label>
+                    <div class="layui-input-block">
+                        <select name="roleId" id="roleId" class="layui-select" lay-verType="tips" lay-verify="required">
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <!--<label class="layui-form-label layui-form-required">部门id:</label>-->
+                    <!--<div class="layui-input-block">-->
+                        <!--<input name="deptId" type="text" class="layui-input" lay-verType="tips" lay-verify="required"/>-->
+                    <!--</div>-->
+                    <label class="layui-form-label layui-form-required">区域权限</label>
+                    <div class="layui-input-block">
+                        <input id="treeName" name="deptName" type="text" placeholder="请选择区域" class="layui-input icon-search" lay-verType="tips" lay-verify="required" required/>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <!--<label class="layui-form-label">是否默认:</label>
+                    <div class="layui-input-block">
+                        <input type="radio" name="isDefault" value="">
+                        <div class="layui-form-mid layui-word-aux">代码生成请选择字典属性</div>
+                    </div>-->
+                    <label class="layui-form-label">是否默认:</label>
+                    <div class="layui-input-block">
+                        <input type="radio" name="isDefault" value="0" title="否" checked="">
+                        <input type="radio" name="isDefault" value="1" title="是">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="layui-form-item layui-hide">
+        <button id="submitBtn" class="layui-btn" lay-filter="submitBtn" lay-submit>保存</button>
+        <button id="closeBtn" class="layui-btn layui-btn-primary" ew-event="closeDialog">关闭</button>
+    </div>
+</form>
+
+<th:block th:include="include :: footer" />
+<script th:inline="javascript">
+    var ctx = [[@{/}]];
+    var prefix = ctx + "system/userRoleDept";
+</script>
+<script th:inline="none">
+    layui.use(['index', 'form', 'formX', 'table', 'laydate', 'upload', 'ext'], function(){
+        var $ = layui.$;
+        var form = layui.form;
+        var formX = layui.formX;
+        var layer = layui.layer;
+        var table = layui.table;
+        var admin = layui.admin;
+        var upload = layui.upload;
+        var laydate = layui.laydate;
+
+        /*用户管理-新增-选择部门树*/
+        $("#treeName").click(function(){
+            var treeId = $("#treeId").val();
+            var deptId = $.common.isEmpty(treeId) ? "04" : $("#treeId").val();
+            var url = ctx + "system/dept/selectDeptTree/" + deptId;
+            var options = {
+                title: '选择部门',
+                width: "380",
+                url: url,
+                callBack: doSubmit
+            };
+            $.modal.openOptions(options);
+        })
+
+        function doSubmit(index, layero){
+            var tree = layero.find("iframe")[0].contentWindow.layui.$._tree;
+            if ($.tree.notAllowParents(tree)) {
+                var body = layer.getChildFrame('body', index);
+                $("#treeId").val(body.find('#treeId').val());
+                $("#treeName").val(body.find('#treeName').val());
+                console.log($("#treeId").val());
+                console.log($("#treeName").val());
+                layer.close(index);
+            }
+        }
+
+        //获取角色列表
+        admin.req(ctx + "system/role/list", {}, function (result) {
+            var select = document.getElementById('roleId');
+            select.innerHTML = "";
+            var o = document.createElement("option");
+            o.setAttribute("value","");
+            o.innerText = "请选择角色";
+            select.appendChild(o);
+            if(result.rows && result.rows.length){
+                for(var i =0;i<result.rows.length;i++){
+                    var data = result.rows[i];
+                    var option = document.createElement("option");
+                    option.setAttribute("value",data.roleId);
+                    option.setAttribute("data-name",data.roleName);
+                    option.innerText = data.roleName;
+                    select.appendChild(option);
+                }
+            }
+            form.render('select');
+        },'post')
+    })
+</script>
+</body>
+</html>
