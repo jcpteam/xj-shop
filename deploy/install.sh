@@ -82,7 +82,6 @@ create_dirs() {
 create_config_template() {
     log_info "创建配置文件模板..."
 
-    # 创建环境变量配置文件
     cat > ${INSTALL_DIR}/config/env.conf << 'EOF'
 # 数据库配置（请根据实际情况修改）
 DB_HOST=localhost
@@ -98,23 +97,13 @@ APP_PORT=8080
 # JVM参数配置
 ADMIN_JVM_OPTS="-Xms512M -Xmx512M -XX:+UseG1GC"
 APP_JVM_OPTS="-Xms256M -Xmx256M -XX:+UseG1GC"
+
+# Spring Profile
+SPRING_PROFILE=prod
 EOF
 
     log_info "配置模板已创建: ${INSTALL_DIR}/config/env.conf"
     log_warn "请修改配置文件后再启动服务!"
-}
-
-# ==================== 复制部署脚本 ====================
-copy_scripts() {
-    log_info "部署脚本已就位..."
-
-    # 设置脚本权限
-    chmod +x ${INSTALL_DIR}/start.sh 2>/dev/null || true
-    chmod +x ${INSTALL_DIR}/stop.sh 2>/dev/null || true
-    chmod +x ${INSTALL_DIR}/status.sh 2>/dev/null || true
-    chmod +x ${INSTALL_DIR}/restart.sh 2>/dev/null || true
-
-    log_info "脚本权限设置完成"
 }
 
 # ==================== 显示使用说明 ====================
@@ -125,21 +114,22 @@ show_usage() {
     echo "=========================================="
     echo ""
     echo "下一步操作:"
+    echo ""
     echo "1. 将JAR包上传到 ${JAR_DIR} 目录:"
     echo "   - javaboot-admin.jar"
     echo "   - javaboot-app.jar"
     echo ""
-    echo "2. 修改数据库配置:"
-    echo "   vi ${INSTALL_DIR}/config/env.conf"
+    echo "   scp deploy/output/*.jar root@server:${JAR_DIR}/"
     echo ""
-    echo "3. 启动服务:"
+    echo "2. 启动服务:"
     echo "   ${INSTALL_DIR}/start.sh"
     echo ""
-    echo "4. 查看状态:"
+    echo "3. 查看状态:"
     echo "   ${INSTALL_DIR}/status.sh"
     echo ""
-    echo "5. 停止服务:"
-    echo "   ${INSTALL_DIR}/stop.sh"
+    echo "4. 查看日志:"
+    echo "   tail -f ${LOG_DIR}/admin.log"
+    echo "   tail -f ${LOG_DIR}/app.log"
     echo ""
     echo "=========================================="
 }

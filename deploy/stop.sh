@@ -40,7 +40,6 @@ stop_service() {
 
     log_info "停止 ${SERVICE_NAME}..."
 
-    # 查找进程PID
     PID=$(ps -ef | grep java | grep ${JAR_NAME} | grep -v grep | awk '{print $2}')
 
     if [[ -z "${PID}" ]]; then

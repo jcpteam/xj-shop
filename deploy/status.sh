@@ -39,12 +39,10 @@ get_process_info() {
     local PID=$(ps -ef | grep java | grep ${JAR_NAME} | grep -v grep | awk '{print $2}')
 
     if [[ -n "${PID}" ]]; then
-        # 获取进程详细信息
         local CPU_USAGE=$(ps -p ${PID} -o %cpu --no-headers | awk '{printf "%.1f", $1}')
         local MEM_USAGE=$(ps -p ${PID} -o %mem --no-headers | awk '{printf "%.1f", $1}')
         local VSZ=$(ps -p ${PID} -o vsz --no-headers | awk '{printf "%.0f", $1/1024}')
         local RSS=$(ps -p ${PID} -o rss --no-headers | awk '{printf "%.0f", $1/1024}')
-        local START_TIME=$(ps -p ${PID} -o lstart --no-headers)
         local ELAPSED=$(ps -p ${PID} -o etime --no-headers | tr -d ' ')
 
         echo "${PID}|${CPU_USAGE}|${MEM_USAGE}|${VSZ}|${RSS}|${ELAPSED}"
@@ -145,7 +143,6 @@ show_status() {
         echo "  物理内存: ${RSS} MB"
         echo "  运行时间: ${ELAPSED}"
 
-        # 检查端口
         if check_port 9999; then
             echo -e "  端口9999: ${GREEN}监听中${NC}"
         else
@@ -171,7 +168,6 @@ show_status() {
         echo "  物理内存: ${RSS} MB"
         echo "  运行时间: ${ELAPSED}"
 
-        # 检查端口
         if check_port 8080; then
             echo -e "  端口8080: ${GREEN}监听中${NC}"
         else
@@ -183,17 +179,14 @@ show_status() {
 
     echo ""
 
-    # JAR文件状态
     check_jar_files
-
-    # 日志文件状态
     check_logs
 
     echo ""
     echo "=========================================="
 }
 
-# ==================== 快速状态检查（用于其他脚本调用） ====================
+# ==================== 快速状态检查 ====================
 quick_status() {
     ADMIN_PID=$(ps -ef | grep java | grep ${ADMIN_JAR} | grep -v grep | awk '{print $2}')
     APP_PID=$(ps -ef | grep java | grep ${APP_JAR} | grep -v grep | awk '{print $2}')
@@ -217,13 +210,11 @@ quick_status() {
 
 # ==================== 主程序 ====================
 main() {
-    # 如果参数为 --quick，则输出简单状态供其他脚本调用
     if [[ "$1" == "--quick" ]]; then
         quick_status
         exit 0
     fi
 
-    # 如果参数为 --logs，则显示最近日志
     if [[ "$1" == "--logs" ]]; then
         local SERVICE=$2
 

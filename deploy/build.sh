@@ -55,23 +55,28 @@ do_package() {
 copy_jars() {
     log_info "复制JAR文件到输出目录..."
 
-    # 创建输出目录
+    # 清理输出目录
+    rm -rf ${OUTPUT_DIR}
     mkdir -p ${OUTPUT_DIR}
 
     # 复制javaboot-admin.jar
     if [[ -f ${PROJECT_DIR}/javaboot-admin/target/javaboot-admin.jar ]]; then
         cp ${PROJECT_DIR}/javaboot-admin/target/javaboot-admin.jar ${OUTPUT_DIR}/
-        log_info "已复制: javaboot-admin.jar"
+        SIZE=$(ls -lh ${OUTPUT_DIR}/javaboot-admin.jar | awk '{print $5}')
+        log_info "已复制: javaboot-admin.jar (${SIZE})"
     else
         log_error "未找到 javaboot-admin.jar"
+        exit 1
     fi
 
     # 复制javaboot-app.jar
     if [[ -f ${PROJECT_DIR}/javaboot-app/target/javaboot-app.jar ]]; then
         cp ${PROJECT_DIR}/javaboot-app/target/javaboot-app.jar ${OUTPUT_DIR}/
-        log_info "已复制: javaboot-app.jar"
+        SIZE=$(ls -lh ${OUTPUT_DIR}/javaboot-app.jar | awk '{print $5}')
+        log_info "已复制: javaboot-app.jar (${SIZE})"
     else
         log_error "未找到 javaboot-app.jar"
+        exit 1
     fi
 
     log_info "输出目录: ${OUTPUT_DIR}"
@@ -85,14 +90,17 @@ show_result() {
     echo "=========================================="
     echo ""
 
-    ls -lh ${OUTPUT_DIR}/*.jar 2>/dev/null || log_warn "输出目录中没有JAR文件"
+    ls -lh ${OUTPUT_DIR}/*.jar
 
     echo ""
+    echo "=========================================="
     echo "下一步操作:"
-    echo "1. 将 ${OUTPUT_DIR} 目录下的JAR文件上传到服务器"
+    echo "=========================================="
+    echo ""
+    echo "1. 上传JAR文件到服务器:"
     echo "   scp ${OUTPUT_DIR}/*.jar root@your_server:/opt/xj-shop/jars/"
     echo ""
-    echo "2. 在服务器上启动服务"
+    echo "2. 启动服务:"
     echo "   cd /opt/xj-shop && ./start.sh"
     echo ""
     echo "=========================================="

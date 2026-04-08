@@ -95,7 +95,7 @@ start_admin() {
     JVM_OPTS="${ADMIN_JVM_OPTS:-"-Xms512M -Xmx512M -XX:+UseG1GC"}"
 
     # Spring Profile
-    SPRING_PROFILE="prod"
+    SPRING_PROFILE="${SPRING_PROFILE:-prod}"
 
     # 启动命令
     nohup java ${JVM_OPTS} \
@@ -134,7 +134,7 @@ start_app() {
     JVM_OPTS="${APP_JVM_OPTS:-"-Xms256M -Xmx256M -XX:+UseG1GC"}"
 
     # Spring Profile
-    SPRING_PROFILE="prod"
+    SPRING_PROFILE="${SPRING_PROFILE:-prod}"
 
     # 启动命令
     nohup java ${JVM_OPTS} \
