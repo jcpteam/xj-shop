@@ -21,9 +21,9 @@ spring:
 #        url: jdbc:mysql://47.92.241.101:3306/db_xjshop_new?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8&nullCatalogMeansCurrent=true
 #        username: root
 #        password: 123456
-        url: jdbc:mysql://rm-bp17159gh1cz69g05ho.mysql.rds.aliyuncs.com:3306/db_hkshop?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8&nullCatalogMeansCurrent=true
+        url: jdbc:mysql://rm-bp1s00d2j828w3xclvo.mysql.rds.aliyuncs.com:3306/db_hkshop?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8&nullCatalogMeansCurrent=true
         username: root
-        password: 123456
+        password: Hk@147369
       # 从库数据源/redirectUrl
       slave:
         # 从数据源开关/默认关闭
